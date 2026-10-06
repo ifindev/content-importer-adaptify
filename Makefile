@@ -1,4 +1,4 @@
-.PHONY: help lint test api web
+.PHONY: help lint test api web gen-api
 
 help: ## List available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
@@ -15,3 +15,7 @@ api: ## Run the backend dev server
 
 web: ## Run the frontend dev server
 	cd web && pnpm dev
+
+gen-api: ## Generate TypeScript types from the FastAPI schema
+	cd backend && uv run python scripts/export_openapi.py
+	cd web && pnpm gen:api

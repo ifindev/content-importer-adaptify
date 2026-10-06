@@ -193,6 +193,8 @@ web/
     ├── api/schema.ts                     # GENERATED from FastAPI openapi.json, never edited
     ├── types/page-props.ts
     └── query-string.ts
+├── Dockerfile
+└── .dockerignore
 ```
 
 Import has no module of its own. An import just creates articles, so it lives in `articles/`.

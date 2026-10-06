@@ -42,7 +42,7 @@ Phases and the master list of tickets. How tickets work: [workflow.md](../workfl
 
 | ID | Ticket | Refs | Status |
 | --- | --- | --- | --- |
-| T-006 | [Compose: api and web](006-infra-compose-api-web.md) | architecture: Local setup | analyzed |
+| T-006 | [Compose: api and web](006-infra-compose-api-web.md) | architecture: Local setup | done |
 | T-007 | [Local WordPress](007-infra-local-wordpress.md) | spec: WordPress integration | analyzed |
 | T-008 | [Firebase emulators](008-infra-firebase-emulators.md) | architecture: Auth, Local setup | analyzed |
 | T-009 | [WordPress publish check](009-infra-wordpress-publish-check.md) | spec: WordPress integration | analyzed |

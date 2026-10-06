@@ -33,7 +33,7 @@ Phases and the master list of tickets. How tickets work: [workflow.md](../workfl
 | ID | Ticket | Refs | Status |
 | --- | --- | --- | --- |
 | T-001 | [Repo layout](001-bootstrap-repo-layout.md) | — | done |
-| T-002 | [Backend skeleton](002-bootstrap-backend-skeleton.md) | architecture: Backend | analyzed |
+| T-002 | [Backend skeleton](002-bootstrap-backend-skeleton.md) | architecture: Backend | done |
 | T-003 | [Next.js scaffold](003-bootstrap-nextjs-scaffold.md) | architecture: Frontend | analyzed |
 | T-004 | [Frontend setup](004-bootstrap-frontend-setup.md) | architecture: Frontend | analyzed |
 | T-005 | [API type generation](005-bootstrap-api-type-generation.md) | architecture: Frontend | analyzed |

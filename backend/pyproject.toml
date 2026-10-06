@@ -1,0 +1,76 @@
+[project]
+name = "app"
+version = "0.1.0"
+description = "Content Importer for Adaptify SEO — backend"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi[standard]>=0.115",
+    "pydantic-settings>=2.6",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.8",
+    "pytest>=8.3",
+    "import-linter>=2.1",
+]
+
+[tool.uv.build-backend]
+module-root = ""
+
+[build-system]
+requires = ["uv_build>=0.11.32,<0.12.0"]
+build-backend = "uv_build"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.importlinter]
+root_package = "app"
+include_external_packages = true
+
+[[tool.importlinter.contracts]]
+name = "Layers"
+type = "layers"
+layers = [
+    "app.api",
+    "app.core.use_cases",
+    "app.core.ports",
+    "app.core.domain",
+]
+
+[[tool.importlinter.contracts]]
+name = "Core must not import adapters, api, or SDKs"
+type = "forbidden"
+source_modules = ["app.core"]
+forbidden_modules = [
+    "app.adapters",
+    "app.api",
+    "httpx",
+    "google",
+    "firebase_admin",
+    "mammoth",
+    "nh3",
+    "langchain",
+]
+
+[[tool.importlinter.contracts]]
+name = "Adapters must not import use_cases or api"
+type = "forbidden"
+source_modules = ["app.adapters"]
+forbidden_modules = ["app.core.use_cases", "app.api"]
+
+[[tool.importlinter.contracts]]
+name = "API must not import adapters directly"
+type = "forbidden"
+source_modules = ["app.api"]
+forbidden_modules = ["app.adapters"]
+allow_indirect_imports = true

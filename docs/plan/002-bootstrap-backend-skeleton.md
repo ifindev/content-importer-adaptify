@@ -1,6 +1,6 @@
 # T-002 Backend skeleton
 
-**Phase:** 1 · Bootstrap · **Status:** analyzed · **Size:** M
+**Phase:** 1 · Bootstrap · **Status:** done · **Size:** M
 **Refs:** architecture: Backend (Folder layout, Import rules)
 **Depends on:** T-001
 
@@ -23,20 +23,20 @@ Translate the import rules table into contracts in `pyproject.toml`:
 - **Forbidden:** `app.api` must not import `app.adapters` (only `app.container` does)
 
 ## Acceptance criteria
-- [ ] `uv run fastapi dev app/api/main.py` serves `GET /health` → `{"status": "ok"}`
-- [ ] `/docs` shows Swagger
-- [ ] `make lint` runs `ruff check`, `ruff format --check`, and `lint-imports`, and all pass
-- [ ] `make test` runs pytest; one test covers `/health` via `TestClient`
-- [ ] A deliberate forbidden import (e.g. `import httpx` in `app/core/domain`) makes `lint-imports` fail. Remove it afterwards.
+- [x] `uv run fastapi dev app/api/main.py` serves `GET /health` → `{"status": "ok"}`
+- [x] `/docs` shows Swagger
+- [x] `make lint` runs `ruff check`, `ruff format --check`, and `lint-imports`, and all pass
+- [x] `make test` runs pytest; one test covers `/health` via `TestClient`
+- [x] A deliberate forbidden import (e.g. `import httpx` in `app/core/domain`) makes `lint-imports` fail. Remove it afterwards.
 
 ## Tasks
-- [ ] `uv init` in `backend/`, pin Python 3.12, add `fastapi[standard]`, `pydantic-settings`; dev: `ruff`, `pytest`, `import-linter`
-- [ ] Folders with `__init__.py`: `app/core/{domain,ports,use_cases,prompts,lib}`, `app/adapters/testing`, `app/api/routes`
-- [ ] `app/settings.py`, `app/container.py`, `app/core/ports/clock.py` + `SystemClock` adapter + `FixedClock` test adapter
-- [ ] `app/api/main.py` with the app factory, container in `app.state`, `/health` route
-- [ ] ruff config (line length, rule set) and import-linter contracts in `pyproject.toml`
-- [ ] `tests/unit/test_health.py`
-- [ ] Makefile targets: `lint`, `test`, `api` (run dev server)
+- [x] `uv init` in `backend/`, pin Python 3.12, add `fastapi[standard]`, `pydantic-settings`; dev: `ruff`, `pytest`, `import-linter`
+- [x] Folders with `__init__.py`: `app/core/{domain,ports,use_cases,prompts,lib}`, `app/adapters/testing`, `app/api/routes`
+- [x] `app/settings.py`, `app/container.py`, `app/core/ports/clock.py` + `SystemClock` adapter + `FixedClock` test adapter
+- [x] `app/api/main.py` with the app factory, container in `app.state`, `/health` route
+- [x] ruff config (line length, rule set) and import-linter contracts in `pyproject.toml`
+- [x] `tests/unit/test_health.py`
+- [x] Makefile targets: `lint`, `test`, `api` (run dev server)
 
 ## Out of scope
 - Dockerfile (T-006)

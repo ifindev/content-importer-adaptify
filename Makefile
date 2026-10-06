@@ -1,4 +1,4 @@
-.PHONY: help lint test api web gen-api
+.PHONY: help lint test api web gen-api up down logs ps
 
 help: ## List available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
@@ -19,3 +19,15 @@ web: ## Run the frontend dev server
 gen-api: ## Generate TypeScript types from the FastAPI schema
 	cd server && uv run python scripts/export_openapi.py
 	cd web && pnpm gen:api
+
+up: ## Start api and web in Docker (detached, rebuilds on change)
+	docker compose up --build -d
+
+down: ## Stop and remove containers
+	docker compose down
+
+logs: ## Follow logs from all services
+	docker compose logs -f
+
+ps: ## List running services
+	docker compose ps

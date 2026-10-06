@@ -2,7 +2,7 @@
 
 Phases and the master list of tickets. How tickets work: [workflow.md](../workflow.md). Ticket template: [_template.md](_template.md).
 
-**Current phase:** 1. Bootstrap
+**Current phase:** 2. Local infra
 
 ## Phases
 
@@ -36,7 +36,7 @@ Phases and the master list of tickets. How tickets work: [workflow.md](../workfl
 | T-002 | [Backend skeleton](002-bootstrap-backend-skeleton.md) | architecture: Backend | done |
 | T-003 | [Next.js scaffold](003-bootstrap-nextjs-scaffold.md) | architecture: Frontend | done |
 | T-004 | [Frontend setup](004-bootstrap-frontend-setup.md) | architecture: Frontend | done |
-| T-005 | [API type generation](005-bootstrap-api-type-generation.md) | architecture: Frontend | analyzed |
+| T-005 | [API type generation](005-bootstrap-api-type-generation.md) | architecture: Frontend | done |
 
 ### Phase 2: Local infra
 

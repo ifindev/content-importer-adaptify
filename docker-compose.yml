@@ -1,0 +1,32 @@
+services:
+  api:
+    build:
+      context: ./server
+      target: dev
+    env_file: .env
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./server:/app
+      - server-venv:/app/.venv
+
+  web:
+    build:
+      context: ./web
+      target: dev
+    env_file: .env
+    environment:
+      # Fixed service-to-service URL; overrides whatever API_URL is in .env
+      # (that value is for the non-Docker `make api`/`make web` path).
+      API_URL: http://api:8000
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./web:/app
+      - web-node-modules:/app/node_modules
+    depends_on:
+      - api
+
+volumes:
+  server-venv:
+  web-node-modules:

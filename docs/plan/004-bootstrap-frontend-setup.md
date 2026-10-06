@@ -1,6 +1,6 @@
 # T-004 Frontend setup
 
-**Phase:** 1 · Bootstrap · **Status:** analyzed · **Size:** M
+**Phase:** 1 · Bootstrap · **Status:** done · **Size:** M
 **Refs:** architecture: Frontend › Rules
 **Depends on:** T-003
 
@@ -16,20 +16,20 @@ The web app has all its tooling and the shared `lib/` and `hooks/` pieces the ar
 - **`bodySizeLimit`:** `10mb` in `next.config.ts` (several `.docx` files per upload).
 
 ## Acceptance criteria
-- [ ] shadcn initialized; `components/ui/button.tsx` added and rendered on one stub page as a smoke test
-- [ ] Prettier (with `prettier-plugin-tailwindcss`) and `eslint-config-prettier` configured; `pnpm format:check` passes
-- [ ] `pnpm typecheck` (`tsc --noEmit`) passes
-- [ ] `lib/http.ts`, `lib/api-server.ts`, `lib/types/page-props.ts`, `lib/query-string.ts`, `lib/mutation-result.ts`, `hooks/use-filter-params.ts` exist and follow the architecture doc
-- [ ] Importing `lib/api-server.ts` from a `"use client"` file fails the build (checked once, then reverted)
-- [ ] `API_URL` added to `.env.example`
+- [x] shadcn initialized; `components/ui/button.tsx` added and rendered on one stub page as a smoke test
+- [x] Prettier (with `prettier-plugin-tailwindcss`) and `eslint-config-prettier` configured; `pnpm format:check` passes
+- [x] `pnpm typecheck` (`tsc --noEmit`) passes
+- [x] `lib/http.ts`, `lib/api-server.ts`, `lib/types/page-props.ts`, `lib/query-string.ts`, `lib/mutation-result.ts`, `hooks/use-filter-params.ts` exist and follow the architecture doc
+- [x] Importing `lib/api-server.ts` from a `"use client"` file fails the build (checked once, then reverted)
+- [x] `API_URL` added to `.env.example`
 
 ## Tasks
-- [ ] `pnpm dlx shadcn@latest init`; add `button`
-- [ ] Add `zod`, `server-only`; dev: `prettier`, `prettier-plugin-tailwindcss`, `eslint-config-prettier`
-- [ ] Scripts: `format`, `format:check`, `typecheck`
-- [ ] Write the `lib/` and `hooks/` files
-- [ ] `next.config.ts`: `experimental.serverActions.bodySizeLimit`
-- [ ] Makefile `lint` target also runs the web lint, format check, and typecheck
+- [x] `pnpm dlx shadcn@latest init`; add `button`
+- [x] Add `zod`, `server-only`; dev: `prettier`, `prettier-plugin-tailwindcss`, `eslint-config-prettier`
+- [x] Scripts: `format`, `format:check`, `typecheck`
+- [x] Write the `lib/` and `hooks/` files
+- [x] `next.config.ts`: `experimental.serverActions.bodySizeLimit`
+- [x] Makefile `lint` target also runs the web lint, format check, and typecheck
 
 ## Out of scope
 - Real queries and mutations (Phase 4)

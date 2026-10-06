@@ -3,8 +3,9 @@
 help: ## List available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
-lint: ## Run backend linting (ruff, import-linter)
+lint: ## Run backend and web linting
 	cd backend && uv run ruff check . && uv run ruff format --check . && uv run lint-imports
+	cd web && pnpm lint && pnpm format:check && pnpm typecheck
 
 test: ## Run backend tests
 	cd backend && uv run pytest

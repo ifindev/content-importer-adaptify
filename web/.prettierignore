@@ -1,0 +1,3 @@
+# Generated files: the generator's own formatting is the source of truth.
+lib/api/openapi.json
+lib/api/schema.ts

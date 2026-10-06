@@ -14,6 +14,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Generated from the FastAPI schema, never edited.
+    "lib/api/schema.ts",
   ]),
 ]);
 

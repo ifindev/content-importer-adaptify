@@ -5,7 +5,7 @@
 **Depends on:** none
 
 ## Goal
-The repo has its top-level shape and shared files, so the backend and web tickets can start in parallel.
+The repo has its top-level shape and shared files, so the server and web tickets can start in parallel.
 
 ## Acceptance criteria
 - [x] Root has `README.md`, `CLAUDE.md`, `docs/`, `.gitignore`, `.env.example`, `Makefile`
@@ -19,5 +19,5 @@ The repo has its top-level shape and shared files, so the backend and web ticket
 - [x] Add `Makefile` with a self-documenting `help` target (`## comment` after each target)
 
 ## Out of scope
-- `backend/` and `web/` contents (T-002, T-003)
+- `server/` and `web/` contents (T-002, T-003)
 - `infra/` and `.github/` (created by the tickets that first need them; git doesn't keep empty folders)

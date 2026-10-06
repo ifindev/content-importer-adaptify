@@ -1,7 +1,7 @@
 [project]
 name = "app"
 version = "0.1.0"
-description = "Content Importer for Adaptify SEO — backend"
+description = "Content Importer for Adaptify SEO — server"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [

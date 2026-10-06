@@ -13,7 +13,7 @@ Agencies paste or upload articles written outside Adaptify. Their clients approv
 | Doc | What it covers |
 | --- | --- |
 | [Spec](docs/spec.md) | What the system does: scope, journeys, lifecycle, requirements, API |
-| [Architecture](docs/architecture.md) | How the code is organized: backend, frontend, auth, infra, testing, cost |
+| [Architecture](docs/architecture.md) | How the code is organized: server, frontend, auth, infra, testing, cost |
 | [Workflow](docs/workflow.md) | How the work is planned and done: tickets, conventions, Definition of Done |
 | [Plan](docs/plan/README.md) | Phases and the master list of tickets |
 

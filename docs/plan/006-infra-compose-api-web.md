@@ -11,7 +11,7 @@
 
 ### Decisions
 - **Multi-stage Dockerfiles.** Each app gets a `dev` stage now. The `prod` stage comes in Phase 5, in the same file.
-- **Source is bind-mounted** for hot reload. Dependencies stay inside the container: `backend/.venv` and `web/node_modules` are anonymous volumes, so host and container installs don't clash (macOS vs Linux binaries).
+- **Source is bind-mounted** for hot reload. Dependencies stay inside the container: `server/.venv` and `web/node_modules` are anonymous volumes, so host and container installs don't clash (macOS vs Linux binaries).
 - **Service URLs:** the web container uses `API_URL=http://api:8000`. Host ports: api `8000`, web `3000`.
 - **Env:** compose reads the root `.env` (copied from `.env.example`).
 
@@ -23,7 +23,7 @@
 - [ ] Fresh clone: `cp .env.example .env && make up` works with no other steps
 
 ## Tasks
-- [ ] `backend/Dockerfile` (dev stage: uv, `fastapi dev --host 0.0.0.0`)
+- [ ] `server/Dockerfile` (dev stage: uv, `fastapi dev --host 0.0.0.0`)
 - [ ] `web/Dockerfile` (dev stage: pnpm via corepack, `pnpm dev`)
 - [ ] `docker-compose.yml` with `api` and `web`, volumes, env, ports
 - [ ] `.dockerignore` for both apps

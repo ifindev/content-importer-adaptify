@@ -35,7 +35,7 @@ If it fails, record the fallback in the spec and architecture docs. Likely fallb
 ## Tasks
 - [ ] `infra/firebase/Dockerfile`, `firebase.json`, `.firebaserc`
 - [ ] Add `firebase` service to `docker-compose.yml`
-- [ ] Add `firebase-admin`, `google-cloud-firestore` to backend dependencies
+- [ ] Add `firebase-admin`, `google-cloud-firestore` to server dependencies
 - [ ] Run the session cookie check; update spec Open questions (and architecture Auth if needed)
 - [ ] Makefile target: `firebase-reset`
 - [ ] Update `.env.example`

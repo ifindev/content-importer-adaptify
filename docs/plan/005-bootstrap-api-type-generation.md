@@ -22,7 +22,7 @@ One command turns the FastAPI schema into TypeScript types for the web app, so t
 - [x] `schema.ts` is excluded from ESLint and Prettier
 
 ## Tasks
-- [x] `backend/scripts/export_openapi.py` (sorted keys, stable output)
+- [x] `server/scripts/export_openapi.py` (sorted keys, stable output)
 - [x] Add `openapi-typescript` to web dev dependencies; script `gen:api`
 - [x] Optional helper type in `lib/api/types.ts` to shorten response type lookups
 - [x] Makefile target `gen-api`

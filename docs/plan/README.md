@@ -33,7 +33,7 @@ Phases and the master list of tickets. How tickets work: [workflow.md](../workfl
 | ID | Ticket | Refs | Status |
 | --- | --- | --- | --- |
 | T-001 | [Repo layout](001-bootstrap-repo-layout.md) | — | done |
-| T-002 | [Backend skeleton](002-bootstrap-backend-skeleton.md) | architecture: Backend | done |
+| T-002 | [Server skeleton](002-bootstrap-backend-skeleton.md) | architecture: Server | done |
 | T-003 | [Next.js scaffold](003-bootstrap-nextjs-scaffold.md) | architecture: Frontend | done |
 | T-004 | [Frontend setup](004-bootstrap-frontend-setup.md) | architecture: Frontend | done |
 | T-005 | [API type generation](005-bootstrap-api-type-generation.md) | architecture: Frontend | done |
@@ -46,6 +46,7 @@ Phases and the master list of tickets. How tickets work: [workflow.md](../workfl
 | T-007 | [Local WordPress](007-infra-local-wordpress.md) | spec: WordPress integration | analyzed |
 | T-008 | [Firebase emulators](008-infra-firebase-emulators.md) | architecture: Auth, Local setup | analyzed |
 | T-009 | [WordPress publish check](009-infra-wordpress-publish-check.md) | spec: WordPress integration | analyzed |
+| T-010 | [Rename backend to server](010-rename-backend-to-server.md) | architecture: Server | done |
 
 ### Phase 3: API
 

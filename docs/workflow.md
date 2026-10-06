@@ -7,7 +7,7 @@ How the work on this project is planned, done, and kept in sync with the docs.
 | Doc | Answers | Changes when |
 | --- | --- | --- |
 | [spec.md](spec.md) | **What** the system does: scope, journeys, lifecycle, requirements, data model, API endpoints | A product or behavior decision changes |
-| [architecture.md](architecture.md) | **How** the code is organized: backend, frontend, auth, infra, testing, cost | The structure or a technical decision changes |
+| [architecture.md](architecture.md) | **How** the code is organized: server, frontend, auth, infra, testing, cost | The structure or a technical decision changes |
 | [plan/README.md](plan/README.md) | **When**: phases and the master list of tickets | A ticket is added or changes status |
 | `workflow.md` (this file) | **How we work**: tickets, conventions, Definition of Done | The process changes |
 

@@ -40,7 +40,7 @@ flowchart LR
 
 
 
-## Backend
+## Server
 
 **Decision:** Use a light hexagonal architecture, also called ports and adapters. The business rules sit in `core/` and never import a cloud SDK or an HTTP client. This lets every outside service swap for a Docker or test version without touching the rules. Full clean architecture adds layers that only pass data along, which is too much for this size.
 
@@ -65,7 +65,7 @@ A **port** is an interface the core depends on, written as a Python `Protocol`. 
 
 ```
 content-importer/
-├── backend/
+├── server/
 │   ├── app/
 │   │   ├── core/                        # business rules, no SDK or HTTP imports below
 │   │   │   ├── domain/
@@ -228,7 +228,7 @@ Mark a function `"use server"` only if a Client Component calls it. After a writ
 - the agency session cookie (see [Auth](#auth)), and
 - the client's IP in `X-Forwarded-For`, so FastAPI can rate-limit per client.
 
-**Types come from the API.** FastAPI publishes `openapi.json` from its Pydantic schemas. `openapi-typescript` turns it into `lib/api/schema.ts` (`pnpm gen:api`). Request and response types are taken from there, so the frontend and backend can't drift apart. There is no shared contracts package, since the backend is Python. When the API changes, regenerate the file and fix what the type checker reports.
+**Types come from the API.** FastAPI publishes `openapi.json` from its Pydantic schemas. `openapi-typescript` turns it into `lib/api/schema.ts` (`pnpm gen:api`). Request and response types are taken from there, so the frontend and server can't drift apart. There is no shared contracts package, since the server is Python. When the API changes, regenerate the file and fix what the type checker reports.
 
 **Zod is for the UI only.** Form schemas and URL filter schemas live in each module's `schemas/`. The mutation maps form values to the API request shape. FastAPI does the real validation.
 

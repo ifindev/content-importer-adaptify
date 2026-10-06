@@ -1,11 +1,11 @@
-# T-002 Backend skeleton
+# T-002 Server skeleton
 
 **Phase:** 1 · Bootstrap · **Status:** done · **Size:** M
-**Refs:** architecture: Backend (Folder layout, Import rules)
+**Refs:** architecture: Server (Folder layout, Import rules)
 **Depends on:** T-001
 
 ## Goal
-A FastAPI app in `backend/` with the hexagonal folder structure, settings, and the composition root. Lint, the import rules, and tests run from day one, so the structure can't erode.
+A FastAPI app in `server/` with the hexagonal folder structure, settings, and the composition root. Lint, the import rules, and tests run from day one, so the structure can't erode.
 
 ## Analysis
 
@@ -30,7 +30,7 @@ Translate the import rules table into contracts in `pyproject.toml`:
 - [x] A deliberate forbidden import (e.g. `import httpx` in `app/core/domain`) makes `lint-imports` fail. Remove it afterwards.
 
 ## Tasks
-- [x] `uv init` in `backend/`, pin Python 3.12, add `fastapi[standard]`, `pydantic-settings`; dev: `ruff`, `pytest`, `import-linter`
+- [x] `uv init` in `server/`, pin Python 3.12, add `fastapi[standard]`, `pydantic-settings`; dev: `ruff`, `pytest`, `import-linter`
 - [x] Folders with `__init__.py`: `app/core/{domain,ports,use_cases,prompts,lib}`, `app/adapters/testing`, `app/api/routes`
 - [x] `app/settings.py`, `app/container.py`, `app/core/ports/clock.py` + `SystemClock` adapter + `FixedClock` test adapter
 - [x] `app/api/main.py` with the app factory, container in `app.state`, `/health` route

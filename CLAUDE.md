@@ -2,7 +2,7 @@
 
 ## Docs to read
 - `docs/spec.md`: what the system does. Source of truth for behavior.
-- `docs/architecture.md`: how the code is organized, including the backend import rules and the frontend structure.
+- `docs/architecture.md`: how the code is organized, including the server import rules and the frontend structure.
 - `docs/workflow.md`: how work is done: tickets, naming, Definition of Done.
 - `docs/plan/README.md`: current phase and the master list of tickets.
 
@@ -12,6 +12,6 @@
 - When a ticket is done, set its status in the ticket header and in `docs/plan/README.md`.
 - New tickets: next number in the global sequence, flat in `docs/plan/`, from `docs/plan/_template.md`.
 - Commits: `feat(T-012): …`. Branches: `T-012-short-slug`.
-- Tooling: uv for Python (`backend/`), pnpm for the web app (`web/`). Use the Makefile targets when they exist.
-- Backend: `core/` never imports SDKs or HTTP clients; import-linter enforces it.
+- Tooling: uv for Python (`server/`), pnpm for the web app (`web/`). Use the Makefile targets when they exist.
+- Server: `core/` never imports SDKs or HTTP clients; import-linter enforces it.
 - Frontend: thin routes in `app/`, features in `modules/`; reads in Server Components, writes in Server Actions; API types are generated, never hand-written.

@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     app_env: Literal["local", "gcp", "test"] = "local"
 
     site_name: str = "Default site"
+    web_base_url: str = ""
 
     wp_base_url: str = ""
     wp_username: str = ""

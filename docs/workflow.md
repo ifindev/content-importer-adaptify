@@ -72,8 +72,8 @@ The status lives in the master list, [plan/README.md](plan/README.md), and in th
 ### Frontend tickets
 
 1. **Data layer:** one ticket for the whole app: `*.queries.ts` and `*.mutations.ts` for every module, typed from `lib/api/schema.ts`. Mutations return `{ ok, code }` for expected errors.
-2. **UI ticket:** one ticket builds every screen from the design canvas (made with `/design`) on fixtures typed from `lib/api/schema.ts`, in every state (loading, empty, error codes from the API tickets, sync warnings, banners), and validates them with a Playwright UI suite. Pages read data only through `modules/<m>/data.ts`.
-3. **Wiring tickets** may group several screens. Each points its modules' `data.ts` at the data layer, deletes the fixtures, and checks every flow and error code against the real API.
+2. **UI ticket:** one ticket builds every screen from the design canvas (made with `/design`) on fixtures typed from `lib/api/schema.ts`, in every state (loading, empty, error codes from the API tickets, sync warnings, banners), checked by hand in the browser (no Playwright; see CLAUDE.md). Pages read data only through `modules/<m>/data.ts` and write only through `modules/<m>/actions.ts`.
+3. **Wiring tickets** may group several screens. Each points its modules' `data.ts` and `actions.ts` at the data layer, deletes the fixtures, and checks every flow and error code against the real API.
 4. **Responsive:** every screen works at 375, 768, and 1280px with no horizontal scroll, and is usable by keyboard.
 
 Frontend tickets may be size L.

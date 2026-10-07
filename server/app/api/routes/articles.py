@@ -1,16 +1,23 @@
 from fastapi import APIRouter, Depends, Query, Request
 
 from app.api.auth import require_session
-from app.api.schemas import ArticleDetail, ArticleSummary, EventOut
+from app.api.schemas import ArticleDetail, ArticleSummary, ArticleUpdate, EventOut
 from app.core.domain.statuses import Status
 from app.core.ports.article_repository import ArticleRepository
 from app.core.ports.clock import Clock
 from app.core.ports.document_parser import DocumentParser
+from app.core.use_cases.edit_article import edit_article
 
 router = APIRouter(dependencies=[Depends(require_session)])
 
+PATCH_BODY_MAX_BYTES = 2 * 1024 * 1024
+
 
 class ArticleNotFoundError(Exception):
+    pass
+
+
+class EmptyUpdateError(Exception):
     pass
 
 
@@ -50,4 +57,31 @@ def get_article(
     events = repository.list_events(article_id)
     return ArticleDetail(
         **article.model_dump(), events=[EventOut(**e.model_dump()) for e in events]
+    )
+
+
+@router.patch("/articles/{article_id}")
+def update_article(
+    article_id: str,
+    body: ArticleUpdate,
+    repository: ArticleRepository = Depends(get_repository),
+    parser: DocumentParser = Depends(get_document_parser),
+    clock: Clock = Depends(get_clock),
+    uid: str = Depends(require_session),
+) -> ArticleDetail:
+    if body.title is None and body.slug is None and body.body_html is None:
+        raise EmptyUpdateError
+    if body.body_html is not None and len(body.body_html.encode()) > PATCH_BODY_MAX_BYTES:
+        raise PayloadTooLargeError
+
+    article = repository.get_article(article_id)
+    if article is None:
+        raise ArticleNotFoundError
+
+    updated = edit_article(
+        article, body.title, body.slug, body.body_html, repository, parser, clock, actor=uid
+    )
+    events = repository.list_events(article_id)
+    return ArticleDetail(
+        **updated.model_dump(), events=[EventOut(**e.model_dump()) for e in events]
     )

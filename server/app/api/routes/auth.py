@@ -2,8 +2,9 @@ from fastapi import APIRouter, Response, status
 
 from app.api.auth import SESSION_COOKIE_NAME, SESSION_EXPIRES_IN, create_session
 from app.api.schemas import SessionRequest
+from app.api.tags import AUTH
 
-router = APIRouter()
+router = APIRouter(tags=[AUTH])
 
 
 @router.post("/auth/session", status_code=status.HTTP_204_NO_CONTENT)

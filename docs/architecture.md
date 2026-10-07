@@ -109,6 +109,7 @@ content-importer/
 │   │   │   ├── deps.py
 │   │   │   ├── auth.py                  # Firebase session cookie check for agency routes
 │   │   │   ├── schemas.py
+│   │   │   ├── tags.py                  # Swagger section names, in display order
 │   │   │   └── routes/
 │   │   │       ├── auth.py              # create session cookie from ID token
 │   │   │       ├── articles.py
@@ -137,6 +138,8 @@ content-importer/
 ```
 
 `core/use_cases/` holds one file per user action, not a pipeline of stages.
+
+Swagger at `/docs` groups endpoints by workflow. `api/tags.py` lists the sections, and that list is the order on the page: Health, Auth, Import, Articles, Publishing, Review link, Client review. Within Import, upload is registered before paste, so it is listed first. A new endpoint takes the tag for its section.
 
 ### Import rules
 

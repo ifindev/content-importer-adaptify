@@ -13,6 +13,12 @@ class WordPressError(Exception):
         super().__init__(f"WordPress error {http_status} ({code}): {message}")
 
 
+class WordPressConnectionTestFailedError(Exception):
+    def __init__(self, message: str = "") -> None:
+        self.message = message
+        super().__init__(f"WordPress connection test failed: {message}")
+
+
 class NotAllowed(Exception):
     def __init__(self, from_status: str, to_status: str) -> None:
         self.from_status = from_status

@@ -21,8 +21,11 @@ ArticleSource = Literal["paste", "docx"]
 
 
 class Site(BaseModel):
+    id: str
     name: str
     wp_base_url: str
+    wp_username: str = ""
+    wp_app_password_encrypted: str = ""
     review_token_hash: str | None = None
     review_token_created_at: datetime | None = None
 

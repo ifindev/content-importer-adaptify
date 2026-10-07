@@ -25,6 +25,7 @@ EXPECTED_OPERATIONS = {
         "POST /review/{token}/articles/{article_id}/approve",
         "POST /review/{token}/articles/{article_id}/request-changes",
     ],
+    "Report": ["GET /report"],
 }
 
 

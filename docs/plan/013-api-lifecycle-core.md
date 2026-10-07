@@ -1,6 +1,6 @@
 # T-013 Lifecycle core: article model, Firestore repository, list and detail
 
-**Phase:** 3 · API · **Status:** analyzed · **Size:** L
+**Phase:** 3 · API · **Status:** done · **Size:** L
 **Refs:** R2.4, spec: Data model, Article lifecycle, API endpoints (Agency)
 **Depends on:** T-012
 
@@ -58,22 +58,26 @@ Single-site MVP: `siteId` is a fixed constant (e.g. `"default"`), not yet select
 | Site document missing at startup | Created once from `settings.SITE_NAME`/`settings.WP_BASE_URL`; logged at INFO |
 
 ## Acceptance criteria
-- [ ] `Status`, `SyncWarning`, `EventType` enums match the spec exactly.
-- [ ] `lifecycle.transition` allows every arrow in the spec's state diagram and rejects every other move with `NotAllowed`.
-- [ ] `ArticleRepository` has both a Firestore and an in-memory adapter satisfying the same Protocol.
-- [ ] `GET /articles` and `GET /articles/{id}` work against the Firestore emulator.
-- [ ] `import-linter` passes with the new `core/` and `adapters/` code.
-- [ ] Swagger and Postman updated.
+- [x] `Status`, `SyncWarning`, `EventType` enums match the spec exactly.
+- [x] `lifecycle.transition` allows every arrow in the spec's state diagram and rejects every other move with `NotAllowed`.
+- [x] `ArticleRepository` has both a Firestore and an in-memory adapter satisfying the same Protocol.
+- [x] `GET /articles` and `GET /articles/{id}` work against the Firestore emulator.
+- [x] `import-linter` passes with the new `core/` and `adapters/` code.
+- [x] Swagger and Postman updated.
 
 ## Tasks
-- [ ] `core/domain/models.py`, `statuses.py`, `lifecycle.py`, `errors.py` (`NotAllowed`).
-- [ ] `core/ports/article_repository.py`.
-- [ ] `adapters/firestore/repository.py`, `adapters/testing/in_memory_repository.py`.
-- [ ] `api/routes/articles.py`: `GET /articles`, `GET /articles/{id}`.
-- [ ] `api/schemas.py`: `ArticleSummary`, `ArticleDetail`, `EventOut`.
-- [ ] Unit tests: every transition pair (status × target) from the state diagram, allowed and refused.
-- [ ] Integration tests: Firestore emulator round-trip for site bootstrap, article create/read, event append.
-- [ ] `pnpm gen:api` in `web/`.
+- [x] `core/domain/models.py`, `statuses.py`, `lifecycle.py`, `errors.py` (`NotAllowed`).
+- [x] `core/ports/article_repository.py`.
+- [x] `adapters/firestore/repository.py`, `adapters/testing/in_memory_repository.py`.
+- [x] `api/routes/articles.py`: `GET /articles`, `GET /articles/{id}`.
+- [x] `api/schemas.py`: `ArticleSummary`, `ArticleDetail`, `EventOut`.
+- [x] Unit tests: every transition pair (status × target) from the state diagram, allowed and refused.
+- [x] Integration tests: Firestore emulator round-trip for site bootstrap, article create/read, event append.
+- [x] `pnpm gen:api` in `web/`.
+
+## Implementation notes
+- **Firestore client:** uses the raw `google.cloud.firestore.Client()`, not `firebase_admin.firestore.client()` as originally planned — the `firebase_admin` helper unconditionally resolves Application Default Credentials at construction time, ignoring `FIRESTORE_EMULATOR_HOST` entirely, which breaks local/emulator use. The raw client correctly switches to anonymous credentials when `FIRESTORE_EMULATOR_HOST`/`GOOGLE_CLOUD_PROJECT` are set.
+- `container.py` falls back to `InMemoryArticleRepository` if Firestore client construction fails (mirrors the existing WordPress-credentials-check resilience: log an error, keep the API running), so a misconfigured/unreachable Firestore doesn't take down unrelated routes.
 
 ## Out of scope
 - Creating articles (T-014), editing (T-015), status transitions beyond what's needed to prove `lifecycle.py` (T-015 onward exercise them through real use cases).

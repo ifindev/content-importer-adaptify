@@ -131,6 +131,19 @@ class UploadResponse(BaseModel):
     )
 
 
+class ScheduleRequest(BaseModel):
+    publish_at: datetime = Field(
+        ..., description="Publish time, as an ISO 8601 datetime with a UTC offset."
+    )
+
+    @field_validator("publish_at")
+    @classmethod
+    def _validate_tz_aware(cls, value: datetime) -> datetime:
+        if value.utcoffset() is None:
+            raise ValueError("publish_at must include a UTC offset")
+        return value
+
+
 class ArticleUpdate(BaseModel):
     title: str | None = Field(None, min_length=1, max_length=200, description="New title.")
     slug: str | None = Field(None, description="New slug: lowercase letters, digits, hyphens.")

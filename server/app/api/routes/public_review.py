@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Request
 
 from app.api.rate_limit import check_rate_limit
-from app.api.schemas import (
+from app.api.schemas.public_review import (
     ApproveRequest,
     ArticleCard,
     RequestChangesRequest,

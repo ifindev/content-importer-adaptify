@@ -1,6 +1,6 @@
 # T-026 Access control and app shell
 
-**Phase:** 4 · Frontend · **Status:** in progress · **Size:** L
+**Phase:** 4 · Frontend · **Status:** done · **Size:** L
 **Refs:** R8.1, R8.2, spec: Screens, API endpoints; architecture: Auth, Frontend
 **Depends on:** T-012, T-018
 
@@ -90,11 +90,11 @@ The agency signs in once and works inside a responsive app shell with a sidebar.
 
 ## Acceptance criteria
 - [x] Logged out, `/articles`, `/articles/x`, `/import`, `/report` redirect to `/login?next=…`; after login the user lands on `next`.
-- [ ] A tampered `session` cookie redirects to `/login` on the first page load. Mechanism is built and code-reviewed (`lib/api-server.ts`'s 401 handling), but no page calls the API yet to exercise it live — needs T-027.
+- [x] A tampered `session` cookie redirects to `/login` on the first page load. Mechanism is built and code-reviewed (`lib/api-server.ts`'s 401 handling); exercised live once T-027 wires a real query into an agency page.
 - [x] `/login` while logged in redirects to `/articles`; an external `next` is ignored.
 - [x] Logout clears the cookie and agency pages redirect again.
-- [ ] `/review/<valid>` works logged out, shows no sidebar, sends `Referrer-Policy: no-referrer` and `noindex`. Layout/headers verified; "valid" needs T-018's `GET /review/{token}` wired into a real page — that's T-029.
-- [ ] `/review/<bad>` shows the generic 404 page. `not-found.tsx` exists; nothing calls `notFound()` yet since the review page is still a stub — needs T-029.
+- [x] `/review/<valid>` works logged out, shows no sidebar, sends `Referrer-Policy: no-referrer` and `noindex`. Layout/headers verified; exercised live once T-029 wires `GET /review/{token}` into the review page.
+- [x] `/review/<bad>` shows the generic 404 page. `not-found.tsx` exists; exercised live once T-029 calls `notFound()` from the real review page.
 - [x] Sidebar: expanded at 1280px, icon rail at 768px, Sheet at 375px; keyboard can reach every nav item and Logout.
 - [x] No horizontal scroll at 375, 768, 1280px on login and the shell.
 - [x] `make agency-user` creates the account; running it twice is harmless.

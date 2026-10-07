@@ -11,7 +11,7 @@ Phases and the master list of tickets. How tickets work: [workflow.md](../workfl
 | 1 | Bootstrap | Both apps exist with their tooling and folder structure | Backend lint, import-linter and tests pass; the web app builds and lints; API types generate from `openapi.json` |
 | 2 | Local infra | The whole stack runs locally, and the riskiest link (publishing to WordPress) is proven | `make up` starts everything; the API creates a scheduled post in local WordPress and it goes live after `make wp-cron` |
 | 3 | API | Every P0 and P1 endpoint, by epic: lifecycle core → import → review → schedule → sync → report | The spec's end-to-end test passes through the API alone: paste → send → approve → schedule → wp-cron → Published |
-| 4 | Frontend | Every screen: data layer → design per screen → build on real data | The full flow works in the browser, agency and client |
+| 4 | Frontend | Every screen's UI on fixtures → data layer → wire each screen to real data | The full flow works in the browser, agency and client |
 | 5 | Deploy | The app runs on GCP against the VPS WordPress | The live URL runs the full flow; budget alert and kill switch are in place |
 | 6 | Demo readiness | Someone new can run it | A new person runs the full flow from the README alone; seed data covers every status |
 | 7 | AI (P2) | AI change drafting | A sample draft passes hand review; the spend limit refuses past $2 |
@@ -68,19 +68,20 @@ Phases and the master list of tickets. How tickets work: [workflow.md](../workfl
 | T-024 | [Consolidate API exception handling](024-api-error-handler-refactor.md) | architecture: Server folder layout | done |
 | T-025 | [Group Swagger by workflow](025-api-swagger-sections.md) | architecture: Server folder layout | done |
 | T-030 | [Split api/schemas.py by route](030-api-schemas-split.md) | architecture: Server folder layout | done |
-| T-031 | [Multi-site: sites collection, siteId-scoped routes, encrypted credentials](031-api-multi-site-sites-collection.md) | spec: Data model, Out of scope | todo |
+| T-031 | [Multi-site: sites collection, siteId-scoped routes, encrypted credentials](031-api-multi-site-sites-collection.md) | spec: Data model, Out of scope | done |
 
 ### Phase 4: Frontend
 
 | ID | Ticket | Refs | Status |
 | --- | --- | --- | --- |
 | T-026 | [Access control and app shell](026-ui-access-shell.md) | R8.1, R8.2, architecture: Auth | in progress |
-| T-032 | [Site switcher and Add Site screen](032-ui-site-switcher-add-site.md) | spec: Screens, E8 Access | todo |
+| T-033 | [UI revamp: every screen on fixtures](033-ui-revamp-all-screens.md) | spec: Screens, design canvas | analyzed |
+| T-032 | [Sites: wiring for the switcher, sites list and Add Site](032-ui-site-switcher-add-site.md) | spec: Screens, E8 Access | analyzed |
 | T-027 | [API data layer](027-ui-data-layer.md) | E1–E6, architecture: Frontend | analyzed |
-| T-028 | [Agency screens](028-ui-agency-screens.md) | E1, E2, E4, R3.2, R3.5–R3.7, R5.1–R5.3, R6.1–R6.4 | analyzed |
-| T-029 | [Client review screens and full-flow test](029-ui-client-review-e2e.md) | R3.3–R3.5, R6.5, R8.2 | analyzed |
+| T-028 | [Agency screens: wiring](028-ui-agency-screens.md) | E1, E2, E4, R3.2, R3.5–R3.7, R5.1–R5.3, R6.1–R6.4 | analyzed |
+| T-029 | [Client review: wiring and full-flow test](029-ui-client-review-e2e.md) | R3.3–R3.5, R6.5, R8.2 | analyzed |
 
-Build order for this phase: T-026 (in progress, finishes single-site) → T-031 (backend, Phase 3) → T-032 → T-027 → T-028 → T-029. T-027's analysis should be revisited once T-032 lands, since its data layer needs to be `siteId`-aware from the start.
+Build order for this phase: T-026 (in progress) → T-033 (all UI on fixtures, no API needed) → T-027 → T-032 → T-028 → T-029. T-031 (multi-site API) is already built, so the generated schema covers every endpoint, sites included. UI first: T-033 builds and tests every screen on fixtures typed from that schema; the wiring tickets then swap each module's fixtures for T-027's functions. Design canvas: [claude.ai artifact](https://claude.ai/artifact/QCpMywgpasGi231uuWrAMn), offline copy `design/canvas.html`.
 
 ### Phase 5: Deploy
 

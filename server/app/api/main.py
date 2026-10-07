@@ -5,11 +5,13 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
 from app.api.auth import InvalidSessionError
+from app.api.rate_limit import RateLimitedError
 from app.api.routes.articles import ArticleNotFoundError, EmptyUpdateError, PayloadTooLargeError
 from app.api.routes.articles import router as articles_router
 from app.api.routes.auth import router as auth_router
 from app.api.routes.imports import NoFilesError, TooManyFilesError
 from app.api.routes.imports import router as imports_router
+from app.api.routes.public_review import router as public_review_router
 from app.api.routes.review_link import router as review_link_router
 from app.container import build_container
 from app.core.domain.errors import (
@@ -19,6 +21,7 @@ from app.core.domain.errors import (
     NotSendableError,
     WordPressError,
 )
+from app.core.use_cases.review import ArticleNotVisibleError, InvalidTokenError
 from app.settings import Settings
 
 logging.basicConfig(level=logging.INFO)
@@ -95,10 +98,23 @@ def create_app() -> FastAPI:
     ) -> JSONResponse:
         return JSONResponse(status_code=409, content={"code": "not_awaiting_approval"})
 
+    @app.exception_handler(InvalidTokenError)
+    def invalid_token_handler(request: Request, exc: InvalidTokenError) -> JSONResponse:
+        return JSONResponse(status_code=404, content={"code": "not_found"})
+
+    @app.exception_handler(ArticleNotVisibleError)
+    def article_not_visible_handler(request: Request, exc: ArticleNotVisibleError) -> JSONResponse:
+        return JSONResponse(status_code=404, content={"code": "not_found"})
+
+    @app.exception_handler(RateLimitedError)
+    def rate_limited_handler(request: Request, exc: RateLimitedError) -> JSONResponse:
+        return JSONResponse(status_code=429, content={"code": "rate_limited"})
+
     app.include_router(auth_router)
     app.include_router(articles_router)
     app.include_router(imports_router)
     app.include_router(review_link_router)
+    app.include_router(public_review_router)
 
     return app
 

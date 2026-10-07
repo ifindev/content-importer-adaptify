@@ -1,43 +1,23 @@
-# T-029 Client review screens and full-flow test
+# T-029 Client review: wiring and full-flow test
 
-**Phase:** 4 · Frontend · **Status:** analyzed · **Size:** L
+**Phase:** 4 · Frontend · **Status:** analyzed · **Size:** M
 **Refs:** R3.3–R3.5, R6.5, R8.2, spec: Client journey, Client view; plan: Phase 4 "done when"
-**Depends on:** T-026, T-027, T-028, T-032 (the agency must create/select a site before importing; `/articles` is now `/sites/{siteId}/articles`)
+**Depends on:** T-027, T-028, T-032 (the agency must create/select a site before importing), T-033 (review screens on fixtures, Playwright setup)
 
 ## Goal
-The client opens the link on a phone, reads each article, and approves or requests changes without an account. One Playwright test then proves the whole flow works in the browser, agency and client, which closes Phase 4.
+The review page and reader T-033 built on fixtures run on real data through the review token, without an account. One Playwright test then proves the whole flow works in the browser, agency and client, which closes Phase 4.
 
 ## Analysis
-Design with `/design` first, mobile-first (clients open links from email on a phone).
+All UI, states and layout are done in T-033. This ticket points `modules/review/data.ts` at T-027's repository, deletes the review fixtures, and adds the full-flow test.
 
-### Review page (`/review/{token}`)
-| Element | Notes |
-| --- | --- |
-| Header | Site name (from `getReview`), set in T-026's review layout |
-| Waiting for your review | Cards: title, "Read and decide" |
-| Upcoming | Title + `<LocalTime>` publish date |
-| Published | Title + date + live link (`target=_blank rel="noopener noreferrer"`) |
+### Wiring
+| Screen | Reads | Mutations | After success |
+| --- | --- | --- | --- |
+| Review page | `getReview(token)` | — | — |
+| Reader | `getReviewArticle(token, id)` (with `version`) | `approve(token, id, {client_name, version})`, `requestChanges(token, id, {client_name, comment, version})` | Toast + redirect to the review page; the article moves groups |
 
-| State | UI |
-| --- | --- |
-| Loading | Skeleton cards |
-| Group empty | One line: "Nothing waiting for you right now." etc. |
-| All empty | "No articles yet." |
-| Bad / reset token | T-026's generic 404 |
-| `rate_limited` | T-026's error state |
-| WordPress unreachable | **Not shown.** The client view hides internals (spec: Client view). Groups render from stored data |
-
-### Reader (`/review/{token}/articles/{id}`)
-| Element | Notes |
-| --- | --- |
-| Back link | To the review page |
-| Article | Title + body with prose styles (`@tailwindcss/typography` or hand-written styles for h2–h4, lists, tables, links) |
-| Action bar | Approve, Request changes. Sticky at the bottom on mobile, inline at `md`+. 44px min tap targets |
-| Name prompt | Dialog on first decision; stored in `localStorage` (`client_name`), read/write wrapped in try/catch. Prefilled on later decisions, editable |
-| Request changes | Dialog with name + comment (required) |
-| After decision | Toast + redirect to the review page; the article moves groups |
-
-Only Awaiting approval articles show the action bar. Upcoming and published articles open read-only.
+- The decision panel shows only for Awaiting approval articles, driven by the response.
+- Live links open with `target=_blank rel="noopener noreferrer"`.
 
 | Code | Message |
 | --- | --- |
@@ -48,44 +28,40 @@ Only Awaiting approval articles show the action bar. Upcoming and published arti
 
 ### Decisions
 - The body is rendered with `dangerouslySetInnerHTML`. The server already cleans it with nh3 to the allowed tags at import and on every edit, so there is no second sanitizer in the browser. Record in architecture.md.
-- The banner is hidden on client pages.
+- The WordPress banner is hidden on client pages (spec: Client view).
 
 ### Full-flow test
-- `@playwright/test` in `web/`, `playwright.config.ts` with `baseURL=http://localhost:3000`, Chromium only.
-- `make e2e`: needs `make up`, `make wp-setup`, `make agency-user` done first; runs `pnpm exec playwright test`.
-- One spec, `e2e/full-flow.spec.ts`:
-  1. Logged out, `/sites` → `/login`.
-  2. Log in with `AGENCY_EMAIL` / `AGENCY_PASSWORD`.
-  3. Create a site through the Add Site form (T-032) against the local WordPress container (same credentials `make wp-setup` already configures); land on `/sites/{siteId}/articles`.
-  4. Paste an article with a unique title; send for review; read the review link.
-  5. New browser context (no cookies): open the link, check there's no sidebar, open the article, approve as "Sam".
-  6. Agency: schedule it one minute ahead; wait; run `make wp-cron` through a test helper (`execSync`); reload `/sites/{siteId}/articles`; see Published with a live URL.
-  7. Access: `/review/not-a-token` shows the 404 page.
-  8. Responsive: at 375px, every screen visited has `scrollWidth <= innerWidth`.
+Uses T-033's Playwright config; the spec lives in `web/e2e/flow/full-flow.spec.ts`.
+- `make e2e`: needs `make up`, `make wp-setup`, `make agency-user` done first.
+1. Logged out, `/sites` → `/login`.
+2. Log in with `AGENCY_EMAIL` / `AGENCY_PASSWORD`.
+3. Create a site through Add Site against the local WordPress container; land on `/sites/{siteId}/articles`.
+4. Paste an article with a unique title; send for review; read the review link.
+5. New browser context (no cookies): open the link, check there's no sidebar, open the article, approve as "Sam".
+6. Agency: schedule it one minute ahead; wait; run `make wp-cron` through a test helper (`execSync`); reload `/sites/{siteId}/articles`; see Published with a live URL.
+7. Access: `/review/not-a-token` shows the 404 page.
 
 ### Edge cases
 | Case | Behavior |
 | --- | --- |
-| `localStorage` blocked (private mode) | Name asked each time; nothing breaks |
-| Client double-taps Approve | Button disabled while pending |
+| Client double-taps Approve | Button disabled while pending (T-033) |
 | Agency pulls the article back while the client reads | Decision gets `not_awaiting_approval` or `article_changed`; message shown |
 
 ## Acceptance criteria
-- [ ] The review page shows the three groups with dates and live links (R3.3, R6.5).
-- [ ] Approve and request changes work, with the name asked once and remembered (R3.4); the comment appears on the agency detail page (R3.5).
+- [ ] The review page shows the three groups from real data, with dates and live links (R3.3, R6.5).
+- [ ] Approve and request changes work; the comment appears on the agency detail page (R3.4, R3.5).
 - [ ] `article_changed` and `not_awaiting_approval` show their messages.
-- [ ] Works without any login (R8.2); no agency UI on client pages.
-- [ ] Usable at 375px with the sticky action bar; no horizontal scroll at 375, 768, 1280px.
+- [ ] Works without any login (R8.2).
+- [ ] No fixtures left in `modules/review`; T-033's UI suite still passes.
 - [ ] `make e2e` passes on a fresh `make up`.
 - [ ] Phase 4 marked done in `docs/plan/README.md`.
 
 ## Tasks
-- [ ] `/design` for the review page and reader.
-- [ ] `ReviewPage`, `ReviewArticlePage`, decision dialogs, action bar.
-- [ ] Prose styles for the reader.
-- [ ] Playwright setup, spec, `make e2e`.
-- [ ] Docs: architecture.md (reader HTML decision, Testing section mentions e2e).
+- [ ] Point `modules/review/data.ts` at T-027's repository; delete the review fixtures.
+- [ ] Full-flow spec, test helper for `make wp-cron`, `make e2e`.
+- [ ] Docs: architecture.md (reader HTML decision; Testing mentions the full-flow test).
 
 ## Out of scope
+- UI, layout and states (T-033).
 - Client accounts, inline comments, passcodes (spec: Out of scope).
 - Cross-browser e2e matrix.

@@ -13,10 +13,12 @@ from app.api.routes.articles import (
     get_document_parser,
     get_publisher,
     get_repository,
+    get_sync_cache,
 )
 from app.core.domain.models import Article
 from app.core.domain.statuses import Status
 from app.core.ports.document_parser import ParsedDocument
+from app.core.use_cases.sync_status import SyncCache
 
 NOW = datetime(2026, 10, 7, 12, 0, 0, tzinfo=UTC)
 
@@ -52,6 +54,7 @@ def client(repository):
     app.dependency_overrides[get_document_parser] = lambda: FakeParser()
     app.dependency_overrides[get_clock] = lambda: FixedClock(NOW)
     app.dependency_overrides[get_publisher] = lambda: ScriptedPublisher()
+    app.dependency_overrides[get_sync_cache] = lambda: SyncCache()
     yield TestClient(app)
     app.dependency_overrides.clear()
 

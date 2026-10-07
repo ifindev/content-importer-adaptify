@@ -2,7 +2,14 @@ from fastapi import APIRouter, Depends, Query, Request
 
 from app.api.auth import require_session
 from app.api.http_errors import ArticleNotFoundError, EmptyUpdateError, PayloadTooLargeError
-from app.api.schemas import ArticleDetail, ArticleSummary, ArticleUpdate, EventOut, ScheduleRequest
+from app.api.schemas import (
+    ArticleDetail,
+    ArticlesOut,
+    ArticleSummary,
+    ArticleUpdate,
+    EventOut,
+    ScheduleRequest,
+)
 from app.api.tags import ARTICLES, PUBLISHING
 from app.core.domain.statuses import Status
 from app.core.ports.article_repository import ArticleRepository
@@ -12,6 +19,7 @@ from app.core.ports.publisher import Publisher
 from app.core.use_cases.edit_article import edit_article
 from app.core.use_cases.review import pull_back, send_for_review
 from app.core.use_cases.schedule import retry, schedule
+from app.core.use_cases.sync_status import SyncCache, sync_statuses
 
 router = APIRouter(dependencies=[Depends(require_session)])
 
@@ -34,13 +42,24 @@ def get_publisher(request: Request) -> Publisher:
     return request.app.state.container.publisher
 
 
+def get_sync_cache(request: Request) -> SyncCache:
+    return request.app.state.container.sync_cache
+
+
 @router.get("/articles", tags=[ARTICLES])
-def list_articles(
+async def list_articles(
     status: Status | None = Query(None),
     repository: ArticleRepository = Depends(get_repository),
-) -> dict[str, list[ArticleSummary]]:
+    publisher: Publisher = Depends(get_publisher),
+    clock: Clock = Depends(get_clock),
+    cache: SyncCache = Depends(get_sync_cache),
+) -> ArticlesOut:
+    result = await sync_statuses(repository, publisher, clock, cache)
     articles = repository.list_articles(status=status)
-    return {"articles": [ArticleSummary(**a.model_dump()) for a in articles]}
+    return ArticlesOut(
+        articles=[ArticleSummary(**a.model_dump()) for a in articles],
+        wordpress_unreachable=result.unreachable,
+    )
 
 
 @router.get("/articles/{article_id}", tags=[ARTICLES])

@@ -71,11 +71,11 @@ The status lives in the master list, [plan/README.md](plan/README.md), and in th
 
 ### Frontend tickets
 
-Each screen goes through three tickets:
+1. **Data layer:** one ticket for the whole app: `*.queries.ts` and `*.mutations.ts` for every module, typed from `lib/api/schema.ts`. Mutations return `{ ok, code }` for expected errors.
+2. **Screen tickets** may group several screens. Each one lists every state of its screens (loading, empty, error codes from the API tickets, sync warnings, banners) and every UI element. Its first task is the design pass, done manually with `/design`. Then the screens are built on the real data layer, matching the design. Use MSW only if an endpoint isn't ready yet.
+3. **Responsive:** every screen works at 375, 768, and 1280px with no horizontal scroll, and is usable by keyboard.
 
-1. **Data layer:** `*.queries.ts` and `*.mutations.ts` for the module, typed from `lib/api/schema.ts`. Mutations return `{ ok, code }` for expected errors.
-2. **Design:** done manually with `/design`. The ticket lists every state of the screen (loading, empty, error codes from the API tickets, sync warnings, banners) and every UI element.
-3. **Build:** the screen built on the real data layer, matching the design. Use MSW only if an endpoint isn't ready yet.
+Frontend tickets may be size L.
 
 ### Every ticket
 

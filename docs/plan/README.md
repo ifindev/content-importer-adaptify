@@ -63,7 +63,7 @@ Phases and the master list of tickets. How tickets work: [workflow.md](../workfl
 | T-019 | [Client approve and request changes](019-api-client-approve-request-changes.md) | R3.4, R3.5 | done |
 | T-020 | [Schedule, retry, and the WordPress publisher](020-api-schedule-publish.md) | R4.1–R4.5 | done |
 | T-021 | [WordPress status sync](021-api-status-sync.md) | R5.1–R5.4 | done |
-| T-022 | [Agency report](022-api-agency-report.md) | R6.1–R6.4 | analyzed |
+| T-022 | [Agency report](022-api-agency-report.md) | R6.1–R6.4 | done |
 | T-023 | [Fail fast on Firestore startup failure in GCP](023-api-firestore-fallback-guard.md) | architecture: GCP services | done |
 | T-024 | [Consolidate API exception handling](024-api-error-handler-refactor.md) | architecture: Server folder layout | done |
 | T-025 | [Group Swagger by workflow](025-api-swagger-sections.md) | architecture: Server folder layout | done |

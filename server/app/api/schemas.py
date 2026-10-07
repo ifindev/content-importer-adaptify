@@ -76,6 +76,9 @@ class ArticleCard(BaseModel):
     slug: str = Field(..., description="URL slug.")
     published_url: str | None = Field(None, description="Live URL, once published.")
     publish_at_utc: datetime | None = Field(None, description="Scheduled publish time, UTC.")
+    sync_warning: SyncWarning | None = Field(
+        None, description="Warning from the last WordPress status check, if any."
+    )
 
 
 class ReviewPageOut(BaseModel):
@@ -83,6 +86,16 @@ class ReviewPageOut(BaseModel):
     waiting: list[ArticleCard] = Field(..., description="Awaiting the client's review.")
     upcoming: list[ArticleCard] = Field(..., description="Scheduled to publish.")
     published: list[ArticleCard] = Field(..., description="Already live.")
+    wordpress_unreachable: bool = Field(
+        ..., description="True if the last WordPress status check failed."
+    )
+
+
+class ArticlesOut(BaseModel):
+    articles: list[ArticleSummary] = Field(..., description="All matching articles.")
+    wordpress_unreachable: bool = Field(
+        ..., description="True if the last WordPress status check failed."
+    )
 
 
 class ReviewArticleOut(BaseModel):

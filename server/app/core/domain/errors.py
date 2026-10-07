@@ -13,5 +13,11 @@ class NotAllowed(Exception):
         super().__init__(f"Cannot move article from {from_status} to {to_status}")
 
 
+class NotEditableError(Exception):
+    def __init__(self, status: str) -> None:
+        self.status = status
+        super().__init__(f"Article in status {status} is not editable")
+
+
 class EmptyContentError(Exception):
     pass

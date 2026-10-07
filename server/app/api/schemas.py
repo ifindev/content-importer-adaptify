@@ -57,6 +57,9 @@ class ArticleDetail(BaseModel):
     published_url: str | None = Field(None, description="Live URL, once published.")
     last_error: str | None = Field(None, description="Error from the last failed WordPress call.")
     last_checked_at: datetime | None = Field(None, description="Last WordPress status check time.")
+    client_comment: str | None = Field(
+        None, description="The client's latest change request, if any."
+    )
     created_at: datetime = Field(..., description="Creation time, UTC.")
     updated_at: datetime = Field(..., description="Last update time, UTC.")
     events: list[EventOut] = Field([], description="History log, oldest first.")
@@ -89,6 +92,24 @@ class ReviewArticleOut(BaseModel):
     body_html: str = Field(..., description="Article body, as HTML.")
     version: int = Field(..., description="Increments on every body edit.")
     status: Status = Field(..., description="Current lifecycle status.")
+
+
+class ApproveRequest(BaseModel):
+    client_name: str = Field(..., min_length=1, max_length=100, description="The client's name.")
+    version: int = Field(..., description="The version the client is approving.")
+
+
+class RequestChangesRequest(BaseModel):
+    client_name: str = Field(..., min_length=1, max_length=100, description="The client's name.")
+    comment: str = Field(
+        ..., min_length=1, max_length=2000, description="What the client wants changed."
+    )
+    version: int = Field(..., description="The version the client is reading.")
+
+
+class ReviewActionOut(BaseModel):
+    id: str = Field(..., description="Article id.")
+    status: Status = Field(..., description="Status after the action.")
 
 
 class ArticlePaste(BaseModel):

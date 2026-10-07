@@ -104,6 +104,8 @@ content-importer/
 │   │   │   └── testing/                 # in-memory and scripted adapters
 │   │   ├── api/
 │   │   │   ├── main.py                  # FastAPI app, builds the container
+│   │   │   ├── error_handlers.py        # registers every exception -> HTTP mapping
+│   │   │   ├── http_errors.py           # API-layer exception classes (not business rules)
 │   │   │   ├── deps.py
 │   │   │   ├── auth.py                  # Firebase session cookie check for agency routes
 │   │   │   ├── schemas.py

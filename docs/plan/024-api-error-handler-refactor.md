@@ -1,6 +1,6 @@
 # T-024 Consolidate API exception handling
 
-**Phase:** 3 · API · **Status:** analyzed · **Size:** S
+**Phase:** 3 · API · **Status:** done · **Size:** S
 **Refs:** architecture: Server folder layout (adds the api/error_handlers.py, api/http_errors.py convention)
 
 ## Goal
@@ -28,21 +28,21 @@ Grepping every `class .*(Exception)` in `server/app/` turns up 19 classes that s
 - `docs/architecture.md`'s folder layout is updated in this same change (no prior convention existed for where handler registration lives).
 
 ## Acceptance criteria
-- [ ] `main.py` has zero `@app.exception_handler` decorators; `create_app()` calls one `register_exception_handlers(app)`.
-- [ ] Every handler-mapped exception class lives in `core/domain/errors.py`, `api/http_errors.py`, or its own small infra module (`api/auth.py`, `api/rate_limit.py`) — nowhere else.
-- [ ] Every status-code/`code` mapping is byte-for-byte unchanged — the existing test suite passes with only import-path updates, no assertion changes.
-- [ ] `docs/architecture.md` folder layout shows the two new files.
+- [x] `main.py` has zero `@app.exception_handler` decorators; `create_app()` calls one `register_exception_handlers(app)`.
+- [x] Every handler-mapped exception class lives in `core/domain/errors.py`, `api/http_errors.py`, or its own small infra module (`api/auth.py`, `api/rate_limit.py`) — nowhere else.
+- [x] Every status-code/`code` mapping is byte-for-byte unchanged — the existing test suite passes with only import-path updates, no assertion changes.
+- [x] `docs/architecture.md` folder layout shows the two new files.
 
 ## Tasks
-- [ ] `core/domain/errors.py`: add `InvalidTokenError`, `ArticleNotVisibleError`.
-- [ ] `core/use_cases/review.py`: remove the two class defs, import from `core.domain.errors`.
-- [ ] `api/http_errors.py` (new): the five moved API-validation errors.
-- [ ] `api/routes/articles.py`, `api/routes/imports.py`: remove ad hoc class defs, import from `api/http_errors.py` (drop `imports.py`'s cross-import from `articles.py`).
-- [ ] `api/error_handlers.py` (new): table-driven `register_exception_handlers(app)`.
-- [ ] `api/main.py`: delete the 17 decorator blocks and now-unneeded imports; call `register_exception_handlers(app)`.
-- [ ] Update `tests/unit/test_review_actions.py` and `tests/unit/test_review_page.py`'s imports for the two moved classes.
-- [ ] `docs/architecture.md`: add the two new files to the folder layout tree.
-- [ ] Run the full unit + integration suite — must pass unmodified in assertions.
+- [x] `core/domain/errors.py`: add `InvalidTokenError`, `ArticleNotVisibleError`.
+- [x] `core/use_cases/review.py`: remove the two class defs, import from `core.domain.errors`.
+- [x] `api/http_errors.py` (new): the five moved API-validation errors.
+- [x] `api/routes/articles.py`, `api/routes/imports.py`: remove ad hoc class defs, import from `api/http_errors.py` (drop `imports.py`'s cross-import from `articles.py`).
+- [x] `api/error_handlers.py` (new): table-driven `register_exception_handlers(app)`.
+- [x] `api/main.py`: delete the 17 decorator blocks and now-unneeded imports; call `register_exception_handlers(app)`.
+- [x] Update `tests/unit/test_review_actions.py` and `tests/unit/test_review_page.py`'s imports for the two moved classes.
+- [x] `docs/architecture.md`: add the two new files to the folder layout tree.
+- [x] Run the full unit + integration suite — must pass unmodified in assertions. (Found and fixed one incidental fallout: `tests/integration/test_auth_session.py` reloads `auth`/`routes.auth`/`main` via `importlib.reload` to re-point Firebase env vars; the new `error_handlers` module sits in that chain too and needed adding to the reload list, otherwise it held a stale `InvalidSessionError` class reference. Test-harness fix only, no production behavior change — 205 unit + 22 integration tests pass, same counts as before this ticket.)
 
 ## Out of scope
 - Any change to a status code, error `code` string, or response body shape.

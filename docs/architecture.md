@@ -181,13 +181,15 @@ The web app is a Next.js App Router project in `web/`. It splits into two direct
 web/
 ├── app/                                  # routing only
 │   ├── (agency)/
-│   │   ├── layout.tsx                    # auth guard, agency navigation
+│   │   ├── layout.tsx                    # sidebar shell (SidebarProvider + AppSidebar)
 │   │   ├── import/page.tsx
 │   │   ├── articles/page.tsx             # ?status= filter lives in the URL
 │   │   ├── articles/[id]/page.tsx
 │   │   └── report/page.tsx
 │   ├── login/page.tsx
 │   └── review/[token]/                   # client pages: no login, no agency navigation
+│       ├── layout.tsx                    # site name header, noindex
+│       ├── not-found.tsx                 # generic "link isn't valid"
 │       ├── page.tsx
 │       └── articles/[id]/page.tsx
 ├── modules/
@@ -201,7 +203,9 @@ web/
 │   ├── review/                           # same shape
 │   ├── report/
 │   └── auth/
-├── components/ui/                        # shadcn components
+├── components/
+│   ├── ui/                               # shadcn components
+│   └── *.tsx                             # shared domain components: StatusBadge, SyncWarningBadge, WordPressBanner, LocalTime
 ├── hooks/
 │   └── use-filter-params.ts
 └── lib/
@@ -210,6 +214,7 @@ web/
     ├── api/schema.ts                     # GENERATED from FastAPI openapi.json, never edited
     ├── types/page-props.ts
     └── query-string.ts
+├── proxy.ts                              # optimistic session-cookie redirect (Next 16's middleware)
 ├── Dockerfile
 └── .dockerignore
 ```
@@ -263,6 +268,16 @@ type MutationResult<T> = { ok: true; data: T } | { ok: false; code: string }
 
 **Upload size.** Server Actions accept 1 MB request bodies by default. `next.config` raises `serverActions.bodySizeLimit` so several `.docx` files fit in one upload.
 
+**Shared domain components.** Components used by more than one module (status and sync warning badges, the "Can't reach WordPress" banner, `LocalTime`) live in `components/`, not in a module.
+
+**Dates.** Server Components render in the server's timezone (UTC). Every date shown to a user goes through `LocalTime`, a client component that formats in the browser's timezone.
+
+**Responsive.** Mobile-first Tailwind. Every screen works at 375, 768, and 1280px with no horizontal scroll. Lists are tables at `md` (768px) and up, cards below. The agency sidebar (shadcn Sidebar) is expanded at `lg`, an icon rail between `md` and `lg`, and a Sheet behind a hamburger below `md`. The review pages are designed mobile-first.
+
+**Editor.** The import and detail screens use one Tiptap editor (`modules/articles/components/ArticleEditor`). Its extensions are limited to the tags the server's nh3 list keeps, so the editor never produces markup the server strips.
+
+**Review page HTML.** The reader renders the article body with `dangerouslySetInnerHTML`. The server already cleans every body with nh3 at import and on every edit, so the browser adds no second sanitizer.
+
 ## Auth
 
 **Agency.** The agency signs in with Firebase Auth. Because the browser never calls FastAPI, the login has to end in a cookie the Next server can forward:
@@ -271,11 +286,12 @@ type MutationResult<T> = { ok: true; data: T } | { ok: false; code: string }
 2. A Server Action sends the ID token to `POST /auth/session` on FastAPI, which creates a Firebase **session cookie** with `firebase_admin.auth.create_session_cookie`.
 3. The Server Action sets it on the browser as an `httpOnly`, `secure`, `sameSite=lax` cookie.
 4. `lib/api-server.ts` forwards the cookie on every request. FastAPI's `auth.py` checks it with `verify_session_cookie`.
-5. `(agency)/layout.tsx` redirects to `/login` when there's no valid session.
+5. `proxy.ts` redirects agency paths to `/login?next=…` when there's no `session` cookie. This check is optimistic: it sees the cookie, not whether it's valid.
+6. The real check is the API: `lib/api-server.ts` turns a 401 from any agency call into a redirect to `/login?next=…`, so an expired, revoked, or tampered cookie fails on the first query of the page. There is no separate session-check endpoint.
 
-Logout clears the cookie. Locally the same flow runs against the Firebase Auth emulator.
+`next` is used only when it's a relative path (starts with `/`, not `//`), which blocks open redirects. Logout is a Server Action that deletes the cookie; there's no server-side revoke while there's one agency user. Locally the same flow runs against the Firebase Auth emulator; `make agency-user` creates the one account there.
 
-**Client.** The review pages need no login. The review token in the URL is the only credential (see the spec's API endpoints decisions).
+**Client.** The review pages need no login. The review token in the URL is the only credential (see the spec's API endpoints decisions). The review layout has no agency navigation and sets `noindex`. `next.config` sends `Referrer-Policy: no-referrer` on `/review/*`, so clicking a live-page link doesn't leak the token to the client's site through the Referer header. A bad or reset token shows a generic 404 page that doesn't confirm the link ever existed.
 
 ## Infrastructure
 

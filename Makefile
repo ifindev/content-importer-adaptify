@@ -1,4 +1,4 @@
-.PHONY: help lint test api web gen-api up down logs ps firebase-reset wp-setup wp-cron wp-reset
+.PHONY: help lint test test-integration api web gen-api up down logs ps firebase-reset wp-setup wp-cron wp-reset
 
 help: ## List available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
@@ -7,8 +7,11 @@ lint: ## Run server and web linting
 	cd server && uv run ruff check . && uv run ruff format --check . && uv run lint-imports
 	cd web && pnpm lint && pnpm format:check && pnpm typecheck
 
-test: ## Run server tests
-	cd server && uv run pytest
+test: ## Run server unit tests (no external services needed)
+	cd server && uv run pytest -m "not integration"
+
+test-integration: ## Run server integration tests (needs `make up` + `make wp-setup`)
+	cd server && uv run pytest -m integration
 
 api: ## Run the API dev server
 	cd server && uv run fastapi dev app/api/main.py

@@ -419,7 +419,7 @@
         "title": "ArticlesOut",
         "type": "object"
       },
-      "Body_upload_articles_articles_upload_post": {
+      "Body_upload_articles_sites__site_id__articles_upload_post": {
         "properties": {
           "files": {
             "default": [],
@@ -431,7 +431,7 @@
             "type": "array"
           }
         },
-        "title": "Body_upload_articles_articles_upload_post",
+        "title": "Body_upload_articles_sites__site_id__articles_upload_post",
         "type": "object"
       },
       "ChangeRoundsEntry": {
@@ -886,6 +886,81 @@
         "title": "SessionRequest",
         "type": "object"
       },
+      "SiteCreate": {
+        "properties": {
+          "name": {
+            "description": "Display name for the site, e.g. the client's name.",
+            "title": "Name",
+            "type": "string"
+          },
+          "wp_app_password": {
+            "description": "WordPress application password. Stored encrypted; never echoed back.",
+            "title": "Wp App Password",
+            "type": "string"
+          },
+          "wp_base_url": {
+            "description": "WordPress site base URL, e.g. https://client.example.com.",
+            "title": "Wp Base Url",
+            "type": "string"
+          },
+          "wp_username": {
+            "description": "WordPress username for the application password.",
+            "title": "Wp Username",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "wp_base_url",
+          "wp_username",
+          "wp_app_password"
+        ],
+        "title": "SiteCreate",
+        "type": "object"
+      },
+      "SiteOut": {
+        "properties": {
+          "id": {
+            "description": "Site id.",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "description": "Display name.",
+            "title": "Name",
+            "type": "string"
+          },
+          "wp_base_url": {
+            "description": "WordPress site base URL.",
+            "title": "Wp Base Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "wp_base_url"
+        ],
+        "title": "SiteOut",
+        "type": "object"
+      },
+      "SitesOut": {
+        "properties": {
+          "sites": {
+            "description": "Every site the agency manages.",
+            "items": {
+              "$ref": "#/components/schemas/SiteOut"
+            },
+            "title": "Sites",
+            "type": "array"
+          }
+        },
+        "required": [
+          "sites"
+        ],
+        "title": "SitesOut",
+        "type": "object"
+      },
       "Status": {
         "enum": [
           "draft",
@@ -1043,406 +1118,6 @@
   },
   "openapi": "3.1.0",
   "paths": {
-    "/articles": {
-      "get": {
-        "operationId": "list_articles_articles_get",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "status",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "$ref": "#/components/schemas/Status"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Status"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ArticlesOut"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "summary": "List Articles",
-        "tags": [
-          "Articles"
-        ]
-      }
-    },
-    "/articles/paste": {
-      "post": {
-        "operationId": "paste_article_articles_paste_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ArticlePaste"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ArticleDetail"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "summary": "Paste Article",
-        "tags": [
-          "Import"
-        ]
-      }
-    },
-    "/articles/upload": {
-      "post": {
-        "operationId": "upload_articles_articles_upload_post",
-        "requestBody": {
-          "content": {
-            "multipart/form-data": {
-              "schema": {
-                "$ref": "#/components/schemas/Body_upload_articles_articles_upload_post"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UploadResponse"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "summary": "Upload Articles",
-        "tags": [
-          "Import"
-        ]
-      }
-    },
-    "/articles/{article_id}": {
-      "get": {
-        "operationId": "get_article_articles__article_id__get",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "article_id",
-            "required": true,
-            "schema": {
-              "title": "Article Id",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ArticleDetail"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "summary": "Get Article",
-        "tags": [
-          "Articles"
-        ]
-      },
-      "patch": {
-        "operationId": "update_article_articles__article_id__patch",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "article_id",
-            "required": true,
-            "schema": {
-              "title": "Article Id",
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ArticleUpdate"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ArticleDetail"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "summary": "Update Article",
-        "tags": [
-          "Articles"
-        ]
-      }
-    },
-    "/articles/{article_id}/pull-back": {
-      "post": {
-        "operationId": "pull_back_route_articles__article_id__pull_back_post",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "article_id",
-            "required": true,
-            "schema": {
-              "title": "Article Id",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ArticleDetail"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "summary": "Pull Back Route",
-        "tags": [
-          "Publishing"
-        ]
-      }
-    },
-    "/articles/{article_id}/retry": {
-      "post": {
-        "operationId": "retry_route_articles__article_id__retry_post",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "article_id",
-            "required": true,
-            "schema": {
-              "title": "Article Id",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ArticleDetail"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "summary": "Retry Route",
-        "tags": [
-          "Publishing"
-        ]
-      }
-    },
-    "/articles/{article_id}/schedule": {
-      "post": {
-        "operationId": "schedule_route_articles__article_id__schedule_post",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "article_id",
-            "required": true,
-            "schema": {
-              "title": "Article Id",
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ScheduleRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ArticleDetail"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "summary": "Schedule Route",
-        "tags": [
-          "Publishing"
-        ]
-      }
-    },
-    "/articles/{article_id}/send-for-review": {
-      "post": {
-        "operationId": "send_for_review_route_articles__article_id__send_for_review_post",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "article_id",
-            "required": true,
-            "schema": {
-              "title": "Article Id",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ArticleDetail"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "summary": "Send For Review Route",
-        "tags": [
-          "Publishing"
-        ]
-      }
-    },
     "/auth/session": {
       "post": {
         "operationId": "create_session_route_auth_session_post",
@@ -1499,69 +1174,6 @@
         "summary": "Health",
         "tags": [
           "Health"
-        ]
-      }
-    },
-    "/report": {
-      "get": {
-        "operationId": "get_report_report_get",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ReportOut"
-                }
-              }
-            },
-            "description": "Successful Response"
-          }
-        },
-        "summary": "Get Report",
-        "tags": [
-          "Report"
-        ]
-      }
-    },
-    "/review-link": {
-      "get": {
-        "operationId": "get_review_link_review_link_get",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ReviewLinkOut"
-                }
-              }
-            },
-            "description": "Successful Response"
-          }
-        },
-        "summary": "Get Review Link",
-        "tags": [
-          "Review link"
-        ]
-      }
-    },
-    "/review-link/reset": {
-      "post": {
-        "operationId": "reset_review_link_route_review_link_reset_post",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ReviewLinkOut"
-                }
-              }
-            },
-            "description": "Successful Response"
-          }
-        },
-        "summary": "Reset Review Link Route",
-        "tags": [
-          "Review link"
         ]
       }
     },
@@ -1779,6 +1391,677 @@
           "Client review"
         ]
       }
+    },
+    "/sites": {
+      "get": {
+        "operationId": "list_sites_route_sites_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SitesOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Sites Route",
+        "tags": [
+          "Sites"
+        ]
+      },
+      "post": {
+        "operationId": "create_site_route_sites_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SiteCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SiteOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Site Route",
+        "tags": [
+          "Sites"
+        ]
+      }
+    },
+    "/sites/{site_id}/articles": {
+      "get": {
+        "operationId": "list_articles_sites__site_id__articles_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "site_id",
+            "required": true,
+            "schema": {
+              "title": "Site Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Status"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArticlesOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Articles",
+        "tags": [
+          "Articles"
+        ]
+      }
+    },
+    "/sites/{site_id}/articles/paste": {
+      "post": {
+        "operationId": "paste_article_sites__site_id__articles_paste_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "site_id",
+            "required": true,
+            "schema": {
+              "title": "Site Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArticlePaste"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArticleDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Paste Article",
+        "tags": [
+          "Import"
+        ]
+      }
+    },
+    "/sites/{site_id}/articles/upload": {
+      "post": {
+        "operationId": "upload_articles_sites__site_id__articles_upload_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "site_id",
+            "required": true,
+            "schema": {
+              "title": "Site Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_articles_sites__site_id__articles_upload_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Upload Articles",
+        "tags": [
+          "Import"
+        ]
+      }
+    },
+    "/sites/{site_id}/articles/{article_id}": {
+      "get": {
+        "operationId": "get_article_sites__site_id__articles__article_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "article_id",
+            "required": true,
+            "schema": {
+              "title": "Article Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "site_id",
+            "required": true,
+            "schema": {
+              "title": "Site Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArticleDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Article",
+        "tags": [
+          "Articles"
+        ]
+      },
+      "patch": {
+        "operationId": "update_article_sites__site_id__articles__article_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "article_id",
+            "required": true,
+            "schema": {
+              "title": "Article Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "site_id",
+            "required": true,
+            "schema": {
+              "title": "Site Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArticleUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArticleDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update Article",
+        "tags": [
+          "Articles"
+        ]
+      }
+    },
+    "/sites/{site_id}/articles/{article_id}/pull-back": {
+      "post": {
+        "operationId": "pull_back_route_sites__site_id__articles__article_id__pull_back_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "article_id",
+            "required": true,
+            "schema": {
+              "title": "Article Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "site_id",
+            "required": true,
+            "schema": {
+              "title": "Site Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArticleDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Pull Back Route",
+        "tags": [
+          "Publishing"
+        ]
+      }
+    },
+    "/sites/{site_id}/articles/{article_id}/retry": {
+      "post": {
+        "operationId": "retry_route_sites__site_id__articles__article_id__retry_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "article_id",
+            "required": true,
+            "schema": {
+              "title": "Article Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "site_id",
+            "required": true,
+            "schema": {
+              "title": "Site Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArticleDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Retry Route",
+        "tags": [
+          "Publishing"
+        ]
+      }
+    },
+    "/sites/{site_id}/articles/{article_id}/schedule": {
+      "post": {
+        "operationId": "schedule_route_sites__site_id__articles__article_id__schedule_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "article_id",
+            "required": true,
+            "schema": {
+              "title": "Article Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "site_id",
+            "required": true,
+            "schema": {
+              "title": "Site Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScheduleRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArticleDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Schedule Route",
+        "tags": [
+          "Publishing"
+        ]
+      }
+    },
+    "/sites/{site_id}/articles/{article_id}/send-for-review": {
+      "post": {
+        "operationId": "send_for_review_route_sites__site_id__articles__article_id__send_for_review_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "article_id",
+            "required": true,
+            "schema": {
+              "title": "Article Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "site_id",
+            "required": true,
+            "schema": {
+              "title": "Site Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArticleDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Send For Review Route",
+        "tags": [
+          "Publishing"
+        ]
+      }
+    },
+    "/sites/{site_id}/report": {
+      "get": {
+        "operationId": "get_report_sites__site_id__report_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "site_id",
+            "required": true,
+            "schema": {
+              "title": "Site Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Report",
+        "tags": [
+          "Report"
+        ]
+      }
+    },
+    "/sites/{site_id}/review-link": {
+      "get": {
+        "operationId": "get_review_link_sites__site_id__review_link_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "site_id",
+            "required": true,
+            "schema": {
+              "title": "Site Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewLinkOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Review Link",
+        "tags": [
+          "Review link"
+        ]
+      }
+    },
+    "/sites/{site_id}/review-link/reset": {
+      "post": {
+        "operationId": "reset_review_link_route_sites__site_id__review_link_reset_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "site_id",
+            "required": true,
+            "schema": {
+              "title": "Site Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewLinkOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Reset Review Link Route",
+        "tags": [
+          "Review link"
+        ]
+      }
     }
   },
   "tags": [
@@ -1789,6 +2072,10 @@
     {
       "description": "Exchange a Firebase ID token for a session cookie.",
       "name": "Auth"
+    },
+    {
+      "description": "Create and list the agency's client sites.",
+      "name": "Sites"
     },
     {
       "description": "Create drafts from a .docx upload or pasted HTML.",

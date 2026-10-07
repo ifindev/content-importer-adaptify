@@ -21,3 +21,5 @@ class Settings(BaseSettings):
     wp_base_url: str = ""
     wp_username: str = ""
     wp_app_password: str = ""
+
+    credential_encryption_key: str = ""

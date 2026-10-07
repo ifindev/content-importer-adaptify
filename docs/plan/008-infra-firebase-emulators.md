@@ -1,6 +1,6 @@
 # T-008 Firebase emulators
 
-**Phase:** 2 · Local infra · **Status:** analyzed · **Size:** M
+**Phase:** 2 · Local infra · **Status:** done · **Size:** M
 **Refs:** architecture: Auth, Infrastructure › Local setup; spec: Open questions (session cookies)
 **Depends on:** T-006
 
@@ -26,19 +26,33 @@ Answer the spec's open question with a throwaway script (not kept as a test):
 If it fails, record the fallback in the spec and architecture docs. Likely fallback: locally, the API accepts the ID token itself in place of the session cookie.
 
 ## Acceptance criteria
-- [ ] `make up` starts the emulators; the Emulator UI shows at `http://localhost:4000`
-- [ ] From the api container, `firebase_admin` / `google-cloud-firestore` write and read a document with no credentials configured
-- [ ] Session cookie check done; the spec's open question is ticked with the answer
-- [ ] Emulator data survives `make down && make up`
-- [ ] `.env.example` lists the emulator variables
+- [x] `make up` starts the emulators; the Emulator UI shows at `http://localhost:4000`
+- [x] From the api container, `firebase_admin` / `google-cloud-firestore` write and read a document with no credentials configured
+- [x] Session cookie check done; the spec's open question is ticked with the answer
+- [x] Emulator data survives `make down && make up`
+- [x] `.env.example` lists the emulator variables
 
 ## Tasks
-- [ ] `infra/firebase/Dockerfile`, `firebase.json`, `.firebaserc`
-- [ ] Add `firebase` service to `docker-compose.yml`
-- [ ] Add `firebase-admin`, `google-cloud-firestore` to server dependencies
-- [ ] Run the session cookie check; update spec Open questions (and architecture Auth if needed)
-- [ ] Makefile target: `firebase-reset`
-- [ ] Update `.env.example`
+- [x] `infra/firebase/Dockerfile`, `firebase.json`, `.firebaserc`
+- [x] Add `firebase` service to `docker-compose.yml`
+- [x] Add `firebase-admin`, `google-cloud-firestore` to server dependencies
+- [x] Run the session cookie check; update spec Open questions (and architecture Auth if needed)
+- [x] Makefile target: `firebase-reset`
+- [x] Update `.env.example`
+
+## Notes
+- JRE: `node:22-slim` is Debian bookworm, whose repos only carry OpenJDK 17, but
+  firebase-tools requires 21+. The Dockerfile copies the JRE out of
+  `eclipse-temurin:21-jre-jammy` instead of installing a Debian package.
+- Export target: `--export-on-exit` must point at a *subdirectory* of the named
+  volume (`/data/export`), not the volume's mount root (`/data`) — firebase-tools
+  does an rmdir+mkdir on the export path, which fails with `EBUSY` on a mount point.
+- Shutdown signal: firebase-tools only runs its export-on-exit hook on `SIGINT`,
+  not the `SIGTERM` that `docker stop`/`compose down` send by default. The
+  `firebase` service sets `stop_signal: SIGINT` in `docker-compose.yml`.
+- Session cookies: the Auth emulator **does** support `create_session_cookie` /
+  `verify_session_cookie` (verified round-trip + rejection of a tampered cookie).
+  The ticket's assumed ID-token fallback was not needed.
 
 ## Out of scope
 - `ArticleRepository` (Phase 3)

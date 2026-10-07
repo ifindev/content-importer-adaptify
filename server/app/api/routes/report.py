@@ -3,7 +3,7 @@ from dataclasses import asdict
 from fastapi import APIRouter, Depends, Request
 
 from app.api.auth import require_session
-from app.api.schemas import (
+from app.api.schemas.report import (
     ChangeRoundsEntry,
     NeedsAttentionEntry,
     PublishedEntry,

@@ -1,3 +1,10 @@
+"""Domain errors raised by use cases, the lifecycle, and adapters.
+
+These classes know nothing about HTTP. ``api/error_handlers.py`` maps them
+to a status code and a ``code`` string.
+"""
+
+
 class WordPressError(Exception):
     def __init__(self, http_status: int, code: str, message: str = "") -> None:
         self.http_status = http_status
@@ -58,4 +65,12 @@ class NotFailedError(Exception):
 
 
 class PublishAtInPastError(Exception):
+    pass
+
+
+class InvalidTokenError(Exception):
+    pass
+
+
+class ArticleNotVisibleError(Exception):
     pass

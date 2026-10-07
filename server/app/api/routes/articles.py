@@ -1,13 +1,15 @@
 from fastapi import APIRouter, Depends, Query, Request
 
 from app.api.auth import require_session
-from app.api.schemas import ArticleDetail, ArticleSummary, ArticleUpdate, EventOut
+from app.api.schemas import ArticleDetail, ArticleSummary, ArticleUpdate, EventOut, ScheduleRequest
 from app.core.domain.statuses import Status
 from app.core.ports.article_repository import ArticleRepository
 from app.core.ports.clock import Clock
 from app.core.ports.document_parser import DocumentParser
+from app.core.ports.publisher import Publisher
 from app.core.use_cases.edit_article import edit_article
 from app.core.use_cases.review import pull_back, send_for_review
+from app.core.use_cases.schedule import retry, schedule
 
 router = APIRouter(dependencies=[Depends(require_session)])
 
@@ -38,6 +40,10 @@ def get_clock(request: Request) -> Clock:
     return request.app.state.container.clock
 
 
+def get_publisher(request: Request) -> Publisher:
+    return request.app.state.container.publisher
+
+
 @router.get("/articles")
 def list_articles(
     status: Status | None = Query(None),
@@ -62,12 +68,13 @@ def get_article(
 
 
 @router.patch("/articles/{article_id}")
-def update_article(
+async def update_article(
     article_id: str,
     body: ArticleUpdate,
     repository: ArticleRepository = Depends(get_repository),
     parser: DocumentParser = Depends(get_document_parser),
     clock: Clock = Depends(get_clock),
+    publisher: Publisher = Depends(get_publisher),
     uid: str = Depends(require_session),
 ) -> ArticleDetail:
     if body.title is None and body.slug is None and body.body_html is None:
@@ -79,8 +86,16 @@ def update_article(
     if article is None:
         raise ArticleNotFoundError
 
-    updated = edit_article(
-        article, body.title, body.slug, body.body_html, repository, parser, clock, actor=uid
+    updated = await edit_article(
+        article,
+        body.title,
+        body.slug,
+        body.body_html,
+        repository,
+        parser,
+        clock,
+        publisher,
+        actor=uid,
     )
     events = repository.list_events(article_id)
     return ArticleDetail(
@@ -118,6 +133,45 @@ def pull_back_route(
         raise ArticleNotFoundError
 
     updated = pull_back(article, repository, clock, actor=uid)
+    events = repository.list_events(article_id)
+    return ArticleDetail(
+        **updated.model_dump(), events=[EventOut(**e.model_dump()) for e in events]
+    )
+
+
+@router.post("/articles/{article_id}/schedule")
+async def schedule_route(
+    article_id: str,
+    body: ScheduleRequest,
+    repository: ArticleRepository = Depends(get_repository),
+    publisher: Publisher = Depends(get_publisher),
+    clock: Clock = Depends(get_clock),
+    uid: str = Depends(require_session),
+) -> ArticleDetail:
+    article = repository.get_article(article_id)
+    if article is None:
+        raise ArticleNotFoundError
+
+    updated = await schedule(article, body.publish_at, repository, publisher, clock, actor=uid)
+    events = repository.list_events(article_id)
+    return ArticleDetail(
+        **updated.model_dump(), events=[EventOut(**e.model_dump()) for e in events]
+    )
+
+
+@router.post("/articles/{article_id}/retry")
+async def retry_route(
+    article_id: str,
+    repository: ArticleRepository = Depends(get_repository),
+    publisher: Publisher = Depends(get_publisher),
+    clock: Clock = Depends(get_clock),
+    uid: str = Depends(require_session),
+) -> ArticleDetail:
+    article = repository.get_article(article_id)
+    if article is None:
+        raise ArticleNotFoundError
+
+    updated = await retry(article, repository, publisher, clock, actor=uid)
     events = repository.list_events(article_id)
     return ArticleDetail(
         **updated.model_dump(), events=[EventOut(**e.model_dump()) for e in events]

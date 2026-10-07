@@ -167,6 +167,8 @@ stateDiagram-v2
     Scheduled --> Published: WordPress publishes
     Approved --> Draft: agency edits (approval resets)
     Scheduled --> Draft: agency edits (approval resets)
+    Draft --> [*]: agency deletes
+    ChangesRequested --> [*]: agency deletes
 ```
 
 
@@ -191,6 +193,7 @@ stateDiagram-v2
 - **Edits reset approval.** Editing an Approved or Scheduled article sends it back to Draft. For a Scheduled article, the app also moves the WordPress post back to draft.
 - **Date changes keep approval.** Changing only the publish date of a Scheduled article updates WordPress and keeps the status.
 - **Publish needs approval.** The app sends an article to WordPress only from Approved.
+- **Delete only before WordPress.** The agency can delete an article in Draft or Changes requested, after a confirmation. The article and its history are removed for good. Other statuses can't be deleted: an Awaiting approval article is pulled back first, and later statuses may already exist in WordPress.
 - **History.** Every status change adds a log entry with time and actor, for example "Approved by Sarah, Oct 8".
 
 
@@ -234,6 +237,7 @@ Requirements fall into eight epics. Priority: **P0** = MVP must have, **P1** = M
 | R2.2 | Editing is allowed only in Draft and Changes requested.                                  | P0       |
 | R2.3 | Editing an Approved or Scheduled article moves it back to Draft (see Article lifecycle). | P0       |
 | R2.4 | Each article keeps a history log of status changes with time and actor.                  | P0       |
+| R2.5 | The agency can delete Draft and Changes requested articles, one at a time or in bulk.    | P1       |
 
 
 
@@ -322,19 +326,27 @@ Requirements fall into eight epics. Priority: **P0** = MVP must have, **P1** = M
 
 ## Screens
 
-The agency app has four screens. The client sees one separate page. The articles table carries most of the daily work: status, scheduling, and the review link all live there.
+The agency app has five screens, all scoped to one client site except Sites. The client sees one separate page. The articles table carries most of the daily work: status, scheduling, and the review link all live there.
 
 
-| Screen         | Who    | What it shows                                                                                                                            | Requirements |
-| -------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------- | ------------ |
-| Import         | Agency | Editor for paste, `.docx` drop zone for one or more files, converted preview with warnings.                                              | E1           |
-| Articles       | Agency | One row per article: title, status, sync warning, publish date field, live URL. "Copy review link" button at the top. Filters by status. | E3, E4, E5   |
-| Article detail | Agency | Editor for title, slug, body. Client comment and history log on the side. Send for review, pull back, and later "Draft this change".     | E2, E3, E7   |
-| Report         | Agency | Status counts, approval speed, change rounds, published and upcoming lists.                                                              | E6           |
-| Review page    | Client | Site name, articles grouped as waiting, upcoming, published. Article reader with Approve and Request changes.                            | E3, E6       |
+| Screen         | Who    | What it shows                                                                                                                                                                  | Requirements |
+| -------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------ |
+| Sites          | Agency | Every client site with its WordPress connection status, article count and needs-attention count. "Add site" opens a dialog that tests the WordPress connection before saving. Each row has Edit and Delete; delete removes the site's articles too and asks for the site name. | T-031        |
+| Import         | Agency | Paste tab with a title field and the editor, Upload tab with a `.docx` drop zone for one or more files, per-file results with Delete, and a link to the articles list.                                                                        | E1           |
+| Articles       | Agency | One row per article: title, status, sync warning, publish date. "Set date" on Approved rows, "Retry" on Failed rows. Checkboxes on deletable rows for bulk delete. "Copy review link" at the top. Search and status filter. | E3, E4, E5   |
+| Article detail | Agency | Editor for title, slug, body. Client feedback and activity log on the side. The primary action follows the status: send, resubmit, pull back, set date, retry, view live. Delete for Draft and Changes requested.  | E2, E3, E7   |
+| Report         | Agency | Cards for published this month, time to approval and change rounds; articles by status; needs attention, upcoming, change rounds per article, and published lists.           | E6           |
+| Review page    | Client | Site name, articles grouped as waiting, upcoming, published. Article reader with Approve and Request changes.                                                                  | E3, E6       |
 
+- **Site switcher.** Every agency screen has a site switcher at the top of the sidebar: search, one row per site with a red dot when its WordPress connection failed, then "All sites" and "Add site". "All sites" is also pinned at the bottom of the sidebar.
+- **Status filter.** A select at every width: "All", each status with its count, and "Needs attention" (Failed or any sync warning).
+- **Editing after approval.** On an Approved or Scheduled article, "Edit" first asks for confirmation: editing resets the client's approval.
 
 **Decision:** The review page is a separate, simple route with no agency navigation. It works on a phone, since clients often open links from email on mobile.
+
+- **Desktop review** is one 3-column page: article list, reader, decision panel. Below `lg` the list and the reader are separate screens.
+- **Request changes** is an inline form: a bottom sheet on mobile, the decision panel on desktop.
+- **Client name** is an inline field in the decision panel, remembered on the device.
 
 ## Reporting
 
@@ -498,11 +510,14 @@ Agency routes need a Firebase **session cookie**: the web app exchanges the Fire
 | POST   | `/auth/session`                                          | Exchange a Firebase ID token for a session cookie.                |
 | POST   | `/sites`                                                 | Create a client site: tests the WordPress connection, stores the app password encrypted, and mints its review token. |
 | GET    | `/sites`                                                 | List the agency's client sites.                                   |
+| PATCH  | `/sites/{siteId}`                                        | Edit name or WordPress details; changed details are tested first. |
+| DELETE | `/sites/{siteId}`                                        | Delete the site with its articles and review link. WordPress is not touched. |
 | POST   | `/sites/{siteId}/articles/paste`                         | Create a Draft from pasted HTML.                                  |
 | POST   | `/sites/{siteId}/articles/upload`                        | Create one Draft per uploaded `.docx` file.                       |
 | GET    | `/sites/{siteId}/articles`                               | List articles, filter by status. Runs the status check.           |
 | GET    | `/sites/{siteId}/articles/{id}`                          | Article with comment and history.                                 |
 | PATCH  | `/sites/{siteId}/articles/{id}`                          | Edit title, slug, body. Applies the approval reset rule.          |
+| DELETE | `/sites/{siteId}/articles/{id}`                          | Delete a Draft or Changes requested article and its history.      |
 | POST   | `/sites/{siteId}/articles/{id}/send-for-review`          | Draft or Changes requested to Awaiting approval.                  |
 | POST   | `/sites/{siteId}/articles/{id}/pull-back`                | Awaiting approval to Draft.                                       |
 | POST   | `/sites/{siteId}/articles/{id}/schedule`                 | Set or change the publish time. Body: `publish_at` with timezone. |

@@ -1,6 +1,6 @@
 # T-014 Import articles
 
-**Phase:** 3 · API · **Status:** analyzed · **Size:** M
+**Phase:** 3 · API · **Status:** done · **Size:** M
 **Refs:** R1.1–R1.7, spec: Import, API endpoints (Agency)
 **Depends on:** T-013
 
@@ -57,23 +57,23 @@ No schema change beyond T-013's `Article` (`warnings: list[str]`, `source`, `sou
 - Explicit size/count caps (2 MB paste, 10 files × 10 MB upload) are enforced in FastAPI itself, not left to Next.js's `bodySizeLimit` alone — that limit protects the Next.js server, not FastAPI, which Next.js calls over plain HTTP and which has no size guard of its own otherwise. Numbers are generous for a text article (even a long one is a few hundred KB) with headroom, not tuned to a real worst case yet.
 
 ## Acceptance criteria
-- [ ] Pasting HTML with headings, lists, links, bold/italic, and inline styles creates a Draft article with styles stripped and structure kept.
-- [ ] Pasting HTML containing an `<img>` creates the article with an image warning and no `<img>` in the body.
-- [ ] Uploading two `.docx` files creates two Draft articles, titled from each file's first heading.
-- [ ] One corrupt file among several uploads fails only that file; the others still import.
-- [ ] A `.docx` with a table keeps the table in the cleaned HTML.
-- [ ] A paste over 2 MB returns 413; more than 10 files or a file over 10 MB is rejected (whole request or per-file, per the table above).
-- [ ] Swagger and Postman updated; Postman has a hand-written multipart request for `/articles/upload`.
+- [x] Pasting HTML with headings, lists, links, bold/italic, and inline styles creates a Draft article with styles stripped and structure kept.
+- [x] Pasting HTML containing an `<img>` creates the article with an image warning and no `<img>` in the body.
+- [x] Uploading two `.docx` files creates two Draft articles, titled from each file's first heading.
+- [x] One corrupt file among several uploads fails only that file; the others still import.
+- [x] A `.docx` with a table keeps the table in the cleaned HTML.
+- [x] A paste over 2 MB returns 413; more than 10 files or a file over 10 MB is rejected (whole request or per-file, per the table above).
+- [x] Swagger updated (openapi.json regenerated). Postman: **manual follow-up** — re-import `web/lib/api/openapi.json` into Postman per `workflow.md`, then hand-write the multipart `/articles/upload` request (Postman's own import doesn't populate multipart form fields usefully).
 
 ## Tasks
-- [ ] `core/lib/html_rules.py`, `core/ports/document_parser.py`.
-- [ ] `adapters/documents/parser.py` (mammoth + nh3).
-- [ ] `core/use_cases/import_article.py`.
-- [ ] `api/routes/imports.py`: `POST /articles/paste`, `POST /articles/upload`.
-- [ ] Fixture `.docx` files in `tests/fixtures/` (headings, lists, images, tables, mixed-level headings, corrupt file).
-- [ ] Unit tests: cleaning rules, title extraction, per-file error isolation, with the in-memory repository.
-- [ ] Integration test: real upload against the FastAPI test client with fixture files.
-- [ ] `pnpm gen:api`.
+- [x] `core/lib/html_rules.py`, `core/ports/document_parser.py`.
+- [x] `adapters/documents/parser.py` (mammoth + nh3).
+- [x] `core/use_cases/import_article.py`.
+- [x] `api/routes/imports.py`: `POST /articles/paste`, `POST /articles/upload`.
+- [x] Fixture `.docx` files in `tests/fixtures/` (headings, lists, images, tables, uniform/mixed-level headings, corrupt file, plus one genuine multi-section article), generated via `scripts/generate_docx_fixtures.py`.
+- [x] Unit tests: cleaning rules, title extraction, per-file error isolation, with the in-memory repository.
+- [x] Route-level test: real upload against the FastAPI test client with fixture files (`tests/unit/test_imports_routes.py` — no emulator/WordPress needed, so it's a unit test, not under `tests/integration/`).
+- [x] `pnpm gen:api`.
 
 ## Out of scope
 - Google Docs API, URL import, CMS migration (spec: Out of scope).

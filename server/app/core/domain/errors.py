@@ -33,3 +33,13 @@ class NotAwaitingApprovalError(Exception):
     def __init__(self, status: str) -> None:
         self.status = status
         super().__init__(f"Article in status {status} is not awaiting approval")
+
+
+class ArticleChangedError(Exception):
+    def __init__(self, current_version: int, submitted_version: int) -> None:
+        self.current_version = current_version
+        self.submitted_version = submitted_version
+        super().__init__(
+            f"Article is at version {current_version}, but version "
+            f"{submitted_version} was submitted"
+        )

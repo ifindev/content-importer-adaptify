@@ -4,6 +4,40 @@
  */
 
 export interface paths {
+    "/articles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Articles */
+        get: operations["list_articles_articles_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/articles/{article_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Article */
+        get: operations["get_article_articles__article_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/auth/session": {
         parameters: {
             query?: never;
@@ -42,6 +76,168 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** ArticleDetail */
+        ArticleDetail: {
+            /**
+             * Approved Version
+             * @description Version the client approved, if any.
+             */
+            approved_version?: number | null;
+            /**
+             * Body Html
+             * @description Article body, as HTML.
+             */
+            body_html: string;
+            /**
+             * Created At
+             * Format: date-time
+             * @description Creation time, UTC.
+             */
+            created_at: string;
+            /**
+             * Events
+             * @description History log, oldest first.
+             * @default []
+             */
+            events: components["schemas"]["EventOut"][];
+            /**
+             * Id
+             * @description Article id.
+             */
+            id: string;
+            /**
+             * Last Checked At
+             * @description Last WordPress status check time.
+             */
+            last_checked_at?: string | null;
+            /**
+             * Last Error
+             * @description Error from the last failed WordPress call.
+             */
+            last_error?: string | null;
+            /**
+             * Publish At Utc
+             * @description Scheduled publish time, UTC.
+             */
+            publish_at_utc?: string | null;
+            /**
+             * Published Url
+             * @description Live URL, once published.
+             */
+            published_url?: string | null;
+            /**
+             * Slug
+             * @description URL slug.
+             */
+            slug: string;
+            /**
+             * Source
+             * @description How the article was imported: paste or docx.
+             */
+            source: string;
+            /**
+             * Source Filename
+             * @description Original filename, if imported from a file.
+             */
+            source_filename?: string | null;
+            /** @description Current lifecycle status. */
+            status: components["schemas"]["Status"];
+            /** @description Warning from the last WordPress status check, if any. */
+            sync_warning?: components["schemas"]["SyncWarning"] | null;
+            /**
+             * Title
+             * @description Article title.
+             */
+            title: string;
+            /**
+             * Updated At
+             * Format: date-time
+             * @description Last update time, UTC.
+             */
+            updated_at: string;
+            /**
+             * Version
+             * @description Increments on every body edit.
+             */
+            version: number;
+            /**
+             * Warnings
+             * @description Warnings produced during import.
+             * @default []
+             */
+            warnings: string[];
+            /**
+             * Wp Post Id
+             * @description WordPress post id, once sent.
+             */
+            wp_post_id?: number | null;
+        };
+        /** ArticleSummary */
+        ArticleSummary: {
+            /**
+             * Id
+             * @description Article id.
+             */
+            id: string;
+            /**
+             * Publish At Utc
+             * @description Scheduled publish time, UTC.
+             */
+            publish_at_utc?: string | null;
+            /**
+             * Slug
+             * @description URL slug.
+             */
+            slug: string;
+            /** @description Current lifecycle status. */
+            status: components["schemas"]["Status"];
+            /** @description Warning from the last WordPress status check, if any. */
+            sync_warning?: components["schemas"]["SyncWarning"] | null;
+            /**
+             * Title
+             * @description Article title.
+             */
+            title: string;
+            /**
+             * Updated At
+             * Format: date-time
+             * @description Last update time, UTC.
+             */
+            updated_at: string;
+        };
+        /** EventOut */
+        EventOut: {
+            /**
+             * Actor
+             * @description Who or what triggered the event.
+             */
+            actor: string;
+            /**
+             * At
+             * Format: date-time
+             * @description When the event happened, UTC.
+             */
+            at: string;
+            /**
+             * Data
+             * @description The comment or error attached to this event.
+             */
+            data?: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * Id
+             * @description Event id.
+             */
+            id: string;
+            /** @description What happened. */
+            type: components["schemas"]["EventType"];
+        };
+        /**
+         * EventType
+         * @enum {string}
+         */
+        EventType: "imported" | "edited" | "sent_for_review" | "pulled_back" | "approved" | "changes_requested" | "scheduled" | "date_changed" | "published" | "failed" | "retried" | "ai_draft_created" | "ai_draft_accepted";
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -56,6 +252,16 @@ export interface components {
              */
             id_token: string;
         };
+        /**
+         * Status
+         * @enum {string}
+         */
+        Status: "draft" | "awaiting_approval" | "changes_requested" | "approved" | "scheduled" | "published" | "failed";
+        /**
+         * SyncWarning
+         * @enum {string}
+         */
+        SyncWarning: "late" | "changed_in_wordpress" | "missing_in_wordpress";
         /** ValidationError */
         ValidationError: {
             /** Context */
@@ -78,6 +284,70 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    list_articles_articles_get: {
+        parameters: {
+            query?: {
+                status?: components["schemas"]["Status"] | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: components["schemas"]["ArticleSummary"][];
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_article_articles__article_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                article_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ArticleDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     create_session_route_auth_session_post: {
         parameters: {
             query?: never;

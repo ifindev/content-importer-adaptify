@@ -1,6 +1,57 @@
 {
   "components": {
     "schemas": {
+      "ArticleCard": {
+        "properties": {
+          "id": {
+            "description": "Article id.",
+            "title": "Id",
+            "type": "string"
+          },
+          "publish_at_utc": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Scheduled publish time, UTC.",
+            "title": "Publish At Utc"
+          },
+          "published_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Live URL, once published.",
+            "title": "Published Url"
+          },
+          "slug": {
+            "description": "URL slug.",
+            "title": "Slug",
+            "type": "string"
+          },
+          "title": {
+            "description": "Article title.",
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "slug"
+        ],
+        "title": "ArticleCard",
+        "type": "object"
+      },
       "ArticleDetail": {
         "properties": {
           "approved_version": {
@@ -392,6 +443,49 @@
         "title": "HTTPValidationError",
         "type": "object"
       },
+      "ReviewArticleOut": {
+        "properties": {
+          "body_html": {
+            "description": "Article body, as HTML.",
+            "title": "Body Html",
+            "type": "string"
+          },
+          "id": {
+            "description": "Article id.",
+            "title": "Id",
+            "type": "string"
+          },
+          "slug": {
+            "description": "URL slug.",
+            "title": "Slug",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/Status",
+            "description": "Current lifecycle status."
+          },
+          "title": {
+            "description": "Article title.",
+            "title": "Title",
+            "type": "string"
+          },
+          "version": {
+            "description": "Increments on every body edit.",
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "slug",
+          "body_html",
+          "version",
+          "status"
+        ],
+        "title": "ReviewArticleOut",
+        "type": "object"
+      },
       "ReviewLinkOut": {
         "properties": {
           "created_at": {
@@ -411,6 +505,47 @@
           "created_at"
         ],
         "title": "ReviewLinkOut",
+        "type": "object"
+      },
+      "ReviewPageOut": {
+        "properties": {
+          "published": {
+            "description": "Already live.",
+            "items": {
+              "$ref": "#/components/schemas/ArticleCard"
+            },
+            "title": "Published",
+            "type": "array"
+          },
+          "site_name": {
+            "description": "The site's name.",
+            "title": "Site Name",
+            "type": "string"
+          },
+          "upcoming": {
+            "description": "Scheduled to publish.",
+            "items": {
+              "$ref": "#/components/schemas/ArticleCard"
+            },
+            "title": "Upcoming",
+            "type": "array"
+          },
+          "waiting": {
+            "description": "Awaiting the client's review.",
+            "items": {
+              "$ref": "#/components/schemas/ArticleCard"
+            },
+            "title": "Waiting",
+            "type": "array"
+          }
+        },
+        "required": [
+          "site_name",
+          "waiting",
+          "upcoming",
+          "published"
+        ],
+        "title": "ReviewPageOut",
         "type": "object"
       },
       "SessionRequest": {
@@ -939,6 +1074,93 @@
           }
         },
         "summary": "Reset Review Link Route"
+      }
+    },
+    "/review/{token}": {
+      "get": {
+        "operationId": "get_review_review__token__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "title": "Token",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewPageOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Review"
+      }
+    },
+    "/review/{token}/articles/{article_id}": {
+      "get": {
+        "operationId": "get_review_article_route_review__token__articles__article_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "title": "Token",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "article_id",
+            "required": true,
+            "schema": {
+              "title": "Article Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewArticleOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Review Article Route"
       }
     }
   }

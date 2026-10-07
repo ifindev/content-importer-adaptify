@@ -175,10 +175,72 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/review/{token}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Review */
+        get: operations["get_review_review__token__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/review/{token}/articles/{article_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Review Article Route */
+        get: operations["get_review_article_route_review__token__articles__article_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** ArticleCard */
+        ArticleCard: {
+            /**
+             * Id
+             * @description Article id.
+             */
+            id: string;
+            /**
+             * Publish At Utc
+             * @description Scheduled publish time, UTC.
+             */
+            publish_at_utc?: string | null;
+            /**
+             * Published Url
+             * @description Live URL, once published.
+             */
+            published_url?: string | null;
+            /**
+             * Slug
+             * @description URL slug.
+             */
+            slug: string;
+            /**
+             * Title
+             * @description Article title.
+             */
+            title: string;
+        };
         /** ArticleDetail */
         ArticleDetail: {
             /**
@@ -380,6 +442,36 @@ export interface components {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
         };
+        /** ReviewArticleOut */
+        ReviewArticleOut: {
+            /**
+             * Body Html
+             * @description Article body, as HTML.
+             */
+            body_html: string;
+            /**
+             * Id
+             * @description Article id.
+             */
+            id: string;
+            /**
+             * Slug
+             * @description URL slug.
+             */
+            slug: string;
+            /** @description Current lifecycle status. */
+            status: components["schemas"]["Status"];
+            /**
+             * Title
+             * @description Article title.
+             */
+            title: string;
+            /**
+             * Version
+             * @description Increments on every body edit.
+             */
+            version: number;
+        };
         /** ReviewLinkOut */
         ReviewLinkOut: {
             /**
@@ -393,6 +485,29 @@ export interface components {
              * @description Full review link URL, built from the plaintext token.
              */
             url: string;
+        };
+        /** ReviewPageOut */
+        ReviewPageOut: {
+            /**
+             * Published
+             * @description Already live.
+             */
+            published: components["schemas"]["ArticleCard"][];
+            /**
+             * Site Name
+             * @description The site's name.
+             */
+            site_name: string;
+            /**
+             * Upcoming
+             * @description Scheduled to publish.
+             */
+            upcoming: components["schemas"]["ArticleCard"][];
+            /**
+             * Waiting
+             * @description Awaiting the client's review.
+             */
+            waiting: components["schemas"]["ArticleCard"][];
         };
         /** SessionRequest */
         SessionRequest: {
@@ -779,6 +894,69 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ReviewLinkOut"];
+                };
+            };
+        };
+    };
+    get_review_review__token__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewPageOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_review_article_route_review__token__articles__article_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+                article_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewArticleOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

@@ -1,6 +1,6 @@
 # T-017 Send for review and pull back
 
-**Phase:** 3 · API · **Status:** analyzed · **Size:** S
+**Phase:** 3 · API · **Status:** done · **Size:** S
 **Refs:** R3.6, spec: Article lifecycle, API endpoints (Agency)
 **Depends on:** T-013, T-015
 
@@ -39,17 +39,17 @@ Both 404 `not_found` if the article doesn't exist.
 | Send for review on first pass (Draft) vs. resubmission (Changes requested) | Same event type `sent_for_review` either way — the report ticket (T-022) distinguishes "first" vs. "resubmission" by counting events, not by a different event type |
 
 ## Acceptance criteria
-- [ ] Draft and Changes requested articles move to Awaiting approval; every other status is refused with 409.
-- [ ] Awaiting approval articles move back to Draft via pull-back; every other status is refused with 409.
-- [ ] Each transition appends the correct event type with an actor and timestamp.
-- [ ] Swagger and Postman updated.
+- [x] Draft and Changes requested articles move to Awaiting approval; every other status is refused with 409.
+- [x] Awaiting approval articles move back to Draft via pull-back; every other status is refused with 409.
+- [x] Each transition appends the correct event type with an actor and timestamp.
+- [x] Swagger updated (openapi.json regenerated). Postman: manual follow-up, re-import into Postman per `workflow.md` (see T-014's note).
 
 ## Tasks
-- [ ] `core/use_cases/review.py`: `send_for_review`, `pull_back`.
-- [ ] `api/routes/articles.py`: the two routes.
-- [ ] Unit tests: status × action table above.
-- [ ] Integration test: Firestore emulator round-trip.
-- [ ] `pnpm gen:api`.
+- [x] `core/use_cases/review.py`: `send_for_review`, `pull_back` (appended to the file T-016 already created for `get_review_page`/`get_review_article`).
+- [x] `api/routes/articles.py`: the two routes.
+- [x] Unit tests: status × action table above.
+- [x] Integration test: Firestore emulator round-trip.
+- [x] `pnpm gen:api`.
 
 ## Out of scope
 - The client's approve/request-changes actions (T-019).

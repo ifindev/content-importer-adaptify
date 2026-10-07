@@ -1,24 +1,36 @@
 from app.core.domain.models import Article, Event, Site
 from app.core.domain.statuses import Status
+from app.core.ports.site_repository import SiteRepository
 
 
 class InMemoryArticleRepository:
-    def __init__(self) -> None:
+    def __init__(
+        self, site_id: str | None = None, site_repository: SiteRepository | None = None
+    ) -> None:
+        # ponytail: a standalone instance keeps its own `_site` (what every
+        # existing unit test constructs); Container.repository_for wires
+        # site_id/site_repository so the fallback-mode instance reads/writes
+        # the same sites/{siteId} record InMemorySiteRepository already owns,
+        # instead of a second, disconnected copy of it.
+        self._site_id = site_id
+        self._site_repository = site_repository
         self._site: Site | None = None
         self._articles: dict[str, Article] = {}
         self._events: dict[str, list[Event]] = {}
 
-    def ensure_site_bootstrapped(self, name: str, wp_base_url: str) -> Site:
-        if self._site is None:
-            self._site = Site(name=name, wp_base_url=wp_base_url)
-        return self._site
-
     def get_site(self) -> Site:
+        if self._site_repository is not None and self._site_id is not None:
+            site = self._site_repository.get_site(self._site_id)
+            if site is None:
+                raise RuntimeError("Site not bootstrapped")
+            return site
         if self._site is None:
             raise RuntimeError("Site not bootstrapped")
         return self._site
 
     def save_site(self, site: Site) -> Site:
+        if self._site_repository is not None and self._site_id is not None:
+            return self._site_repository.save_site(site)
         self._site = site
         return site
 

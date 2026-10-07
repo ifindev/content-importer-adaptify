@@ -24,24 +24,13 @@ class FirestoreArticleRepository:
     def _events_ref(self, article_id: str):
         return self._articles_ref().document(article_id).collection("events")
 
-    def ensure_site_bootstrapped(self, name: str, wp_base_url: str) -> Site:
-        snapshot = self._site_ref.get()
-        if snapshot.exists:
-            logger.info("Firestore site %s already bootstrapped", self._site_id)
-            return Site(**snapshot.to_dict())
-
-        site = Site(name=name, wp_base_url=wp_base_url)
-        self._site_ref.set(site.model_dump())
-        logger.info("Firestore site %s bootstrapped from config", self._site_id)
-        return site
-
     def get_site(self) -> Site:
         snapshot = self._site_ref.get()
         logger.info("Firestore get site %s -> exists=%s", self._site_id, snapshot.exists)
-        return Site(**snapshot.to_dict())
+        return Site(id=snapshot.id, **snapshot.to_dict())
 
     def save_site(self, site: Site) -> Site:
-        self._site_ref.set(site.model_dump())
+        self._site_ref.set(site.model_dump(exclude={"id"}))
         logger.info("Firestore save_site %s", self._site_id)
         return site
 

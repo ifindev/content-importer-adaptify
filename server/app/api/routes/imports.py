@@ -11,34 +11,18 @@ from app.api.schemas import (
     UploadFileResult,
     UploadResponse,
 )
+from app.api.tags import IMPORT
 from app.core.ports.article_repository import ArticleRepository
 from app.core.ports.clock import Clock
 from app.core.ports.document_parser import DocumentParser
 from app.core.use_cases.import_article import import_from_docx, import_from_paste
 
-router = APIRouter(dependencies=[Depends(require_session)])
+router = APIRouter(tags=[IMPORT], dependencies=[Depends(require_session)])
 
 PASTE_MAX_BYTES = 2 * 1024 * 1024
 UPLOAD_MAX_FILES = 10
 UPLOAD_MAX_FILE_BYTES = 10 * 1024 * 1024
 DOCX_CONTENT_TYPE = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-
-
-@router.post("/articles/paste", status_code=201)
-def paste_article(
-    body: ArticlePaste,
-    repository: ArticleRepository = Depends(get_repository),
-    parser: DocumentParser = Depends(get_document_parser),
-    clock: Clock = Depends(get_clock),
-    uid: str = Depends(require_session),
-) -> ArticleDetail:
-    if len(body.html.encode()) > PASTE_MAX_BYTES:
-        raise PayloadTooLargeError
-    article = import_from_paste(body.html, repository, parser, clock, actor=uid)
-    events = repository.list_events(article.id)
-    return ArticleDetail(
-        **article.model_dump(), events=[EventOut(**e.model_dump()) for e in events]
-    )
 
 
 @router.post("/articles/upload", status_code=201)
@@ -77,3 +61,20 @@ async def upload_articles(
             )
         )
     return UploadResponse(results=results)
+
+
+@router.post("/articles/paste", status_code=201)
+def paste_article(
+    body: ArticlePaste,
+    repository: ArticleRepository = Depends(get_repository),
+    parser: DocumentParser = Depends(get_document_parser),
+    clock: Clock = Depends(get_clock),
+    uid: str = Depends(require_session),
+) -> ArticleDetail:
+    if len(body.html.encode()) > PASTE_MAX_BYTES:
+        raise PayloadTooLargeError
+    article = import_from_paste(body.html, repository, parser, clock, actor=uid)
+    events = repository.list_events(article.id)
+    return ArticleDetail(
+        **article.model_dump(), events=[EventOut(**e.model_dump()) for e in events]
+    )

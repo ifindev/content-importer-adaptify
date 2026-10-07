@@ -392,6 +392,27 @@
         "title": "HTTPValidationError",
         "type": "object"
       },
+      "ReviewLinkOut": {
+        "properties": {
+          "created_at": {
+            "description": "When this token was generated, UTC.",
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "url": {
+            "description": "Full review link URL, built from the plaintext token.",
+            "title": "Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "url",
+          "created_at"
+        ],
+        "title": "ReviewLinkOut",
+        "type": "object"
+      },
       "SessionRequest": {
         "properties": {
           "id_token": {
@@ -804,6 +825,42 @@
           }
         },
         "summary": "Health"
+      }
+    },
+    "/review-link": {
+      "get": {
+        "operationId": "get_review_link_review_link_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewLinkOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Review Link"
+      }
+    },
+    "/review-link/reset": {
+      "post": {
+        "operationId": "reset_review_link_route_review_link_reset_post",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewLinkOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Reset Review Link Route"
       }
     }
   }

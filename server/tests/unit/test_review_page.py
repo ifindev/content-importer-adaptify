@@ -4,7 +4,7 @@ import pytest
 
 from app.adapters.testing.in_memory_repository import InMemoryArticleRepository
 from app.core.domain.errors import ArticleNotVisibleError, InvalidTokenError
-from app.core.domain.models import Article
+from app.core.domain.models import Article, Site
 from app.core.domain.statuses import Status
 from app.core.lib.tokens import hash_token
 from app.core.use_cases.review import get_review_article, get_review_page
@@ -30,8 +30,14 @@ def _article(article_id: str, status: Status) -> Article:
 @pytest.fixture
 def repository():
     repo = InMemoryArticleRepository()
-    repo.ensure_site_bootstrapped("Test site", "https://wp.example.com")
-    repo.save_site(repo.get_site().model_copy(update={"review_token_hash": hash_token(TOKEN)}))
+    repo.save_site(
+        Site(
+            id="s1",
+            name="Test site",
+            wp_base_url="https://wp.example.com",
+            review_token_hash=hash_token(TOKEN),
+        )
+    )
     return repo
 
 
@@ -57,7 +63,7 @@ def test_wrong_token_raises(repository):
 
 def test_no_token_set_on_site_raises():
     repo = InMemoryArticleRepository()
-    repo.ensure_site_bootstrapped("Test site", "https://wp.example.com")
+    repo.save_site(Site(id="s1", name="Test site", wp_base_url="https://wp.example.com"))
     with pytest.raises(InvalidTokenError):
         get_review_page(repo, TOKEN)
 

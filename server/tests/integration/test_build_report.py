@@ -7,7 +7,7 @@ from google.cloud import firestore
 from app.adapters.firestore.repository import FirestoreArticleRepository
 from app.adapters.testing.clock import FixedClock
 from app.adapters.testing.scripted_publisher import ScriptedPublisher
-from app.core.domain.models import Article, Event
+from app.core.domain.models import Article, Event, Site
 from app.core.domain.statuses import EventType, Status
 from app.core.use_cases.build_report import build_report
 from app.core.use_cases.sync_status import SyncCache
@@ -20,11 +20,16 @@ NOW = datetime(2026, 10, 7, 12, 0, 0, tzinfo=UTC)
 
 
 @pytest.fixture
-def repository(monkeypatch):
+def site_id():
+    return f"test-{uuid.uuid4()}"
+
+
+@pytest.fixture
+def repository(monkeypatch, site_id):
     monkeypatch.setenv("FIRESTORE_EMULATOR_HOST", FIRESTORE_EMULATOR_HOST)
     monkeypatch.setenv("GOOGLE_CLOUD_PROJECT", PROJECT_ID)
     client = firestore.Client()
-    return FirestoreArticleRepository(client, site_id=f"test-{uuid.uuid4()}")
+    return FirestoreArticleRepository(client, site_id=site_id)
 
 
 def _article(id_: str, status: Status, **overrides) -> Article:
@@ -42,8 +47,8 @@ def _article(id_: str, status: Status, **overrides) -> Article:
     )
 
 
-async def test_build_report_over_a_seeded_article_set(repository):
-    repository.ensure_site_bootstrapped("My Site", "https://wp.example")
+async def test_build_report_over_a_seeded_article_set(repository, site_id):
+    repository.save_site(Site(id=site_id, name="My Site", wp_base_url="https://wp.example"))
 
     repository.create_article(_article("draft-1", Status.DRAFT))
     repository.create_article(_article("failed-1", Status.FAILED, last_error="WordPress 500"))

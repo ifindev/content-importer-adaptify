@@ -10,7 +10,7 @@ from app.core.domain.errors import (
     InvalidTokenError,
     NotAwaitingApprovalError,
 )
-from app.core.domain.models import Article
+from app.core.domain.models import Article, Site
 from app.core.domain.statuses import Status
 from app.core.lib.tokens import hash_token
 from app.core.use_cases.review import approve, request_changes
@@ -46,8 +46,14 @@ def _article(status: Status, version: int = 1, client_comment: str | None = None
 @pytest.fixture
 def repository():
     repo = InMemoryArticleRepository()
-    repo.ensure_site_bootstrapped("Test site", "https://wp.example.com")
-    repo.save_site(repo.get_site().model_copy(update={"review_token_hash": hash_token(TOKEN)}))
+    repo.save_site(
+        Site(
+            id="s1",
+            name="Test site",
+            wp_base_url="https://wp.example.com",
+            review_token_hash=hash_token(TOKEN),
+        )
+    )
     return repo
 
 

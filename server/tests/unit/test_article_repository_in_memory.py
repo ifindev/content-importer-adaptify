@@ -1,7 +1,7 @@
 from datetime import UTC, datetime
 
 from app.adapters.testing.in_memory_repository import InMemoryArticleRepository
-from app.core.domain.models import Article, Event
+from app.core.domain.models import Article, Event, Site
 from app.core.domain.statuses import EventType, Status
 
 NOW = datetime(2026, 10, 7, 12, 0, 0, tzinfo=UTC)
@@ -21,12 +21,11 @@ def _article(id_: str, status: Status = Status.DRAFT) -> Article:
     )
 
 
-def test_ensure_site_bootstrapped_is_idempotent():
+def test_save_site_then_get_site_round_trips():
     repo = InMemoryArticleRepository()
-    first = repo.ensure_site_bootstrapped("My Site", "https://wp.example")
-    second = repo.ensure_site_bootstrapped("Other name", "https://other.example")
-    assert first == second
-    assert repo.get_site().name == "My Site"
+    site = Site(id="s1", name="My Site", wp_base_url="https://wp.example")
+    repo.save_site(site)
+    assert repo.get_site() == site
 
 
 def test_create_and_get_article():

@@ -1,7 +1,13 @@
 import hmac
 
 from app.core.domain import lifecycle
-from app.core.domain.errors import ArticleChangedError, NotAwaitingApprovalError, NotSendableError
+from app.core.domain.errors import (
+    ArticleChangedError,
+    ArticleNotVisibleError,
+    InvalidTokenError,
+    NotAwaitingApprovalError,
+    NotSendableError,
+)
 from app.core.domain.models import Article, Site
 from app.core.domain.statuses import EventType, Status
 from app.core.lib.tokens import hash_token
@@ -10,14 +16,6 @@ from app.core.ports.clock import Clock
 
 VISIBLE_STATUSES = {Status.AWAITING_APPROVAL, Status.SCHEDULED, Status.PUBLISHED}
 SENDABLE_STATUSES = {Status.DRAFT, Status.CHANGES_REQUESTED}
-
-
-class InvalidTokenError(Exception):
-    pass
-
-
-class ArticleNotVisibleError(Exception):
-    pass
 
 
 def _verify_token(site: Site, token: str) -> None:

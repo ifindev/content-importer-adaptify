@@ -1,8 +1,10 @@
 # T-029 Client review: wiring and full-flow test
 
+> **Re-scope before building:** Playwright is out of scope (CLAUDE.md). The full-flow test below becomes a hand check in the browser.
+
 **Phase:** 4 · Frontend · **Status:** analyzed · **Size:** M
 **Refs:** R3.3–R3.5, R6.5, R8.2, spec: Client journey, Client view; plan: Phase 4 "done when"
-**Depends on:** T-027, T-028, T-032 (the agency must create/select a site before importing), T-033 (review screens on fixtures, Playwright setup)
+**Depends on:** T-027, T-028, T-032 (the agency must create/select a site before importing), T-033 (review screens on fixtures)
 
 ## Goal
 The review page and reader T-033 built on fixtures run on real data through the review token, without an account. One Playwright test then proves the whole flow works in the browser, agency and client, which closes Phase 4.

@@ -5,6 +5,7 @@ ARTICLES = "Articles"
 PUBLISHING = "Publishing"
 REVIEW_LINK = "Review link"
 CLIENT_REVIEW = "Client review"
+REPORT = "Report"
 
 OPENAPI_TAGS: list[dict[str, str]] = [
     {"name": HEALTH, "description": "Liveness check."},
@@ -13,6 +14,7 @@ OPENAPI_TAGS: list[dict[str, str]] = [
     {"name": ARTICLES, "description": "List, read, and edit articles."},
     {"name": PUBLISHING, "description": "Send for review, pull back, schedule, and retry."},
     {"name": REVIEW_LINK, "description": "The agency's client review URL."},
+    {"name": REPORT, "description": "Status counts, approval speed, and change rounds."},
     {
         "name": CLIENT_REVIEW,
         "description": (

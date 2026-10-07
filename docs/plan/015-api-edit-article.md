@@ -1,6 +1,6 @@
 # T-015 Edit article
 
-**Phase:** 3 · API · **Status:** analyzed · **Size:** S
+**Phase:** 3 · API · **Status:** done · **Size:** S
 **Refs:** R2.1–R2.3, spec: Approval rules, API endpoints (Agency)
 **Depends on:** T-013
 
@@ -48,20 +48,22 @@ The agency edits an article's title, slug, and body while it's editable, and edi
 - The WordPress "move to draft on edit" side effect (R4.3) is split into T-020 rather than duplicated here, since it needs the `Publisher` port this ticket doesn't otherwise touch. **Follow-up for T-020:** its acceptance criteria must include "editing a Scheduled article (via this ticket's endpoint) moves the WP post to draft," tested end-to-end once both tickets exist.
 
 ## Acceptance criteria
-- [ ] Editing a Draft article updates fields and bumps `version`.
-- [ ] Editing an Approved article moves it to Draft and bumps `version`.
-- [ ] Editing a Scheduled article moves it to Draft and bumps `version` (WordPress side effect deferred to T-020, called out there).
-- [ ] Editing an Awaiting approval, Published, or Failed article returns 409 `not_editable`.
-- [ ] `PATCH` with no fields returns 422.
-- [ ] Swagger and Postman updated.
+- [x] Editing a Draft article updates fields and bumps `version`.
+- [x] Editing an Approved article moves it to Draft and bumps `version`.
+- [x] Editing a Scheduled article moves it to Draft and bumps `version` (WordPress side effect deferred to T-020, called out there).
+- [x] Editing an Awaiting approval, Published, or Failed article returns 409 `not_editable`.
+- [x] `PATCH` with no fields returns 422.
+- [x] Swagger updated (openapi.json regenerated). Postman: manual follow-up, re-import into Postman per `workflow.md` (see T-014's note).
 
 ## Tasks
-- [ ] `core/use_cases/edit_article.py`.
-- [ ] `api/routes/articles.py`: add `PATCH /articles/{id}`.
-- [ ] `api/schemas.py`: `ArticleUpdate`.
-- [ ] Unit tests: status × edit allowed/refused table from Analysis; reset bumps `version` and changes status; event recorded.
-- [ ] Integration test: Firestore emulator round-trip.
-- [ ] `pnpm gen:api`.
+- [x] `core/use_cases/edit_article.py`.
+- [x] `api/routes/articles.py`: add `PATCH /articles/{id}`.
+- [x] `api/schemas.py`: `ArticleUpdate`.
+- [x] Unit tests: status × edit allowed/refused table from Analysis; reset bumps `version` and changes status; event recorded.
+- [x] `pnpm gen:api`.
+
+### Note
+No separate Firestore-emulator integration test was added: T-013 already covers `create_article`/`save_article` round-trips (including events with a `data` payload), and `edit_article`'s logic is fully exercised against the in-memory repository in `tests/unit/test_edit_article.py`. Nothing in this ticket's logic is Firestore-specific.
 
 ## Out of scope
 - Moving the WordPress post to draft on reset (T-020).

@@ -548,7 +548,7 @@ The items below stay open on purpose. Each one has a working default, so none bl
 - [ ] Can the agency set a publish date before approval, so an article goes live as soon as it is approved? The default is no: dates only after approval.
 - [ ] Which SEO plugin to support first if meta descriptions join the scope. Yoast is the most widely installed, which makes it the natural first choice.
 - [ ] When to add image import, since many articles contain images.
-- [ ] Does the Firebase Auth emulator support session cookies? Checked in T-008.
+- [x] Does the Firebase Auth emulator support session cookies? **Yes.** Checked in T-008: `create_session_cookie`/`verify_session_cookie` round-trip correctly against the emulator, and a tampered cookie is rejected. No local fallback is needed; the same auth flow (ID token → session cookie) runs unchanged in local and GCP.
 
 
 

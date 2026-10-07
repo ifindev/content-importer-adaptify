@@ -1,6 +1,6 @@
 # T-020 Schedule, retry, and the WordPress publisher
 
-**Phase:** 3 · API · **Status:** analyzed · **Size:** L
+**Phase:** 3 · API · **Status:** done · **Size:** L
 **Refs:** R4.1–R4.5, spec: WordPress integration (Calls), API endpoints (Agency)
 **Depends on:** T-013, T-015, T-009 (WordPress publish check proved the connection)
 
@@ -32,7 +32,7 @@ The agency sets a publish date on an Approved article and WordPress schedules it
 | Re-schedule after re-approval | 200 | `ArticleDetail` |
 | From any other status | 409 | `{code: "not_schedulable"}` |
 | `publish_at` in the past | 422 | `{code: "publish_at_in_past"}` |
-| WordPress call fails | 200 with status `Failed` in the body (not an HTTP error — the request to *our* API succeeded; the article's own status reflects the WordPress failure) |
+| WordPress call fails | **502** `{code: "wordpress_error", message: ...}` (deviation, see Implementation note below) |
 
 `POST /articles/{id}/retry`
 
@@ -61,24 +61,27 @@ No new fields beyond T-013's `wp_post_id`, `published_url`, `last_error`, `publi
 ### Decisions
 - `publish_at` is sent as a single ISO datetime with a UTC offset (e.g. `2026-11-01T09:00:00+07:00`) rather than separate `publish_at`+`timezone` fields — the offset already disambiguates, and it's one field to validate instead of two that could disagree.
 
+### Implementation note: failure response deviates from this ticket's original API table
+The table above originally specified 200 with the article's own `Failed` status in the body (not an HTTP error). During implementation, explicit direction was to let a WordPress failure surface as an HTTP error instead. Resolution: `schedule()`/`retry()` still persist the article as `Failed` (with `last_error` and a `failed` event) before re-raising `WordPressError`, so R4.4 and the Retry flow are unaffected — only the HTTP response for *that specific request* changed, from 200 to 502 `{code: "wordpress_error"}`. A subsequent `GET /articles/{id}` shows `Failed` either way.
+
 ## Acceptance criteria
-- [ ] Scheduling an Approved article for the first time creates a WordPress post with `status: future` and stores its id.
-- [ ] Changing only the date on a Scheduled article updates `date_gmt` only, via the stored id, and keeps status Scheduled.
-- [ ] A simulated WordPress timeout followed by a successful slug lookup reuses the found post instead of creating a duplicate.
-- [ ] A WordPress failure sets Failed with a stored reason; Retry re-attempts and can succeed.
-- [ ] Editing a Scheduled article (T-015's endpoint) moves the real WordPress post to draft — verified with the local WordPress container.
-- [ ] Swagger and Postman updated.
+- [x] Scheduling an Approved article for the first time creates a WordPress post with `status: future` and stores its id.
+- [x] Changing only the date on a Scheduled article updates `date_gmt` only, via the stored id, and keeps status Scheduled.
+- [x] A simulated WordPress timeout followed by a successful slug lookup reuses the found post instead of creating a duplicate.
+- [x] A WordPress failure sets Failed with a stored reason; Retry re-attempts and can succeed.
+- [x] Editing a Scheduled article (T-015's endpoint) moves the real WordPress post to draft — verified with the local WordPress container.
+- [x] Swagger updated (via `pnpm gen:api`). Postman is a manual, local step per `docs/workflow.md` (no collection file is committed to the repo) — left for the user.
 
 ## Tasks
-- [ ] `core/ports/publisher.py`, `core/lib/dates.py`.
-- [ ] `adapters/wordpress/publisher.py`: extend with `update_scheduled`, `set_draft`, `find_by_slug`.
-- [ ] `adapters/testing/scripted_publisher.py`: scriptable responses, including a timeout simulation.
-- [ ] `core/use_cases/schedule.py`.
-- [ ] Wire `Publisher.set_draft` into T-015's `edit_article` use case.
-- [ ] `api/routes/articles.py`: `POST /articles/{id}/schedule`, `POST /articles/{id}/retry`.
-- [ ] Unit tests: create vs. update branch, timeout + slug-lookup fallback, failure/retry, with the scripted publisher.
-- [ ] Integration test: local WordPress container — create, change date, move to draft, confirm via `GET /wp-json/wp/v2/posts/{id}`.
-- [ ] `pnpm gen:api`.
+- [x] `core/ports/publisher.py`. Skipped `core/lib/dates.py` — the tz→UTC conversion already lives in exactly one place (the adapter's existing `.astimezone(UTC)` call); a second pure function wrapping it would restate, not simplify.
+- [x] `adapters/wordpress/publisher.py`: extend with `update_scheduled`, `set_draft`, `find_by_slug`.
+- [x] `adapters/testing/scripted_publisher.py`: scriptable responses, including a timeout simulation.
+- [x] `core/use_cases/schedule.py`.
+- [x] Wire `Publisher.set_draft` into T-015's `edit_article` use case.
+- [x] `api/routes/articles.py`: `POST /articles/{id}/schedule`, `POST /articles/{id}/retry`.
+- [x] Unit tests: create vs. update branch, timeout + slug-lookup fallback, failure/retry, with the scripted publisher.
+- [x] Integration test: local WordPress container — create, change date, move to draft, confirm via `GET /wp-json/wp/v2/posts/{id}`.
+- [x] `pnpm gen:api`.
 
 ## Out of scope
 - The batched status check (T-021).

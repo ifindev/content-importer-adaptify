@@ -10,6 +10,7 @@ from app.api.routes.articles import router as articles_router
 from app.api.routes.auth import router as auth_router
 from app.api.routes.imports import NoFilesError, TooManyFilesError
 from app.api.routes.imports import router as imports_router
+from app.api.routes.review_link import router as review_link_router
 from app.container import build_container
 from app.core.domain.errors import EmptyContentError, NotEditableError, WordPressError
 from app.settings import Settings
@@ -81,6 +82,7 @@ def create_app() -> FastAPI:
     app.include_router(auth_router)
     app.include_router(articles_router)
     app.include_router(imports_router)
+    app.include_router(review_link_router)
 
     return app
 

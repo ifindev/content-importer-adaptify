@@ -1,11 +1,9 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const AGENCY_PATHS = ["/", "/import", "/articles", "/report"];
-
 function isAgencyPath(pathname: string): boolean {
-  return AGENCY_PATHS.some(
-    (path) => pathname === path || pathname.startsWith(`${path}/`),
+  return (
+    pathname === "/" || pathname === "/sites" || pathname.startsWith("/sites/")
   );
 }
 
@@ -15,20 +13,15 @@ export function proxy(request: NextRequest) {
 
   if (pathname === "/login") {
     if (hasSession) {
-      return NextResponse.redirect(new URL("/articles", request.url));
+      return NextResponse.redirect(new URL("/", request.url));
     }
     return NextResponse.next();
   }
 
-  if (isAgencyPath(pathname)) {
-    if (!hasSession) {
-      const loginUrl = new URL("/login", request.url);
-      loginUrl.searchParams.set("next", pathname);
-      return NextResponse.redirect(loginUrl);
-    }
-    if (pathname === "/") {
-      return NextResponse.redirect(new URL("/articles", request.url));
-    }
+  if (isAgencyPath(pathname) && !hasSession) {
+    const loginUrl = new URL("/login", request.url);
+    loginUrl.searchParams.set("next", pathname);
+    return NextResponse.redirect(loginUrl);
   }
 
   const requestHeaders = new Headers(request.headers);
@@ -37,5 +30,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/", "/import", "/articles/:path*", "/report", "/login"],
+  matcher: ["/", "/sites/:path*", "/login"],
 };

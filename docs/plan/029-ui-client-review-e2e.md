@@ -2,7 +2,7 @@
 
 **Phase:** 4 · Frontend · **Status:** analyzed · **Size:** L
 **Refs:** R3.3–R3.5, R6.5, R8.2, spec: Client journey, Client view; plan: Phase 4 "done when"
-**Depends on:** T-026, T-027, T-028
+**Depends on:** T-026, T-027, T-028, T-032 (the agency must create/select a site before importing; `/articles` is now `/sites/{siteId}/articles`)
 
 ## Goal
 The client opens the link on a phone, reads each article, and approves or requests changes without an account. One Playwright test then proves the whole flow works in the browser, agency and client, which closes Phase 4.
@@ -54,13 +54,14 @@ Only Awaiting approval articles show the action bar. Upcoming and published arti
 - `@playwright/test` in `web/`, `playwright.config.ts` with `baseURL=http://localhost:3000`, Chromium only.
 - `make e2e`: needs `make up`, `make wp-setup`, `make agency-user` done first; runs `pnpm exec playwright test`.
 - One spec, `e2e/full-flow.spec.ts`:
-  1. Logged out, `/articles` → `/login`.
+  1. Logged out, `/sites` → `/login`.
   2. Log in with `AGENCY_EMAIL` / `AGENCY_PASSWORD`.
-  3. Paste an article with a unique title; send for review; read the review link.
-  4. New browser context (no cookies): open the link, check there's no sidebar, open the article, approve as "Sam".
-  5. Agency: schedule it one minute ahead; wait; run `make wp-cron` through a test helper (`execSync`); reload `/articles`; see Published with a live URL.
-  6. Access: `/review/not-a-token` shows the 404 page.
-  7. Responsive: at 375px, every screen visited has `scrollWidth <= innerWidth`.
+  3. Create a site through the Add Site form (T-032) against the local WordPress container (same credentials `make wp-setup` already configures); land on `/sites/{siteId}/articles`.
+  4. Paste an article with a unique title; send for review; read the review link.
+  5. New browser context (no cookies): open the link, check there's no sidebar, open the article, approve as "Sam".
+  6. Agency: schedule it one minute ahead; wait; run `make wp-cron` through a test helper (`execSync`); reload `/sites/{siteId}/articles`; see Published with a live URL.
+  7. Access: `/review/not-a-token` shows the 404 page.
+  8. Responsive: at 375px, every screen visited has `scrollWidth <= innerWidth`.
 
 ### Edge cases
 | Case | Behavior |

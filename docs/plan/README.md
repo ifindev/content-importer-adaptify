@@ -68,15 +68,19 @@ Phases and the master list of tickets. How tickets work: [workflow.md](../workfl
 | T-024 | [Consolidate API exception handling](024-api-error-handler-refactor.md) | architecture: Server folder layout | done |
 | T-025 | [Group Swagger by workflow](025-api-swagger-sections.md) | architecture: Server folder layout | done |
 | T-030 | [Split api/schemas.py by route](030-api-schemas-split.md) | architecture: Server folder layout | done |
+| T-031 | [Multi-site: sites collection, siteId-scoped routes, encrypted credentials](031-api-multi-site-sites-collection.md) | spec: Data model, Out of scope | todo |
 
 ### Phase 4: Frontend
 
 | ID | Ticket | Refs | Status |
 | --- | --- | --- | --- |
 | T-026 | [Access control and app shell](026-ui-access-shell.md) | R8.1, R8.2, architecture: Auth | in progress |
+| T-032 | [Site switcher and Add Site screen](032-ui-site-switcher-add-site.md) | spec: Screens, E8 Access | todo |
 | T-027 | [API data layer](027-ui-data-layer.md) | E1–E6, architecture: Frontend | analyzed |
 | T-028 | [Agency screens](028-ui-agency-screens.md) | E1, E2, E4, R3.2, R3.5–R3.7, R5.1–R5.3, R6.1–R6.4 | analyzed |
 | T-029 | [Client review screens and full-flow test](029-ui-client-review-e2e.md) | R3.3–R3.5, R6.5, R8.2 | analyzed |
+
+Build order for this phase: T-026 (in progress, finishes single-site) → T-031 (backend, Phase 3) → T-032 → T-027 → T-028 → T-029. T-027's analysis should be revisited once T-032 lands, since its data layer needs to be `siteId`-aware from the start.
 
 ### Phase 5: Deploy
 

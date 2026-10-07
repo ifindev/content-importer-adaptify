@@ -2,7 +2,7 @@
 
 **Phase:** 4 · Frontend · **Status:** analyzed · **Size:** L
 **Refs:** E1, E2, R3.2, R3.5–R3.7, E4, R5.1–R5.3, R6.1–R6.4, spec: Screens, Agency journey, Article lifecycle
-**Depends on:** T-026, T-027
+**Depends on:** T-026, T-027, T-032 (every route below lives under `/sites/{siteId}/...`)
 
 ## Goal
 The agency does its whole job in the browser: import, edit, send for review, handle changes, schedule, retry, and read the report, on any screen size.
@@ -15,6 +15,8 @@ Each screen starts with a `/design` pass covering the States and Elements below,
 - Extensions limited to what the server's nh3 list keeps: h2–h4, p, ul/ol/li, a, strong, em, table. The editor never produces something the server will strip.
 - Toolbar: heading levels, bold, italic, lists, link, table. Wraps on mobile; sticky at the top of the editor on scroll.
 - Outputs HTML (`editor.getHTML()`). `readOnly` prop for Awaiting approval and later statuses.
+
+All routes below live under `/sites/[siteId]/...` (T-032); paths are written without the prefix for brevity.
 
 ### Import (`/import`)
 | Element | Notes |

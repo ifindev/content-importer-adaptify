@@ -12,10 +12,12 @@ from app.api.auth import require_session
 from app.api.main import app
 from app.api.routes.articles import get_clock as get_articles_clock
 from app.api.routes.articles import get_repository
+from app.api.routes.public_review import get_repository as get_public_review_repository
 from app.api.routes.review_link import get_clock, get_secret_store, get_web_base_url
 from app.api.routes.review_link import get_repository as get_review_link_repository
 from app.core.domain.models import Article, Event
 from app.core.domain.statuses import EventType, Status
+from app.core.lib.tokens import generate_token, hash_token
 
 pytestmark = pytest.mark.integration
 
@@ -138,3 +140,36 @@ def test_review_link_routes_work_against_the_firestore_emulator(repository):
     assert reset.status_code == 200
     assert reset.json()["url"] != first.json()["url"]
     assert repository.get_site().review_token_hash is not None
+
+
+def test_public_review_routes_work_against_the_firestore_emulator(repository):
+    repository.ensure_site_bootstrapped("Test Site", "https://wp.example.com")
+    token = generate_token()
+    repository.save_site(
+        repository.get_site().model_copy(update={"review_token_hash": hash_token(token)})
+    )
+    repository.create_article(_article("waiting", Status.AWAITING_APPROVAL))
+    repository.create_article(_article("hidden", Status.DRAFT))
+
+    app.dependency_overrides[get_public_review_repository] = lambda: repository
+    try:
+        client = TestClient(app)
+        page_response = client.get(f"/review/{token}")
+        article_response = client.get(f"/review/{token}/articles/waiting")
+        hidden_response = client.get(f"/review/{token}/articles/hidden")
+        wrong_token_response = client.get("/review/not-the-token")
+    finally:
+        app.dependency_overrides.clear()
+
+    assert page_response.status_code == 200
+    body = page_response.json()
+    assert body["site_name"] == "Test Site"
+    assert [a["id"] for a in body["waiting"]] == ["waiting"]
+    assert body["upcoming"] == []
+    assert body["published"] == []
+    assert article_response.status_code == 200
+    assert article_response.json()["id"] == "waiting"
+    assert hidden_response.status_code == 404
+    assert hidden_response.json()["code"] == "not_found"
+    assert wrong_token_response.status_code == 404
+    assert wrong_token_response.json()["code"] == "not_found"

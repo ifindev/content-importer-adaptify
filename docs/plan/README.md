@@ -47,6 +47,7 @@ Phases and the master list of tickets. How tickets work: [workflow.md](../workfl
 | T-008 | [Firebase emulators](008-infra-firebase-emulators.md) | architecture: Auth, Local setup | done |
 | T-009 | [WordPress publish check](009-infra-wordpress-publish-check.md) | spec: WordPress integration | done |
 | T-010 | [Rename backend to server](010-rename-backend-to-server.md) | architecture: Server | done |
+| T-011 | [Adapter logging convention](011-adapter-logging-convention.md) | architecture: Server (Logging) | done |
 
 ### Phase 3: API
 

@@ -60,7 +60,7 @@ Phases and the master list of tickets. How tickets work: [workflow.md](../workfl
 | T-016 | [Review link](016-api-review-link.md) | R3.1, R3.2, R3.7 | done |
 | T-017 | [Send for review and pull back](017-api-send-for-review-pull-back.md) | R3.6 | done |
 | T-018 | [Client review page](018-api-client-review-page.md) | R3.3, R6.5, R8.2 | done |
-| T-019 | [Client approve and request changes](019-api-client-approve-request-changes.md) | R3.4, R3.5 | analyzed |
+| T-019 | [Client approve and request changes](019-api-client-approve-request-changes.md) | R3.4, R3.5 | done |
 | T-020 | [Schedule, retry, and the WordPress publisher](020-api-schedule-publish.md) | R4.1–R4.5 | analyzed |
 | T-021 | [WordPress status sync](021-api-status-sync.md) | R5.1–R5.4 | analyzed |
 | T-022 | [Agency report](022-api-agency-report.md) | R6.1–R6.4 | analyzed |

@@ -1,6 +1,6 @@
 # T-019 Client approve and request changes
 
-**Phase:** 3 · API · **Status:** analyzed · **Size:** M
+**Phase:** 3 · API · **Status:** done · **Size:** M
 **Refs:** R3.4, R3.5, spec: Approval rules, API endpoints (Client) Decisions
 **Depends on:** T-018
 
@@ -53,22 +53,24 @@ Same status codes as approve, plus the comment is stored.
 | `client_name` differs between approve attempts on a resubmission | No identity check across rounds — each event just records whoever typed the name that time (matches spec: "so the agency knows who decided", not an identity system) |
 
 ## Acceptance criteria
-- [ ] Approve with the current `version` moves `AwaitingApproval → Approved`, sets `approved_version`, logs the client's name.
-- [ ] Approve with a stale `version` returns 409 `article_changed` and changes nothing.
-- [ ] Request changes stores the comment, moves to `ChangesRequested`, logs the client's name and comment as an event.
-- [ ] Either action from a non-`AwaitingApproval` status returns 409 `not_awaiting_approval`.
-- [ ] `spec.md`'s Data model updated with `client_comment`.
-- [ ] Swagger and Postman updated, including the hand-written paste → send → approve flow Postman request chain (per workflow.md's DoD).
+- [x] Approve with the current `version` moves `AwaitingApproval → Approved`, sets `approved_version`, logs the client's name.
+- [x] Approve with a stale `version` returns 409 `article_changed` and changes nothing.
+- [x] Request changes stores the comment, moves to `ChangesRequested`, logs the client's name and comment as an event.
+- [x] Either action from a non-`AwaitingApproval` status returns 409 `not_awaiting_approval`.
+- [x] `spec.md`'s Data model updated with `client_comment`.
+- [x] Swagger updated (via `pnpm gen:api`). Postman is a manual, local step per `docs/workflow.md` (no collection file is committed to the repo) — left for the user to do themselves; not part of this implementation.
 
 ## Tasks
-- [ ] Add `client_comment` to `core/domain/models.py` and `spec.md`.
-- [ ] `core/use_cases/review.py`: `approve`, `request_changes`.
-- [ ] `api/routes/public_review.py`: both routes.
-- [ ] Unit tests: version match/mismatch, status table, event content.
-- [ ] Integration test: Firestore emulator, full approve round-trip.
-- [ ] Postman: chained request folder (paste → send-for-review → approve), using collection variables for the article id and token.
-- [ ] `pnpm gen:api`.
+- [x] Add `client_comment` to `core/domain/models.py` and `spec.md`.
+- [x] `core/use_cases/review.py`: `approve`, `request_changes`.
+- [x] `api/routes/public_review.py`: both routes.
+- [x] Unit tests: version match/mismatch, status table, event content.
+- [x] Integration test: Firestore emulator, full approve round-trip.
+- [ ] Postman: chained request folder (paste → send-for-review → approve), using collection variables for the article id and token. **Manual step for the user** — no Postman collection file exists in this repo to edit.
+- [x] `pnpm gen:api`.
+
+## Follow-ups closed by this ticket
+- `client_comment` is now cleared on edit (`edit_article.py`) and on resubmit (`send_for_review` in `review.py`), closing the gap the ticket originally flagged as a follow-up for T-015/T-017.
 
 ## Out of scope
-- Clearing `client_comment` on edit/resubmit if not already done by T-015/T-017 at the time this ships (flagged as a follow-up above, not blocking).
 - AI drafting of the requested change (T-0xx, Phase 7).

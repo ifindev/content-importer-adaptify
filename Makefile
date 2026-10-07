@@ -11,7 +11,7 @@ test: ## Run server unit tests (no external services needed)
 	cd server && uv run pytest -m "not integration"
 
 test-integration: ## Run server integration tests (needs `make up` + `make wp-setup`)
-	cd server && uv run pytest -m integration
+	cd server && uv run pytest -m integration --log-cli-level=INFO
 
 api: ## Run the API dev server
 	cd server && uv run fastapi dev app/api/main.py

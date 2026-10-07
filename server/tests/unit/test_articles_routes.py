@@ -3,14 +3,21 @@ from datetime import UTC, datetime
 import pytest
 from fastapi.testclient import TestClient
 
+from app.adapters.testing.clock import FixedClock
 from app.adapters.testing.in_memory_repository import InMemoryArticleRepository
 from app.api.auth import require_session
 from app.api.main import app
-from app.api.routes.articles import get_repository
+from app.api.routes.articles import get_clock, get_document_parser, get_repository
 from app.core.domain.models import Article
 from app.core.domain.statuses import Status
+from app.core.ports.document_parser import ParsedDocument
 
 NOW = datetime(2026, 10, 7, 12, 0, 0, tzinfo=UTC)
+
+
+class FakeParser:
+    def clean_html(self, html: str) -> ParsedDocument:
+        return ParsedDocument(title=None, body_html=html)
 
 
 def _article(id_: str, status: Status = Status.DRAFT) -> Article:
@@ -36,6 +43,8 @@ def repository():
 def client(repository):
     app.dependency_overrides[require_session] = lambda: "test-uid"
     app.dependency_overrides[get_repository] = lambda: repository
+    app.dependency_overrides[get_document_parser] = lambda: FakeParser()
+    app.dependency_overrides[get_clock] = lambda: FixedClock(NOW)
     yield TestClient(app)
     app.dependency_overrides.clear()
 
@@ -83,3 +92,57 @@ def test_articles_require_session():
     app.dependency_overrides.clear()
     assert response.status_code == 401
     assert response.json() == {"code": "invalid_token"}
+
+
+@pytest.mark.parametrize("status", [Status.DRAFT, Status.CHANGES_REQUESTED])
+def test_patch_article_from_editable_status(client, repository, status):
+    repository.create_article(_article("a1", status))
+    response = client.patch("/articles/a1", json={"title": "New Title"})
+    assert response.status_code == 200
+    body = response.json()
+    assert body["title"] == "New Title"
+    assert body["status"] == status.value
+    assert body["version"] == 2
+
+
+@pytest.mark.parametrize("status", [Status.APPROVED, Status.SCHEDULED])
+def test_patch_article_from_approved_or_scheduled_resets_to_draft(client, repository, status):
+    repository.create_article(_article("a1", status))
+    response = client.patch("/articles/a1", json={"title": "New Title"})
+    assert response.status_code == 200
+    assert response.json()["status"] == "draft"
+
+
+@pytest.mark.parametrize("status", [Status.AWAITING_APPROVAL, Status.PUBLISHED, Status.FAILED])
+def test_patch_article_from_non_editable_status_returns_409(client, repository, status):
+    repository.create_article(_article("a1", status))
+    response = client.patch("/articles/a1", json={"title": "New Title"})
+    assert response.status_code == 409
+    assert response.json() == {"code": "not_editable"}
+
+
+def test_patch_article_not_found_returns_404(client):
+    response = client.patch("/articles/missing", json={"title": "x"})
+    assert response.status_code == 404
+    assert response.json() == {"code": "not_found"}
+
+
+def test_patch_article_empty_body_returns_422(client, repository):
+    repository.create_article(_article("a1"))
+    response = client.patch("/articles/a1", json={})
+    assert response.status_code == 422
+    assert response.json() == {"code": "empty_update"}
+
+
+def test_patch_article_oversized_body_html_returns_413(client, repository):
+    repository.create_article(_article("a1"))
+    huge = "a" * (2 * 1024 * 1024 + 1)
+    response = client.patch("/articles/a1", json={"body_html": huge})
+    assert response.status_code == 413
+    assert response.json() == {"code": "payload_too_large"}
+
+
+def test_patch_article_malformed_slug_returns_422(client, repository):
+    repository.create_article(_article("a1"))
+    response = client.patch("/articles/a1", json={"slug": "Not A Slug!"})
+    assert response.status_code == 422

@@ -62,6 +62,11 @@ class ArticleDetail(BaseModel):
     events: list[EventOut] = Field([], description="History log, oldest first.")
 
 
+class ReviewLinkOut(BaseModel):
+    url: str = Field(..., description="Full review link URL, built from the plaintext token.")
+    created_at: datetime = Field(..., description="When this token was generated, UTC.")
+
+
 class ArticlePaste(BaseModel):
     html: str = Field(..., description="Pasted article HTML, raw body capped at 2 MB.")
 

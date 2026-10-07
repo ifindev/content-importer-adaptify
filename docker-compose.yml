@@ -4,6 +4,11 @@ services:
       context: ./server
       target: dev
     env_file: .env
+    environment:
+      # Fixed service-to-service URL; overrides WP_BASE_URL from .env
+      # (that value is for the non-Docker `make test-integration` path,
+      # which runs on the host and reaches WordPress via localhost:8080).
+      WP_BASE_URL: http://wordpress
     ports:
       - "8000:8000"
     volumes:

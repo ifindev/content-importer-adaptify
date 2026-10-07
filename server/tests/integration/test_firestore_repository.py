@@ -7,18 +7,23 @@ from google.cloud import firestore
 
 from app.adapters.firestore.repository import FirestoreArticleRepository
 from app.adapters.testing.clock import FixedClock
+from app.adapters.testing.scripted_publisher import ScriptedPublisher
 from app.adapters.testing.secret_store import InMemorySecretStore
 from app.api.auth import require_session
+from app.api.deps import (
+    SiteContext,
+    get_clock,
+    get_public_site_context,
+    get_secret_store,
+    get_site_context,
+    get_sync_cache,
+    get_web_base_url,
+)
 from app.api.main import app
-from app.api.routes.articles import get_clock as get_articles_clock
-from app.api.routes.articles import get_repository
-from app.api.routes.public_review import get_clock as get_public_review_clock
-from app.api.routes.public_review import get_repository as get_public_review_repository
-from app.api.routes.review_link import get_clock, get_secret_store, get_web_base_url
-from app.api.routes.review_link import get_repository as get_review_link_repository
-from app.core.domain.models import Article, Event
+from app.core.domain.models import Article, Event, Site
 from app.core.domain.statuses import EventType, Status
 from app.core.lib.tokens import generate_token, hash_token
+from app.core.use_cases.sync_status import SyncCache
 
 pytestmark = pytest.mark.integration
 
@@ -27,11 +32,22 @@ PROJECT_ID = "demo-content-importer"
 
 
 @pytest.fixture
-def repository(monkeypatch):
+def site_id():
+    return f"test-{uuid.uuid4()}"
+
+
+@pytest.fixture
+def repository(monkeypatch, site_id):
     monkeypatch.setenv("FIRESTORE_EMULATOR_HOST", FIRESTORE_EMULATOR_HOST)
     monkeypatch.setenv("GOOGLE_CLOUD_PROJECT", PROJECT_ID)
     client = firestore.Client()
-    return FirestoreArticleRepository(client, site_id=f"test-{uuid.uuid4()}")
+    return FirestoreArticleRepository(client, site_id=site_id)
+
+
+def _site(
+    site_id: str, name: str = "Test Site", wp_base_url: str = "https://wp.example.com"
+) -> Site:
+    return Site(id=site_id, name=name, wp_base_url=wp_base_url)
 
 
 def _article(id_: str, status: Status = Status.DRAFT) -> Article:
@@ -49,12 +65,19 @@ def _article(id_: str, status: Status = Status.DRAFT) -> Article:
     )
 
 
-def test_ensure_site_bootstrapped_is_idempotent(repository):
-    first = repository.ensure_site_bootstrapped("My Site", "https://wp.example")
-    second = repository.ensure_site_bootstrapped("Other name", "https://other.example")
+def _site_context(site_id: str, repository, site: Site | None = None) -> SiteContext:
+    return SiteContext(
+        site_id=site_id,
+        site=site or _site(site_id),
+        repository=repository,
+        publisher=ScriptedPublisher(),
+    )
 
-    assert first == second
-    assert repository.get_site().name == "My Site"
+
+def test_save_site_then_get_site_round_trips(repository, site_id):
+    site = _site(site_id, name="My Site", wp_base_url="https://wp.example")
+    repository.save_site(site)
+    assert repository.get_site() == site
 
 
 def test_create_and_get_article_round_trip(repository):
@@ -85,14 +108,16 @@ def test_list_articles_filters_by_status(repository):
     assert [a.id for a in repository.list_articles(status=Status.APPROVED)] == ["a2"]
 
 
-def test_articles_routes_work_against_the_firestore_emulator(repository):
+def test_articles_routes_work_against_the_firestore_emulator(repository, site_id):
     repository.create_article(_article("a1"))
     app.dependency_overrides[require_session] = lambda: "test-uid"
-    app.dependency_overrides[get_repository] = lambda: repository
+    app.dependency_overrides[get_site_context] = lambda: _site_context(site_id, repository)
+    app.dependency_overrides[get_clock] = lambda: FixedClock(datetime.now(UTC))
+    app.dependency_overrides[get_sync_cache] = lambda: SyncCache()
     try:
         client = TestClient(app)
-        list_response = client.get("/articles")
-        detail_response = client.get("/articles/a1")
+        list_response = client.get(f"/sites/{site_id}/articles")
+        detail_response = client.get(f"/sites/{site_id}/articles/a1")
     finally:
         app.dependency_overrides.clear()
 
@@ -102,14 +127,14 @@ def test_articles_routes_work_against_the_firestore_emulator(repository):
     assert detail_response.json()["id"] == "a1"
 
 
-def test_send_for_review_route_works_against_the_firestore_emulator(repository):
+def test_send_for_review_route_works_against_the_firestore_emulator(repository, site_id):
     repository.create_article(_article("a1", Status.DRAFT))
     app.dependency_overrides[require_session] = lambda: "test-uid"
-    app.dependency_overrides[get_repository] = lambda: repository
-    app.dependency_overrides[get_articles_clock] = lambda: FixedClock(datetime.now(UTC))
+    app.dependency_overrides[get_site_context] = lambda: _site_context(site_id, repository)
+    app.dependency_overrides[get_clock] = lambda: FixedClock(datetime.now(UTC))
     try:
         client = TestClient(app)
-        response = client.post("/articles/a1/send-for-review")
+        response = client.post(f"/sites/{site_id}/articles/a1/send-for-review")
     finally:
         app.dependency_overrides.clear()
 
@@ -120,19 +145,19 @@ def test_send_for_review_route_works_against_the_firestore_emulator(repository):
     assert events[-1].actor == "test-uid"
 
 
-def test_review_link_routes_work_against_the_firestore_emulator(repository):
-    repository.ensure_site_bootstrapped("Test Site", "https://wp.example.com")
+def test_review_link_routes_work_against_the_firestore_emulator(repository, site_id):
+    repository.save_site(_site(site_id))
     secret_store = InMemorySecretStore()
     app.dependency_overrides[require_session] = lambda: "test-uid"
-    app.dependency_overrides[get_review_link_repository] = lambda: repository
+    app.dependency_overrides[get_site_context] = lambda: _site_context(site_id, repository)
     app.dependency_overrides[get_secret_store] = lambda: secret_store
     app.dependency_overrides[get_clock] = lambda: FixedClock(datetime.now(UTC))
     app.dependency_overrides[get_web_base_url] = lambda: "https://app.example.com"
     try:
         client = TestClient(app)
-        first = client.get("/review-link")
-        second = client.get("/review-link")
-        reset = client.post("/review-link/reset")
+        first = client.get(f"/sites/{site_id}/review-link")
+        second = client.get(f"/sites/{site_id}/review-link")
+        reset = client.post(f"/sites/{site_id}/review-link/reset")
     finally:
         app.dependency_overrides.clear()
 
@@ -143,16 +168,15 @@ def test_review_link_routes_work_against_the_firestore_emulator(repository):
     assert repository.get_site().review_token_hash is not None
 
 
-def test_public_review_routes_work_against_the_firestore_emulator(repository):
-    repository.ensure_site_bootstrapped("Test Site", "https://wp.example.com")
+def test_public_review_routes_work_against_the_firestore_emulator(repository, site_id):
     token = generate_token()
-    repository.save_site(
-        repository.get_site().model_copy(update={"review_token_hash": hash_token(token)})
-    )
+    repository.save_site(_site(site_id).model_copy(update={"review_token_hash": hash_token(token)}))
     repository.create_article(_article("waiting", Status.AWAITING_APPROVAL))
     repository.create_article(_article("hidden", Status.DRAFT))
 
-    app.dependency_overrides[get_public_review_repository] = lambda: repository
+    app.dependency_overrides[get_public_site_context] = lambda: _site_context(site_id, repository)
+    app.dependency_overrides[get_clock] = lambda: FixedClock(datetime.now(UTC))
+    app.dependency_overrides[get_sync_cache] = lambda: SyncCache()
     try:
         client = TestClient(app)
         page_response = client.get(f"/review/{token}")
@@ -172,21 +196,29 @@ def test_public_review_routes_work_against_the_firestore_emulator(repository):
     assert article_response.json()["id"] == "waiting"
     assert hidden_response.status_code == 404
     assert hidden_response.json()["code"] == "not_found"
+    # Overridden get_public_site_context ignores the token, but get_review_page's own
+    # _verify_token re-check against the resolved site's real hash still refuses it.
     assert wrong_token_response.status_code == 404
     assert wrong_token_response.json()["code"] == "not_found"
 
 
-def test_approve_and_request_changes_routes_work_against_the_firestore_emulator(repository):
-    repository.ensure_site_bootstrapped("Test Site", "https://wp.example.com")
+def test_wrong_token_returns_404_without_a_resolvable_site():
+    with TestClient(app) as client:
+        response = client.get("/review/not-the-token")
+    assert response.status_code == 404
+    assert response.json()["code"] == "not_found"
+
+
+def test_approve_and_request_changes_routes_work_against_the_firestore_emulator(
+    repository, site_id
+):
     token = generate_token()
-    repository.save_site(
-        repository.get_site().model_copy(update={"review_token_hash": hash_token(token)})
-    )
+    repository.save_site(_site(site_id).model_copy(update={"review_token_hash": hash_token(token)}))
     repository.create_article(_article("approve-me", Status.AWAITING_APPROVAL))
     repository.create_article(_article("request-changes-me", Status.AWAITING_APPROVAL))
 
-    app.dependency_overrides[get_public_review_repository] = lambda: repository
-    app.dependency_overrides[get_public_review_clock] = lambda: FixedClock(datetime.now(UTC))
+    app.dependency_overrides[get_public_site_context] = lambda: _site_context(site_id, repository)
+    app.dependency_overrides[get_clock] = lambda: FixedClock(datetime.now(UTC))
     try:
         client = TestClient(app)
         approve_response = client.post(

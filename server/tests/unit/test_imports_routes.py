@@ -6,11 +6,14 @@ from fastapi.testclient import TestClient
 
 from app.adapters.testing.clock import FixedClock
 from app.adapters.testing.in_memory_repository import InMemoryArticleRepository
+from app.adapters.testing.scripted_publisher import ScriptedPublisher
 from app.api.auth import require_session
+from app.api.deps import SiteContext, get_clock, get_document_parser, get_site_context
 from app.api.main import app
-from app.api.routes.articles import get_clock, get_document_parser, get_repository
+from app.core.domain.models import Site
 
 NOW = datetime(2026, 10, 7, 12, 0, 0, tzinfo=UTC)
+SITE_ID = "s1"
 
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures"
 
@@ -24,8 +27,14 @@ def repository():
 def client(repository):
     from app.adapters.documents.parser import RealDocumentParser
 
+    site_context = SiteContext(
+        site_id=SITE_ID,
+        site=Site(id=SITE_ID, name="Test site", wp_base_url="http://wp.test"),
+        repository=repository,
+        publisher=ScriptedPublisher(),
+    )
     app.dependency_overrides[require_session] = lambda: "test-uid"
-    app.dependency_overrides[get_repository] = lambda: repository
+    app.dependency_overrides[get_site_context] = lambda: site_context
     app.dependency_overrides[get_document_parser] = lambda: RealDocumentParser()
     app.dependency_overrides[get_clock] = lambda: FixedClock(NOW)
     yield TestClient(app)
@@ -42,7 +51,9 @@ def _docx_file(name: str) -> tuple[str, bytes, str]:
 
 
 def test_paste_creates_draft_article(client):
-    response = client.post("/articles/paste", json={"html": "<h1>Title</h1><p>Body</p>"})
+    response = client.post(
+        f"/sites/{SITE_ID}/articles/paste", json={"html": "<h1>Title</h1><p>Body</p>"}
+    )
     assert response.status_code == 201
     body = response.json()
     assert body["status"] == "draft"
@@ -52,7 +63,7 @@ def test_paste_creates_draft_article(client):
 
 def test_paste_with_image_warns_and_strips_it(client):
     response = client.post(
-        "/articles/paste", json={"html": "<h1>T</h1><p>body</p><img src='x.png'>"}
+        f"/sites/{SITE_ID}/articles/paste", json={"html": "<h1>T</h1><p>body</p><img src='x.png'>"}
     )
     assert response.status_code == 201
     body = response.json()
@@ -61,21 +72,21 @@ def test_paste_with_image_warns_and_strips_it(client):
 
 
 def test_paste_empty_after_cleaning_returns_422(client):
-    response = client.post("/articles/paste", json={"html": "<img src='x.png'>"})
+    response = client.post(f"/sites/{SITE_ID}/articles/paste", json={"html": "<img src='x.png'>"})
     assert response.status_code == 422
     assert response.json() == {"code": "empty_content"}
 
 
 def test_paste_over_size_cap_returns_413(client):
     huge = "<p>" + ("a" * (2 * 1024 * 1024 + 1)) + "</p>"
-    response = client.post("/articles/paste", json={"html": huge})
+    response = client.post(f"/sites/{SITE_ID}/articles/paste", json={"html": huge})
     assert response.status_code == 413
     assert response.json() == {"code": "payload_too_large"}
 
 
 def test_upload_two_valid_files_creates_two_articles(client):
     response = client.post(
-        "/articles/upload",
+        f"/sites/{SITE_ID}/articles/upload",
         files=[
             ("files", _docx_file("heading_simple.docx")),
             ("files", _docx_file("with_table.docx")),
@@ -91,7 +102,7 @@ def test_upload_two_valid_files_creates_two_articles(client):
 
 def test_upload_corrupt_file_fails_only_that_file(client):
     response = client.post(
-        "/articles/upload",
+        f"/sites/{SITE_ID}/articles/upload",
         files=[
             ("files", _docx_file("heading_simple.docx")),
             ("files", _docx_file("corrupt.docx")),
@@ -111,14 +122,14 @@ def test_upload_corrupt_file_fails_only_that_file(client):
 
 def test_upload_realistic_article_end_to_end(client):
     response = client.post(
-        "/articles/upload", files=[("files", _docx_file("realistic_article.docx"))]
+        f"/sites/{SITE_ID}/articles/upload", files=[("files", _docx_file("realistic_article.docx"))]
     )
     assert response.status_code == 201
     result = response.json()["results"][0]
     assert result["ok"] is True
     assert result["article"]["title"] == "How Remote Work Is Reshaping Modern Teams"
 
-    detail = client.get(f"/articles/{result['article']['id']}")
+    detail = client.get(f"/sites/{SITE_ID}/articles/{result['article']['id']}")
     body_html = detail.json()["body_html"]
     assert body_html.count("<h2>") == 4
     assert "<table>" in body_html
@@ -126,21 +137,23 @@ def test_upload_realistic_article_end_to_end(client):
 
 
 def test_upload_table_file_keeps_table(client):
-    response = client.post("/articles/upload", files=[("files", _docx_file("with_table.docx"))])
+    response = client.post(
+        f"/sites/{SITE_ID}/articles/upload", files=[("files", _docx_file("with_table.docx"))]
+    )
     article_id = response.json()["results"][0]["article"]["id"]
-    detail = client.get(f"/articles/{article_id}")
+    detail = client.get(f"/sites/{SITE_ID}/articles/{article_id}")
     assert "<table>" in detail.json()["body_html"]
 
 
 def test_upload_no_files_returns_422(client):
-    response = client.post("/articles/upload", files=[])
+    response = client.post(f"/sites/{SITE_ID}/articles/upload", files=[])
     assert response.status_code == 422
     assert response.json() == {"code": "no_files"}
 
 
 def test_upload_too_many_files_returns_422(client):
     files = [("files", _docx_file("heading_simple.docx")) for _ in range(11)]
-    response = client.post("/articles/upload", files=files)
+    response = client.post(f"/sites/{SITE_ID}/articles/upload", files=files)
     assert response.status_code == 422
     assert response.json() == {"code": "too_many_files"}
 
@@ -148,7 +161,7 @@ def test_upload_too_many_files_returns_422(client):
 def test_upload_file_too_large_is_per_file(client):
     huge = ("huge.docx", b"x" * (10 * 1024 * 1024 + 1), "application/octet-stream")
     response = client.post(
-        "/articles/upload",
+        f"/sites/{SITE_ID}/articles/upload",
         files=[("files", _docx_file("heading_simple.docx")), ("files", huge)],
     )
     assert response.status_code == 201
@@ -159,7 +172,7 @@ def test_upload_file_too_large_is_per_file(client):
 
 def test_upload_unsupported_file_type_is_per_file(client):
     response = client.post(
-        "/articles/upload",
+        f"/sites/{SITE_ID}/articles/upload",
         files=[("files", ("notes.txt", b"hello", "text/plain"))],
     )
     assert response.status_code == 201
@@ -168,8 +181,6 @@ def test_upload_unsupported_file_type_is_per_file(client):
 
 
 def test_import_routes_require_session():
-    app.dependency_overrides[get_repository] = lambda: InMemoryArticleRepository()
-    response = TestClient(app).post("/articles/paste", json={"html": "<p>x</p>"})
-    app.dependency_overrides.clear()
+    response = TestClient(app).post(f"/sites/{SITE_ID}/articles/paste", json={"html": "<p>x</p>"})
     assert response.status_code == 401
     assert response.json() == {"code": "invalid_token"}

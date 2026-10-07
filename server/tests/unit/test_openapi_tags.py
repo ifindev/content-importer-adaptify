@@ -6,26 +6,33 @@ HTTP_METHODS = {"get", "post", "put", "patch", "delete"}
 EXPECTED_OPERATIONS = {
     "Health": ["GET /health"],
     "Auth": ["POST /auth/session"],
-    "Import": ["POST /articles/upload", "POST /articles/paste"],
+    "Sites": ["GET /sites", "POST /sites"],
+    "Import": [
+        "POST /sites/{site_id}/articles/upload",
+        "POST /sites/{site_id}/articles/paste",
+    ],
     "Articles": [
-        "GET /articles",
-        "GET /articles/{article_id}",
-        "PATCH /articles/{article_id}",
+        "GET /sites/{site_id}/articles",
+        "GET /sites/{site_id}/articles/{article_id}",
+        "PATCH /sites/{site_id}/articles/{article_id}",
     ],
     "Publishing": [
-        "POST /articles/{article_id}/send-for-review",
-        "POST /articles/{article_id}/pull-back",
-        "POST /articles/{article_id}/schedule",
-        "POST /articles/{article_id}/retry",
+        "POST /sites/{site_id}/articles/{article_id}/send-for-review",
+        "POST /sites/{site_id}/articles/{article_id}/pull-back",
+        "POST /sites/{site_id}/articles/{article_id}/schedule",
+        "POST /sites/{site_id}/articles/{article_id}/retry",
     ],
-    "Review link": ["GET /review-link", "POST /review-link/reset"],
+    "Review link": [
+        "GET /sites/{site_id}/review-link",
+        "POST /sites/{site_id}/review-link/reset",
+    ],
+    "Report": ["GET /sites/{site_id}/report"],
     "Client review": [
         "GET /review/{token}",
         "GET /review/{token}/articles/{article_id}",
         "POST /review/{token}/articles/{article_id}/approve",
         "POST /review/{token}/articles/{article_id}/request-changes",
     ],
-    "Report": ["GET /report"],
 }
 
 

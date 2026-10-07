@@ -1,6 +1,310 @@
 {
   "components": {
     "schemas": {
+      "ArticleDetail": {
+        "properties": {
+          "approved_version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Version the client approved, if any.",
+            "title": "Approved Version"
+          },
+          "body_html": {
+            "description": "Article body, as HTML.",
+            "title": "Body Html",
+            "type": "string"
+          },
+          "created_at": {
+            "description": "Creation time, UTC.",
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "events": {
+            "default": [],
+            "description": "History log, oldest first.",
+            "items": {
+              "$ref": "#/components/schemas/EventOut"
+            },
+            "title": "Events",
+            "type": "array"
+          },
+          "id": {
+            "description": "Article id.",
+            "title": "Id",
+            "type": "string"
+          },
+          "last_checked_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Last WordPress status check time.",
+            "title": "Last Checked At"
+          },
+          "last_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Error from the last failed WordPress call.",
+            "title": "Last Error"
+          },
+          "publish_at_utc": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Scheduled publish time, UTC.",
+            "title": "Publish At Utc"
+          },
+          "published_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Live URL, once published.",
+            "title": "Published Url"
+          },
+          "slug": {
+            "description": "URL slug.",
+            "title": "Slug",
+            "type": "string"
+          },
+          "source": {
+            "description": "How the article was imported: paste or docx.",
+            "title": "Source",
+            "type": "string"
+          },
+          "source_filename": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Original filename, if imported from a file.",
+            "title": "Source Filename"
+          },
+          "status": {
+            "$ref": "#/components/schemas/Status",
+            "description": "Current lifecycle status."
+          },
+          "sync_warning": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SyncWarning"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Warning from the last WordPress status check, if any."
+          },
+          "title": {
+            "description": "Article title.",
+            "title": "Title",
+            "type": "string"
+          },
+          "updated_at": {
+            "description": "Last update time, UTC.",
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          },
+          "version": {
+            "description": "Increments on every body edit.",
+            "title": "Version",
+            "type": "integer"
+          },
+          "warnings": {
+            "default": [],
+            "description": "Warnings produced during import.",
+            "items": {
+              "type": "string"
+            },
+            "title": "Warnings",
+            "type": "array"
+          },
+          "wp_post_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "WordPress post id, once sent.",
+            "title": "Wp Post Id"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "slug",
+          "body_html",
+          "source",
+          "status",
+          "version",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "ArticleDetail",
+        "type": "object"
+      },
+      "ArticleSummary": {
+        "properties": {
+          "id": {
+            "description": "Article id.",
+            "title": "Id",
+            "type": "string"
+          },
+          "publish_at_utc": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Scheduled publish time, UTC.",
+            "title": "Publish At Utc"
+          },
+          "slug": {
+            "description": "URL slug.",
+            "title": "Slug",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/Status",
+            "description": "Current lifecycle status."
+          },
+          "sync_warning": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SyncWarning"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Warning from the last WordPress status check, if any."
+          },
+          "title": {
+            "description": "Article title.",
+            "title": "Title",
+            "type": "string"
+          },
+          "updated_at": {
+            "description": "Last update time, UTC.",
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "slug",
+          "status",
+          "updated_at"
+        ],
+        "title": "ArticleSummary",
+        "type": "object"
+      },
+      "EventOut": {
+        "properties": {
+          "actor": {
+            "description": "Who or what triggered the event.",
+            "title": "Actor",
+            "type": "string"
+          },
+          "at": {
+            "description": "When the event happened, UTC.",
+            "format": "date-time",
+            "title": "At",
+            "type": "string"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The comment or error attached to this event.",
+            "title": "Data"
+          },
+          "id": {
+            "description": "Event id.",
+            "title": "Id",
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/EventType",
+            "description": "What happened."
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "actor",
+          "at"
+        ],
+        "title": "EventOut",
+        "type": "object"
+      },
+      "EventType": {
+        "enum": [
+          "imported",
+          "edited",
+          "sent_for_review",
+          "pulled_back",
+          "approved",
+          "changes_requested",
+          "scheduled",
+          "date_changed",
+          "published",
+          "failed",
+          "retried",
+          "ai_draft_created",
+          "ai_draft_accepted"
+        ],
+        "title": "EventType",
+        "type": "string"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -30,6 +334,28 @@
         ],
         "title": "SessionRequest",
         "type": "object"
+      },
+      "Status": {
+        "enum": [
+          "draft",
+          "awaiting_approval",
+          "changes_requested",
+          "approved",
+          "scheduled",
+          "published",
+          "failed"
+        ],
+        "title": "Status",
+        "type": "string"
+      },
+      "SyncWarning": {
+        "enum": [
+          "late",
+          "changed_in_wordpress",
+          "missing_in_wordpress"
+        ],
+        "title": "SyncWarning",
+        "type": "string"
       },
       "ValidationError": {
         "properties": {
@@ -79,6 +405,98 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/articles": {
+      "get": {
+        "operationId": "list_articles_articles_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Status"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "items": {
+                      "$ref": "#/components/schemas/ArticleSummary"
+                    },
+                    "type": "array"
+                  },
+                  "title": "Response List Articles Articles Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Articles"
+      }
+    },
+    "/articles/{article_id}": {
+      "get": {
+        "operationId": "get_article_articles__article_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "article_id",
+            "required": true,
+            "schema": {
+              "title": "Article Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArticleDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Article"
+      }
+    },
     "/auth/session": {
       "post": {
         "operationId": "create_session_route_auth_session_post",

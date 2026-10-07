@@ -19,7 +19,10 @@ from app.core.domain.errors import (
     EmptyContentError,
     NotAwaitingApprovalError,
     NotEditableError,
+    NotFailedError,
+    NotSchedulableError,
     NotSendableError,
+    PublishAtInPastError,
     WordPressError,
 )
 from app.core.use_cases.review import ArticleNotVisibleError, InvalidTokenError
@@ -114,6 +117,25 @@ def create_app() -> FastAPI:
     @app.exception_handler(ArticleChangedError)
     def article_changed_handler(request: Request, exc: ArticleChangedError) -> JSONResponse:
         return JSONResponse(status_code=409, content={"code": "article_changed"})
+
+    @app.exception_handler(NotSchedulableError)
+    def not_schedulable_handler(request: Request, exc: NotSchedulableError) -> JSONResponse:
+        return JSONResponse(status_code=409, content={"code": "not_schedulable"})
+
+    @app.exception_handler(NotFailedError)
+    def not_failed_handler(request: Request, exc: NotFailedError) -> JSONResponse:
+        return JSONResponse(status_code=409, content={"code": "not_failed"})
+
+    @app.exception_handler(PublishAtInPastError)
+    def publish_at_in_past_handler(request: Request, exc: PublishAtInPastError) -> JSONResponse:
+        return JSONResponse(status_code=422, content={"code": "publish_at_in_past"})
+
+    @app.exception_handler(WordPressError)
+    def wordpress_error_handler(request: Request, exc: WordPressError) -> JSONResponse:
+        return JSONResponse(
+            status_code=502,
+            content={"code": "wordpress_error", "message": exc.message or str(exc)},
+        )
 
     app.include_router(auth_router)
     app.include_router(articles_router)

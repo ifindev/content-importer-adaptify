@@ -5,9 +5,15 @@ from fastapi.testclient import TestClient
 
 from app.adapters.testing.clock import FixedClock
 from app.adapters.testing.in_memory_repository import InMemoryArticleRepository
+from app.adapters.testing.scripted_publisher import ScriptedPublisher
 from app.api.auth import require_session
 from app.api.main import app
-from app.api.routes.articles import get_clock, get_document_parser, get_repository
+from app.api.routes.articles import (
+    get_clock,
+    get_document_parser,
+    get_publisher,
+    get_repository,
+)
 from app.core.domain.models import Article
 from app.core.domain.statuses import Status
 from app.core.ports.document_parser import ParsedDocument
@@ -45,6 +51,7 @@ def client(repository):
     app.dependency_overrides[get_repository] = lambda: repository
     app.dependency_overrides[get_document_parser] = lambda: FakeParser()
     app.dependency_overrides[get_clock] = lambda: FixedClock(NOW)
+    app.dependency_overrides[get_publisher] = lambda: ScriptedPublisher()
     yield TestClient(app)
     app.dependency_overrides.clear()
 

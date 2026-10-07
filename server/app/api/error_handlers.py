@@ -7,6 +7,7 @@ from app.api.http_errors import (
     EmptyUpdateError,
     NoFilesError,
     PayloadTooLargeError,
+    SiteNotFoundError,
     TooManyFilesError,
 )
 from app.api.rate_limit import RateLimitedError
@@ -21,6 +22,7 @@ from app.core.domain.errors import (
     NotSchedulableError,
     NotSendableError,
     PublishAtInPastError,
+    WordPressConnectionTestFailedError,
     WordPressError,
 )
 
@@ -42,6 +44,7 @@ _SIMPLE_HANDLERS: tuple[tuple[type[Exception], int, str], ...] = (
     (NotSchedulableError, 409, "not_schedulable"),
     (NotFailedError, 409, "not_failed"),
     (PublishAtInPastError, 422, "publish_at_in_past"),
+    (SiteNotFoundError, 404, "site_not_found"),
 )
 
 
@@ -49,6 +52,9 @@ def register_exception_handlers(app: FastAPI) -> None:
     for exc_class, status_code, code in _SIMPLE_HANDLERS:
         app.add_exception_handler(exc_class, _simple_handler(status_code, code))
     app.add_exception_handler(WordPressError, _wordpress_error_handler)
+    app.add_exception_handler(
+        WordPressConnectionTestFailedError, _wordpress_connection_test_failed_handler
+    )
 
 
 def _simple_handler(status_code: int, code: str):
@@ -62,4 +68,13 @@ def _wordpress_error_handler(request: Request, exc: WordPressError) -> JSONRespo
     return JSONResponse(
         status_code=502,
         content={"code": "wordpress_error", "message": exc.message or str(exc)},
+    )
+
+
+def _wordpress_connection_test_failed_handler(
+    request: Request, exc: WordPressConnectionTestFailedError
+) -> JSONResponse:
+    return JSONResponse(
+        status_code=422,
+        content={"code": "wp_connection_failed", "message": exc.message or str(exc)},
     )

@@ -10,9 +10,9 @@ from app.api.routes.imports import router as imports_router
 from app.api.routes.public_review import router as public_review_router
 from app.api.routes.report import router as report_router
 from app.api.routes.review_link import router as review_link_router
+from app.api.routes.sites import router as sites_router
 from app.api.tags import HEALTH, OPENAPI_TAGS
 from app.container import build_container
-from app.core.domain.errors import WordPressError
 from app.settings import Settings
 
 logging.basicConfig(level=logging.INFO)
@@ -23,20 +23,6 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     settings = Settings()
     app.state.container = build_container(settings)
-    app.state.container.article_repository.ensure_site_bootstrapped(
-        settings.site_name, settings.wp_base_url
-    )
-    try:
-        await app.state.container.publisher.check_credentials()
-        logger.info("WordPress credentials OK")
-    except WordPressError as exc:
-        detail = (exc.message or str(exc)).rstrip(".")
-        logger.error(
-            "WordPress credential check failed (%s): check WP_BASE_URL, WP_USERNAME, and "
-            "WP_APP_PASSWORD in .env — %s. The API will keep running.",
-            exc.code,
-            detail,
-        )
     yield
 
 
@@ -50,11 +36,12 @@ def create_app() -> FastAPI:
     register_exception_handlers(app)
 
     app.include_router(auth_router)
-    app.include_router(articles_router)
-    app.include_router(imports_router)
-    app.include_router(review_link_router)
+    app.include_router(sites_router)
+    app.include_router(articles_router, prefix="/sites/{site_id}")
+    app.include_router(imports_router, prefix="/sites/{site_id}")
+    app.include_router(review_link_router, prefix="/sites/{site_id}")
     app.include_router(public_review_router)
-    app.include_router(report_router)
+    app.include_router(report_router, prefix="/sites/{site_id}")
 
     return app
 

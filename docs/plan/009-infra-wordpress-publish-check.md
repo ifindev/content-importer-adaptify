@@ -1,7 +1,7 @@
 # T-009 WordPress publish check
 
-**Phase:** 2 · Local infra · **Status:** analyzed · **Size:** M
-**Refs:** spec: WordPress integration (Authentication, Calls, Status check); architecture: Backend › Ports
+**Phase:** 2 · Local infra · **Status:** done · **Size:** M
+**Refs:** spec: WordPress integration (Authentication, Calls, Status check); architecture: Server › Ports
 **Depends on:** T-007
 
 ## Goal
@@ -40,20 +40,27 @@ On startup (FastAPI lifespan), the API calls `check_credentials()`. On failure i
 | Wrong password | `check_credentials` raises `WordPressError(401, "incorrect_password")`; the startup log says so. |
 
 ## Acceptance criteria
-- [ ] Integration test (marked `integration`, run with `make test-integration`) passes against local WordPress
-- [ ] Unit tests for the adapter's request building and error mapping using `httpx.MockTransport`
-- [ ] API startup logs "WordPress credentials OK" with good credentials, and a clear error with bad ones, without crashing
-- [ ] `Publisher` is wired in `container.py`; `core/` doesn't import `httpx` (import-linter passes)
-- [ ] Any behavior that differs from the spec's WordPress integration section is fixed in the spec
+- [x] Integration test (marked `integration`, run with `make test-integration`) passes against local WordPress
+- [x] Unit tests for the adapter's request building and error mapping using `httpx.MockTransport`
+- [x] API startup logs "WordPress credentials OK" with good credentials, and a clear error with bad ones, without crashing
+- [x] `Publisher` is wired in `container.py`; `core/` doesn't import `httpx` (import-linter passes)
+- [x] Any behavior that differs from the spec's WordPress integration section is fixed in the spec (none needed — see Notes)
 
 ## Tasks
-- [ ] `core/ports/publisher.py`, `PostStatus`, `WordPressError`
-- [ ] `adapters/wordpress/publisher.py` with `httpx.AsyncClient`, Basic auth, timeouts
-- [ ] Settings: `WP_BASE_URL`, `WP_USERNAME`, `WP_APP_PASSWORD`
-- [ ] Lifespan credential check in `api/main.py`
-- [ ] `tests/fixtures/sample_article.html`
-- [ ] Unit tests (MockTransport) and the integration test
-- [ ] pytest marker `integration`; Makefile target `test-integration`
+- [x] `core/ports/publisher.py`, `PostStatus`, `WordPressError`
+- [x] `adapters/wordpress/publisher.py` with `httpx.AsyncClient`, Basic auth, timeouts
+- [x] Settings: `WP_BASE_URL`, `WP_USERNAME`, `WP_APP_PASSWORD`
+- [x] Lifespan credential check in `api/main.py`
+- [x] `tests/fixtures/sample_article.html`
+- [x] Unit tests (MockTransport) and the integration test
+- [x] pytest marker `integration`; Makefile target `test-integration`
+
+## Notes
+- **Wrong-password error code differs from this ticket's own guess**, not from `docs/spec.md` (which never named a specific code): WordPress actually returns `rest_not_logged_in` for bad Basic-auth credentials on `/users/me?context=edit`, not `incorrect_password`. The adapter and startup log already use whatever code WordPress returns generically, so no code change was needed — noted here for the record only.
+- **kses/`unfiltered_html` verified for real**, not just assumed: the integration test's `content.raw` check (step 5 of the Flow) passed, confirming the admin user's HTML is stored intact. No spec.md risk row added.
+- **Found and fixed a pre-existing bug while making these tests work**: `Settings`'s `env_file=".env"` was relative to the process's current working directory, but every Makefile target runs from `server/`, where no `.env` exists — so `Settings()` silently fell back to empty defaults on every host-run invocation (`make test`, `make api`, etc.) since T-002. It only ever worked inside Docker, where `env_file:` in compose sets real process env vars and bypasses pydantic-settings' dotenv lookup entirely. Fixed by resolving the `.env` path relative to `settings.py`'s own location instead of cwd.
+- **Added a service-to-service `WP_BASE_URL` override** for the `api` container in `docker-compose.yml`, mirroring `web`'s existing `API_URL` override from T-006 — `api`'s `.env`-sourced `WP_BASE_URL=http://localhost:8080` only makes sense for host-side test runs; inside the container it needs `http://wordpress`.
+- Added `logging.basicConfig(level=logging.INFO)` in `api/main.py` — without it, the root logger defaults to `WARNING` and the "WordPress credentials OK" success log would never actually appear in `make logs`, even though it would still pass in a test using `caplog` (which overrides the level per-test). Verified the real difference by checking container logs before and after.
 
 ## Out of scope
 - Article lifecycle, scheduling use case, sync warnings (Phase 3)

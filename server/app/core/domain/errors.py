@@ -43,3 +43,19 @@ class ArticleChangedError(Exception):
             f"Article is at version {current_version}, but version "
             f"{submitted_version} was submitted"
         )
+
+
+class NotSchedulableError(Exception):
+    def __init__(self, status: str) -> None:
+        self.status = status
+        super().__init__(f"Article in status {status} cannot be scheduled")
+
+
+class NotFailedError(Exception):
+    def __init__(self, status: str) -> None:
+        self.status = status
+        super().__init__(f"Article in status {status} is not failed")
+
+
+class PublishAtInPastError(Exception):
+    pass

@@ -1,4 +1,4 @@
-.PHONY: help lint test api web gen-api up down logs ps firebase-reset
+.PHONY: help lint test api web gen-api up down logs ps firebase-reset wp-setup wp-cron wp-reset
 
 help: ## List available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
@@ -35,3 +35,14 @@ ps: ## List running services
 firebase-reset: ## Clear emulator data (Firestore + Auth)
 	docker compose stop firebase
 	docker compose run --rm --entrypoint sh firebase -c "rm -rf /data/*"
+
+wp-setup: ## One-time local WordPress install + application password (writes to .env)
+	./infra/wordpress/local-setup.sh
+
+wp-cron: ## Trigger WordPress's scheduler once (publishes any due scheduled posts)
+	docker compose exec wordpress curl -s -o /dev/null -w "%{http_code}\n" http://localhost/wp-cron.php
+
+wp-reset: ## Wipe the local WordPress and database volumes for a clean reinstall
+	docker compose rm -sf wordpress mariadb
+	docker volume rm -f $$(docker volume ls -q --filter label=com.docker.compose.volume=wordpress-data) \
+	                   $$(docker volume ls -q --filter label=com.docker.compose.volume=mariadb-data)

@@ -42,5 +42,5 @@ The agency sees every client site it manages, switches between them, and adds a 
 
 ## Out of scope
 - UI, layout and route structure (T-033).
-- Site removal/archive. Cross-site report view.
+- Site archive/restore. Cross-site report view. (Edit and delete: T-035, UI in T-033.)
 - Per-user or per-client access control (R8.1 stands: single shared login).

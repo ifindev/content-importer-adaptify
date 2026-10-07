@@ -1,12 +1,8 @@
 from fastapi import APIRouter, Depends, File, UploadFile
 
 from app.api.auth import require_session
-from app.api.routes.articles import (
-    PayloadTooLargeError,
-    get_clock,
-    get_document_parser,
-    get_repository,
-)
+from app.api.http_errors import NoFilesError, PayloadTooLargeError, TooManyFilesError
+from app.api.routes.articles import get_clock, get_document_parser, get_repository
 from app.api.schemas import (
     ArticleDetail,
     ArticlePaste,
@@ -26,14 +22,6 @@ PASTE_MAX_BYTES = 2 * 1024 * 1024
 UPLOAD_MAX_FILES = 10
 UPLOAD_MAX_FILE_BYTES = 10 * 1024 * 1024
 DOCX_CONTENT_TYPE = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-
-
-class NoFilesError(Exception):
-    pass
-
-
-class TooManyFilesError(Exception):
-    pass
 
 
 @router.post("/articles/paste", status_code=201)

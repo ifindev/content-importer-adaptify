@@ -60,6 +60,17 @@
             "title": "Slug",
             "type": "string"
           },
+          "sync_warning": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SyncWarning"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Warning from the last WordPress status check, if any."
+          },
           "title": {
             "description": "Article title.",
             "title": "Title",
@@ -385,6 +396,29 @@
         "title": "ArticleUpdate",
         "type": "object"
       },
+      "ArticlesOut": {
+        "properties": {
+          "articles": {
+            "description": "All matching articles.",
+            "items": {
+              "$ref": "#/components/schemas/ArticleSummary"
+            },
+            "title": "Articles",
+            "type": "array"
+          },
+          "wordpress_unreachable": {
+            "description": "True if the last WordPress status check failed.",
+            "title": "Wordpress Unreachable",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "articles",
+          "wordpress_unreachable"
+        ],
+        "title": "ArticlesOut",
+        "type": "object"
+      },
       "Body_upload_articles_articles_upload_post": {
         "properties": {
           "files": {
@@ -620,13 +654,19 @@
             },
             "title": "Waiting",
             "type": "array"
+          },
+          "wordpress_unreachable": {
+            "description": "True if the last WordPress status check failed.",
+            "title": "Wordpress Unreachable",
+            "type": "boolean"
           }
         },
         "required": [
           "site_name",
           "waiting",
           "upcoming",
-          "published"
+          "published",
+          "wordpress_unreachable"
         ],
         "title": "ReviewPageOut",
         "type": "object"
@@ -819,14 +859,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": {
-                    "items": {
-                      "$ref": "#/components/schemas/ArticleSummary"
-                    },
-                    "type": "array"
-                  },
-                  "title": "Response List Articles Articles Get",
-                  "type": "object"
+                  "$ref": "#/components/schemas/ArticlesOut"
                 }
               }
             },

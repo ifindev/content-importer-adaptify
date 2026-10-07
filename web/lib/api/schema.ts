@@ -316,6 +316,8 @@ export interface components {
              * @description URL slug.
              */
             slug: string;
+            /** @description Warning from the last WordPress status check, if any. */
+            sync_warning?: components["schemas"]["SyncWarning"] | null;
             /**
              * Title
              * @description Article title.
@@ -482,6 +484,19 @@ export interface components {
              */
             title?: string | null;
         };
+        /** ArticlesOut */
+        ArticlesOut: {
+            /**
+             * Articles
+             * @description All matching articles.
+             */
+            articles: components["schemas"]["ArticleSummary"][];
+            /**
+             * Wordpress Unreachable
+             * @description True if the last WordPress status check failed.
+             */
+            wordpress_unreachable: boolean;
+        };
         /** Body_upload_articles_articles_upload_post */
         Body_upload_articles_articles_upload_post: {
             /**
@@ -622,6 +637,11 @@ export interface components {
              * @description Awaiting the client's review.
              */
             waiting: components["schemas"]["ArticleCard"][];
+            /**
+             * Wordpress Unreachable
+             * @description True if the last WordPress status check failed.
+             */
+            wordpress_unreachable: boolean;
         };
         /** ScheduleRequest */
         ScheduleRequest: {
@@ -718,9 +738,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: components["schemas"]["ArticleSummary"][];
-                    };
+                    "application/json": components["schemas"]["ArticlesOut"];
                 };
             };
             /** @description Validation Error */

@@ -50,6 +50,51 @@ class WordPressPublisher:
         )
         return post_id
 
+    async def update_scheduled(
+        self,
+        wp_post_id: int,
+        *,
+        title: str | None = None,
+        slug: str | None = None,
+        html: str | None = None,
+        publish_at_utc: dt | None = None,
+        status: str | None = None,
+    ) -> None:
+        body = {}
+        if title is not None:
+            body["title"] = title
+        if slug is not None:
+            body["slug"] = slug
+        if html is not None:
+            body["content"] = html
+        if publish_at_utc is not None:
+            body["date_gmt"] = publish_at_utc.astimezone(UTC).strftime("%Y-%m-%dT%H:%M:%S")
+        if status is not None:
+            body["status"] = status
+        data = await self._request("POST", f"/posts/{wp_post_id}", json=body)
+        logger.info(
+            "WordPress updated post %s: slug=%s status=%s publish_at=%s",
+            wp_post_id,
+            data.get("slug"),
+            data.get("status"),
+            data.get("date_gmt"),
+        )
+
+    async def set_draft(self, wp_post_id: int) -> None:
+        await self._request("POST", f"/posts/{wp_post_id}", json={"status": "draft"})
+        logger.info("WordPress set post %s to draft", wp_post_id)
+
+    async def find_by_slug(self, slug: str) -> int | None:
+        params = {
+            "slug": slug,
+            "status": "future,draft,publish,private",
+            "context": "edit",
+        }
+        data = await self._request("GET", "/posts", params=params)
+        post_id = data[0]["id"] if data else None
+        logger.info("WordPress find by slug %s -> %s", slug, post_id)
+        return post_id
+
     async def get_statuses(self, post_ids: list[int]) -> list[PostStatus]:
         params = {
             "include": ",".join(str(i) for i in post_ids),

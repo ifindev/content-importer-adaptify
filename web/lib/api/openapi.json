@@ -843,7 +843,10 @@
             "description": "Validation Error"
           }
         },
-        "summary": "List Articles"
+        "summary": "List Articles",
+        "tags": [
+          "Articles"
+        ]
       }
     },
     "/articles/paste": {
@@ -881,7 +884,10 @@
             "description": "Validation Error"
           }
         },
-        "summary": "Paste Article"
+        "summary": "Paste Article",
+        "tags": [
+          "Import"
+        ]
       }
     },
     "/articles/upload": {
@@ -918,7 +924,10 @@
             "description": "Validation Error"
           }
         },
-        "summary": "Upload Articles"
+        "summary": "Upload Articles",
+        "tags": [
+          "Import"
+        ]
       }
     },
     "/articles/{article_id}": {
@@ -957,7 +966,10 @@
             "description": "Validation Error"
           }
         },
-        "summary": "Get Article"
+        "summary": "Get Article",
+        "tags": [
+          "Articles"
+        ]
       },
       "patch": {
         "operationId": "update_article_articles__article_id__patch",
@@ -1004,7 +1016,10 @@
             "description": "Validation Error"
           }
         },
-        "summary": "Update Article"
+        "summary": "Update Article",
+        "tags": [
+          "Articles"
+        ]
       }
     },
     "/articles/{article_id}/pull-back": {
@@ -1043,7 +1058,10 @@
             "description": "Validation Error"
           }
         },
-        "summary": "Pull Back Route"
+        "summary": "Pull Back Route",
+        "tags": [
+          "Publishing"
+        ]
       }
     },
     "/articles/{article_id}/retry": {
@@ -1082,7 +1100,10 @@
             "description": "Validation Error"
           }
         },
-        "summary": "Retry Route"
+        "summary": "Retry Route",
+        "tags": [
+          "Publishing"
+        ]
       }
     },
     "/articles/{article_id}/schedule": {
@@ -1131,7 +1152,10 @@
             "description": "Validation Error"
           }
         },
-        "summary": "Schedule Route"
+        "summary": "Schedule Route",
+        "tags": [
+          "Publishing"
+        ]
       }
     },
     "/articles/{article_id}/send-for-review": {
@@ -1170,7 +1194,10 @@
             "description": "Validation Error"
           }
         },
-        "summary": "Send For Review Route"
+        "summary": "Send For Review Route",
+        "tags": [
+          "Publishing"
+        ]
       }
     },
     "/auth/session": {
@@ -1201,7 +1228,10 @@
             "description": "Validation Error"
           }
         },
-        "summary": "Create Session Route"
+        "summary": "Create Session Route",
+        "tags": [
+          "Auth"
+        ]
       }
     },
     "/health": {
@@ -1223,7 +1253,10 @@
             "description": "Successful Response"
           }
         },
-        "summary": "Health"
+        "summary": "Health",
+        "tags": [
+          "Health"
+        ]
       }
     },
     "/review-link": {
@@ -1241,7 +1274,10 @@
             "description": "Successful Response"
           }
         },
-        "summary": "Get Review Link"
+        "summary": "Get Review Link",
+        "tags": [
+          "Review link"
+        ]
       }
     },
     "/review-link/reset": {
@@ -1259,7 +1295,10 @@
             "description": "Successful Response"
           }
         },
-        "summary": "Reset Review Link Route"
+        "summary": "Reset Review Link Route",
+        "tags": [
+          "Review link"
+        ]
       }
     },
     "/review/{token}": {
@@ -1298,7 +1337,10 @@
             "description": "Validation Error"
           }
         },
-        "summary": "Get Review"
+        "summary": "Get Review",
+        "tags": [
+          "Client review"
+        ]
       }
     },
     "/review/{token}/articles/{article_id}": {
@@ -1346,7 +1388,10 @@
             "description": "Validation Error"
           }
         },
-        "summary": "Get Review Article Route"
+        "summary": "Get Review Article Route",
+        "tags": [
+          "Client review"
+        ]
       }
     },
     "/review/{token}/articles/{article_id}/approve": {
@@ -1404,7 +1449,10 @@
             "description": "Validation Error"
           }
         },
-        "summary": "Approve Route"
+        "summary": "Approve Route",
+        "tags": [
+          "Client review"
+        ]
       }
     },
     "/review/{token}/articles/{article_id}/request-changes": {
@@ -1462,8 +1510,41 @@
             "description": "Validation Error"
           }
         },
-        "summary": "Request Changes Route"
+        "summary": "Request Changes Route",
+        "tags": [
+          "Client review"
+        ]
       }
     }
-  }
+  },
+  "tags": [
+    {
+      "description": "Liveness check.",
+      "name": "Health"
+    },
+    {
+      "description": "Exchange a Firebase ID token for a session cookie.",
+      "name": "Auth"
+    },
+    {
+      "description": "Create drafts from a .docx upload or pasted HTML.",
+      "name": "Import"
+    },
+    {
+      "description": "List, read, and edit articles.",
+      "name": "Articles"
+    },
+    {
+      "description": "Send for review, pull back, schedule, and retry.",
+      "name": "Publishing"
+    },
+    {
+      "description": "The agency's client review URL.",
+      "name": "Review link"
+    },
+    {
+      "description": "The client's review page. These routes use the review token, not the session cookie.",
+      "name": "Client review"
+    }
+  ]
 }

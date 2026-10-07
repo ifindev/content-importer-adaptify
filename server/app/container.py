@@ -30,6 +30,8 @@ def build_container(settings: Settings) -> Container:
             firestore.Client(), site_id=SITE_ID
         )
     except Exception as exc:
+        if settings.app_env == "gcp":
+            raise
         logger.error(
             "Firestore unavailable (%s); falling back to an in-memory repository. Check "
             "FIRESTORE_EMULATOR_HOST/GOOGLE_CLOUD_PROJECT in .env. The API will keep running.",

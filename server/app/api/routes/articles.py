@@ -4,6 +4,8 @@ from app.api.auth import require_session
 from app.api.schemas import ArticleDetail, ArticleSummary, EventOut
 from app.core.domain.statuses import Status
 from app.core.ports.article_repository import ArticleRepository
+from app.core.ports.clock import Clock
+from app.core.ports.document_parser import DocumentParser
 
 router = APIRouter(dependencies=[Depends(require_session)])
 
@@ -12,8 +14,20 @@ class ArticleNotFoundError(Exception):
     pass
 
 
+class PayloadTooLargeError(Exception):
+    pass
+
+
 def get_repository(request: Request) -> ArticleRepository:
     return request.app.state.container.article_repository
+
+
+def get_document_parser(request: Request) -> DocumentParser:
+    return request.app.state.container.document_parser
+
+
+def get_clock(request: Request) -> Clock:
+    return request.app.state.container.clock
 
 
 @router.get("/articles")

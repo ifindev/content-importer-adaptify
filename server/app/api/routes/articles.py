@@ -7,6 +7,7 @@ from app.core.ports.article_repository import ArticleRepository
 from app.core.ports.clock import Clock
 from app.core.ports.document_parser import DocumentParser
 from app.core.use_cases.edit_article import edit_article
+from app.core.use_cases.review import pull_back, send_for_review
 
 router = APIRouter(dependencies=[Depends(require_session)])
 
@@ -81,6 +82,42 @@ def update_article(
     updated = edit_article(
         article, body.title, body.slug, body.body_html, repository, parser, clock, actor=uid
     )
+    events = repository.list_events(article_id)
+    return ArticleDetail(
+        **updated.model_dump(), events=[EventOut(**e.model_dump()) for e in events]
+    )
+
+
+@router.post("/articles/{article_id}/send-for-review")
+def send_for_review_route(
+    article_id: str,
+    repository: ArticleRepository = Depends(get_repository),
+    clock: Clock = Depends(get_clock),
+    uid: str = Depends(require_session),
+) -> ArticleDetail:
+    article = repository.get_article(article_id)
+    if article is None:
+        raise ArticleNotFoundError
+
+    updated = send_for_review(article, repository, clock, actor=uid)
+    events = repository.list_events(article_id)
+    return ArticleDetail(
+        **updated.model_dump(), events=[EventOut(**e.model_dump()) for e in events]
+    )
+
+
+@router.post("/articles/{article_id}/pull-back")
+def pull_back_route(
+    article_id: str,
+    repository: ArticleRepository = Depends(get_repository),
+    clock: Clock = Depends(get_clock),
+    uid: str = Depends(require_session),
+) -> ArticleDetail:
+    article = repository.get_article(article_id)
+    if article is None:
+        raise ArticleNotFoundError
+
+    updated = pull_back(article, repository, clock, actor=uid)
     events = repository.list_events(article_id)
     return ArticleDetail(
         **updated.model_dump(), events=[EventOut(**e.model_dump()) for e in events]

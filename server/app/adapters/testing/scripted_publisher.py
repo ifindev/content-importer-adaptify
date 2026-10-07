@@ -15,10 +15,12 @@ class ScriptedPublisher:
         self.find_by_slug_result: int | None = None
         self.get_statuses_result: list[PostStatus] = []
         self.get_statuses_error: WordPressError | None = None
+        self.check_credentials_error: WordPressError | None = None
         self._next_id = 1
 
     async def check_credentials(self) -> None:
-        pass
+        if self.check_credentials_error is not None:
+            raise self.check_credentials_error
 
     async def create_scheduled(
         self, title: str, slug: str, html: str, publish_at_utc: datetime

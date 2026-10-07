@@ -64,6 +64,7 @@ Phases and the master list of tickets. How tickets work: [workflow.md](../workfl
 | T-020 | [Schedule, retry, and the WordPress publisher](020-api-schedule-publish.md) | R4.1–R4.5 | analyzed |
 | T-021 | [WordPress status sync](021-api-status-sync.md) | R5.1–R5.4 | analyzed |
 | T-022 | [Agency report](022-api-agency-report.md) | R6.1–R6.4 | analyzed |
+| T-023 | [Fail fast on Firestore startup failure in GCP](023-api-firestore-fallback-guard.md) | architecture: GCP services | done |
 
 ### Phase 4: Frontend
 

@@ -21,6 +21,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/articles/paste": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Paste Article */
+        post: operations["paste_article_articles_paste_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/articles/upload": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Upload Articles */
+        post: operations["upload_articles_articles_upload_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/articles/{article_id}": {
         parameters: {
             query?: never;
@@ -35,7 +69,8 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        patch?: never;
+        /** Update Article */
+        patch: operations["update_article_articles__article_id__patch"];
         trace?: never;
     };
     "/auth/session": {
@@ -172,6 +207,14 @@ export interface components {
              */
             wp_post_id?: number | null;
         };
+        /** ArticlePaste */
+        ArticlePaste: {
+            /**
+             * Html
+             * @description Pasted article HTML, raw body capped at 2 MB.
+             */
+            html: string;
+        };
         /** ArticleSummary */
         ArticleSummary: {
             /**
@@ -204,6 +247,32 @@ export interface components {
              * @description Last update time, UTC.
              */
             updated_at: string;
+        };
+        /** ArticleUpdate */
+        ArticleUpdate: {
+            /**
+             * Body Html
+             * @description New body HTML, cleaned like import, capped at 2 MB.
+             */
+            body_html?: string | null;
+            /**
+             * Slug
+             * @description New slug: lowercase letters, digits, hyphens.
+             */
+            slug?: string | null;
+            /**
+             * Title
+             * @description New title.
+             */
+            title?: string | null;
+        };
+        /** Body_upload_articles_articles_upload_post */
+        Body_upload_articles_articles_upload_post: {
+            /**
+             * Files
+             * @default []
+             */
+            files: string[];
         };
         /** EventOut */
         EventOut: {
@@ -262,6 +331,34 @@ export interface components {
          * @enum {string}
          */
         SyncWarning: "late" | "changed_in_wordpress" | "missing_in_wordpress";
+        /** UploadFileResult */
+        UploadFileResult: {
+            /** @description The created article, if import succeeded. */
+            article?: components["schemas"]["ArticleSummary"] | null;
+            /**
+             * Code
+             * @description Error code, if import failed.
+             */
+            code?: string | null;
+            /**
+             * Filename
+             * @description Name of the uploaded file.
+             */
+            filename: string;
+            /**
+             * Ok
+             * @description Whether this file was imported successfully.
+             */
+            ok: boolean;
+        };
+        /** UploadResponse */
+        UploadResponse: {
+            /**
+             * Results
+             * @description One result per uploaded file, in request order.
+             */
+            results: components["schemas"]["UploadFileResult"][];
+        };
         /** ValidationError */
         ValidationError: {
             /** Context */
@@ -317,6 +414,72 @@ export interface operations {
             };
         };
     };
+    paste_article_articles_paste_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ArticlePaste"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ArticleDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    upload_articles_articles_upload_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_upload_articles_articles_upload_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UploadResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_article_articles__article_id__get: {
         parameters: {
             query?: never;
@@ -327,6 +490,41 @@ export interface operations {
             cookie?: never;
         };
         requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ArticleDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_article_articles__article_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                article_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ArticleUpdate"];
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {

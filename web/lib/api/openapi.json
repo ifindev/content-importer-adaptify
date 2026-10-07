@@ -179,6 +179,20 @@
         "title": "ArticleDetail",
         "type": "object"
       },
+      "ArticlePaste": {
+        "properties": {
+          "html": {
+            "description": "Pasted article HTML, raw body capped at 2 MB.",
+            "title": "Html",
+            "type": "string"
+          }
+        },
+        "required": [
+          "html"
+        ],
+        "title": "ArticlePaste",
+        "type": "object"
+      },
       "ArticleSummary": {
         "properties": {
           "id": {
@@ -239,6 +253,66 @@
           "updated_at"
         ],
         "title": "ArticleSummary",
+        "type": "object"
+      },
+      "ArticleUpdate": {
+        "properties": {
+          "body_html": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "New body HTML, cleaned like import, capped at 2 MB.",
+            "title": "Body Html"
+          },
+          "slug": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "New slug: lowercase letters, digits, hyphens.",
+            "title": "Slug"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "New title.",
+            "title": "Title"
+          }
+        },
+        "title": "ArticleUpdate",
+        "type": "object"
+      },
+      "Body_upload_articles_articles_upload_post": {
+        "properties": {
+          "files": {
+            "default": [],
+            "items": {
+              "contentMediaType": "application/octet-stream",
+              "type": "string"
+            },
+            "title": "Files",
+            "type": "array"
+          }
+        },
+        "title": "Body_upload_articles_articles_upload_post",
         "type": "object"
       },
       "EventOut": {
@@ -357,6 +431,66 @@
         "title": "SyncWarning",
         "type": "string"
       },
+      "UploadFileResult": {
+        "properties": {
+          "article": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ArticleSummary"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The created article, if import succeeded."
+          },
+          "code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Error code, if import failed.",
+            "title": "Code"
+          },
+          "filename": {
+            "description": "Name of the uploaded file.",
+            "title": "Filename",
+            "type": "string"
+          },
+          "ok": {
+            "description": "Whether this file was imported successfully.",
+            "title": "Ok",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "filename",
+          "ok"
+        ],
+        "title": "UploadFileResult",
+        "type": "object"
+      },
+      "UploadResponse": {
+        "properties": {
+          "results": {
+            "description": "One result per uploaded file, in request order.",
+            "items": {
+              "$ref": "#/components/schemas/UploadFileResult"
+            },
+            "title": "Results",
+            "type": "array"
+          }
+        },
+        "required": [
+          "results"
+        ],
+        "title": "UploadResponse",
+        "type": "object"
+      },
       "ValidationError": {
         "properties": {
           "ctx": {
@@ -458,6 +592,81 @@
         "summary": "List Articles"
       }
     },
+    "/articles/paste": {
+      "post": {
+        "operationId": "paste_article_articles_paste_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArticlePaste"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArticleDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Paste Article"
+      }
+    },
+    "/articles/upload": {
+      "post": {
+        "operationId": "upload_articles_articles_upload_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_articles_articles_upload_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Upload Articles"
+      }
+    },
     "/articles/{article_id}": {
       "get": {
         "operationId": "get_article_articles__article_id__get",
@@ -495,6 +704,53 @@
           }
         },
         "summary": "Get Article"
+      },
+      "patch": {
+        "operationId": "update_article_articles__article_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "article_id",
+            "required": true,
+            "schema": {
+              "title": "Article Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArticleUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArticleDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update Article"
       }
     },
     "/auth/session": {

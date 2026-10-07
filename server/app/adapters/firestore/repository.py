@@ -40,6 +40,11 @@ class FirestoreArticleRepository:
         logger.info("Firestore get site %s -> exists=%s", self._site_id, snapshot.exists)
         return Site(**snapshot.to_dict())
 
+    def save_site(self, site: Site) -> Site:
+        self._site_ref.set(site.model_dump())
+        logger.info("Firestore save_site %s", self._site_id)
+        return site
+
     def list_articles(self, status: Status | None = None) -> list[Article]:
         query = self._articles_ref()
         if status is not None:

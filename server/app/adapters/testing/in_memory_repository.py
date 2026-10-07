@@ -18,6 +18,10 @@ class InMemoryArticleRepository:
             raise RuntimeError("Site not bootstrapped")
         return self._site
 
+    def save_site(self, site: Site) -> Site:
+        self._site = site
+        return site
+
     def list_articles(self, status: Status | None = None) -> list[Article]:
         articles = self._articles.values()
         if status is not None:

@@ -1,31 +1,16 @@
 import logging
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
+from fastapi import FastAPI
 
-from app.api.auth import InvalidSessionError
-from app.api.rate_limit import RateLimitedError
-from app.api.routes.articles import ArticleNotFoundError, EmptyUpdateError, PayloadTooLargeError
+from app.api.error_handlers import register_exception_handlers
 from app.api.routes.articles import router as articles_router
 from app.api.routes.auth import router as auth_router
-from app.api.routes.imports import NoFilesError, TooManyFilesError
 from app.api.routes.imports import router as imports_router
 from app.api.routes.public_review import router as public_review_router
 from app.api.routes.review_link import router as review_link_router
 from app.container import build_container
-from app.core.domain.errors import (
-    ArticleChangedError,
-    EmptyContentError,
-    NotAwaitingApprovalError,
-    NotEditableError,
-    NotFailedError,
-    NotSchedulableError,
-    NotSendableError,
-    PublishAtInPastError,
-    WordPressError,
-)
-from app.core.use_cases.review import ArticleNotVisibleError, InvalidTokenError
+from app.core.domain.errors import WordPressError
 from app.settings import Settings
 
 logging.basicConfig(level=logging.INFO)
@@ -60,82 +45,7 @@ def create_app() -> FastAPI:
     def health() -> dict[str, str]:
         return {"status": "ok"}
 
-    @app.exception_handler(InvalidSessionError)
-    def invalid_session_handler(request: Request, exc: InvalidSessionError) -> JSONResponse:
-        return JSONResponse(status_code=401, content={"code": "invalid_token"})
-
-    @app.exception_handler(ArticleNotFoundError)
-    def article_not_found_handler(request: Request, exc: ArticleNotFoundError) -> JSONResponse:
-        return JSONResponse(status_code=404, content={"code": "not_found"})
-
-    @app.exception_handler(EmptyContentError)
-    def empty_content_handler(request: Request, exc: EmptyContentError) -> JSONResponse:
-        return JSONResponse(status_code=422, content={"code": "empty_content"})
-
-    @app.exception_handler(PayloadTooLargeError)
-    def payload_too_large_handler(request: Request, exc: PayloadTooLargeError) -> JSONResponse:
-        return JSONResponse(status_code=413, content={"code": "payload_too_large"})
-
-    @app.exception_handler(NoFilesError)
-    def no_files_handler(request: Request, exc: NoFilesError) -> JSONResponse:
-        return JSONResponse(status_code=422, content={"code": "no_files"})
-
-    @app.exception_handler(TooManyFilesError)
-    def too_many_files_handler(request: Request, exc: TooManyFilesError) -> JSONResponse:
-        return JSONResponse(status_code=422, content={"code": "too_many_files"})
-
-    @app.exception_handler(NotEditableError)
-    def not_editable_handler(request: Request, exc: NotEditableError) -> JSONResponse:
-        return JSONResponse(status_code=409, content={"code": "not_editable"})
-
-    @app.exception_handler(EmptyUpdateError)
-    def empty_update_handler(request: Request, exc: EmptyUpdateError) -> JSONResponse:
-        return JSONResponse(status_code=422, content={"code": "empty_update"})
-
-    @app.exception_handler(NotSendableError)
-    def not_sendable_handler(request: Request, exc: NotSendableError) -> JSONResponse:
-        return JSONResponse(status_code=409, content={"code": "not_sendable"})
-
-    @app.exception_handler(NotAwaitingApprovalError)
-    def not_awaiting_approval_handler(
-        request: Request, exc: NotAwaitingApprovalError
-    ) -> JSONResponse:
-        return JSONResponse(status_code=409, content={"code": "not_awaiting_approval"})
-
-    @app.exception_handler(InvalidTokenError)
-    def invalid_token_handler(request: Request, exc: InvalidTokenError) -> JSONResponse:
-        return JSONResponse(status_code=404, content={"code": "not_found"})
-
-    @app.exception_handler(ArticleNotVisibleError)
-    def article_not_visible_handler(request: Request, exc: ArticleNotVisibleError) -> JSONResponse:
-        return JSONResponse(status_code=404, content={"code": "not_found"})
-
-    @app.exception_handler(RateLimitedError)
-    def rate_limited_handler(request: Request, exc: RateLimitedError) -> JSONResponse:
-        return JSONResponse(status_code=429, content={"code": "rate_limited"})
-
-    @app.exception_handler(ArticleChangedError)
-    def article_changed_handler(request: Request, exc: ArticleChangedError) -> JSONResponse:
-        return JSONResponse(status_code=409, content={"code": "article_changed"})
-
-    @app.exception_handler(NotSchedulableError)
-    def not_schedulable_handler(request: Request, exc: NotSchedulableError) -> JSONResponse:
-        return JSONResponse(status_code=409, content={"code": "not_schedulable"})
-
-    @app.exception_handler(NotFailedError)
-    def not_failed_handler(request: Request, exc: NotFailedError) -> JSONResponse:
-        return JSONResponse(status_code=409, content={"code": "not_failed"})
-
-    @app.exception_handler(PublishAtInPastError)
-    def publish_at_in_past_handler(request: Request, exc: PublishAtInPastError) -> JSONResponse:
-        return JSONResponse(status_code=422, content={"code": "publish_at_in_past"})
-
-    @app.exception_handler(WordPressError)
-    def wordpress_error_handler(request: Request, exc: WordPressError) -> JSONResponse:
-        return JSONResponse(
-            status_code=502,
-            content={"code": "wordpress_error", "message": exc.message or str(exc)},
-        )
+    register_exception_handlers(app)
 
     app.include_router(auth_router)
     app.include_router(articles_router)

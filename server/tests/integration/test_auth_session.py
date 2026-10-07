@@ -36,10 +36,12 @@ def client(monkeypatch):
     import importlib
 
     import app.api.auth as auth_module
+    import app.api.error_handlers as error_handlers_module
     import app.api.main as main_module
     import app.api.routes.auth as routes_auth_module
 
     importlib.reload(auth_module)
+    importlib.reload(error_handlers_module)
     importlib.reload(routes_auth_module)
     importlib.reload(main_module)
 

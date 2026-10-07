@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Response, status
 
 from app.api.auth import SESSION_COOKIE_NAME, SESSION_EXPIRES_IN, create_session
-from app.api.schemas import SessionRequest
+from app.api.schemas.auth import SessionRequest
 from app.api.tags import AUTH
 
 router = APIRouter(tags=[AUTH])

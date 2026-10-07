@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Articles — mobile</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.app{font-family:'Geist',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;color:oklch(0.145 0 0);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:32px;padding:0 12px;box-sizing:border-box;border-radius:8px;font-family:inherit;font-size:13px;font-weight:500;line-height:1;white-space:nowrap;text-decoration:none;cursor:pointer}
+.btn-sm{height:30px;padding:0 10px;border-radius:7px;font-size:12.5px}
+.icon-btn{padding:0;width:44px;height:44px}
+.btn-outline{background:oklch(1 0 0);color:oklch(0.145 0 0);border:1px solid oklch(0.93 0.006 264);box-shadow:0 1px 2px oklch(0 0 0 / 0.04)}
+.btn-ghost{background:transparent;color:oklch(0.35 0 0);border:1px solid transparent}
+.input{height:40px;box-sizing:border-box;padding:0 10px;border:1px solid oklch(0.93 0.006 264);border-radius:8px;background:oklch(1 0 0);font-family:inherit;font-size:15px;color:oklch(0.145 0 0);box-shadow:0 1px 2px oklch(0 0 0 / 0.03)}
+.input::placeholder{color:oklch(0.62 0 0)}
+.badge{display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:9999px;font-size:12px;font-weight:500;white-space:nowrap;line-height:1}
+.s-draft{background:oklch(0.955 0 0);color:oklch(0.45 0 0)}
+.s-awaiting{background:#eff6ff;color:#1d4ed8}
+.s-changes{background:#fffbeb;color:#b45309}
+.s-approved{background:#ecfdf5;color:#047857}
+.s-scheduled{background:oklch(0.94 0.035 300);color:oklch(0.42 0.18 300)}
+.s-published{background:oklch(0.93 0.05 180);color:oklch(0.4 0.09 180)}
+.s-failed{background:oklch(0.95 0.02 27.325);color:oklch(0.5 0.22 27.325)}
+.muted{color:oklch(0.556 0 0)}
+.item{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid oklch(0.955 0.003 264)}
+.item-title{display:block;font-size:14.5px;font-weight:500;color:oklch(0.145 0 0);text-decoration:none;margin-bottom:6px}
+.meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12.5px;color:oklch(0.556 0 0)}
+</style>
+</helmet>
+<div class="app" style="width: 100%; min-height: 844px; box-sizing: border-box; display: flex; flex-direction: column; background: oklch(1 0 0);">
+
+  <header style="height: 52px; flex: 0 0 auto; box-sizing: border-box; display: flex; align-items: center; padding: 0 4px; border-bottom: 1px solid oklch(0.93 0.006 264);">
+    <button class="btn btn-ghost icon-btn" aria-label="Open menu">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+    <span style="flex: 1 1 auto; font-size: 15px; font-weight: 600; letter-spacing: -0.01em;">Articles</span>
+    <button class="btn btn-ghost icon-btn" aria-label="Copy review link">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+    </button>
+  </header>
+
+  <div style="display: flex; gap: 8px; padding: 12px 16px; border-bottom: 1px solid oklch(0.93 0.006 264);">
+    <label style="position: relative; flex: 1 1 auto; min-width: 0;">
+      <svg style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%);" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="oklch(0.62 0 0)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input class="input" type="search" aria-label="Search articles" placeholder="Search" style="width: 100%; padding-left: 32px;">
+    </label>
+    <label style="position: relative; flex: 0 0 auto; display: flex; align-items: center;">
+      <span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0);">Status</span>
+      <select class="input" style="appearance: none; -webkit-appearance: none; width: 104px; padding-right: 28px; font-weight: 500;">
+        <option>All</option>
+        <option>Draft · 5</option>
+        <option>Awaiting approval · 4</option>
+        <option>Changes requested · 2</option>
+        <option>Approved · 3</option>
+        <option>Scheduled · 5</option>
+        <option>Published · 22</option>
+        <option>Failed · 1</option>
+        <option>Needs attention · 2</option>
+      </select>
+      <svg style="position: absolute; right: 9px; pointer-events: none;" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="oklch(0.62 0 0)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+    </label>
+  </div>
+
+  <div style="flex: 1 1 auto; overflow-y: auto;">
+    <div class="item">
+      <div style="flex: 1 1 auto; min-width: 0;">
+        <a href="ArticleDetailMobile.dc.html" class="item-title">10 Best Running Shoes for Flat Feet</a>
+        <div class="meta"><span class="badge s-draft">Draft</span></div>
+      </div>
+    </div>
+    <div class="item">
+      <div style="flex: 1 1 auto; min-width: 0;">
+        <a href="ArticleDetailMobile.dc.html" class="item-title">How to Choose a Treadmill for Home Use</a>
+        <div class="meta"><span class="badge s-awaiting">Awaiting approval</span></div>
+      </div>
+    </div>
+    <div class="item">
+      <div style="flex: 1 1 auto; min-width: 0;">
+        <a href="ArticleDetailMobile.dc.html" class="item-title">Beginner's Guide to Marathon Training</a>
+        <div class="meta"><span class="badge s-changes">Changes requested</span></div>
+      </div>
+    </div>
+    <div class="item">
+      <div style="flex: 1 1 auto; min-width: 0;">
+        <a href="ArticleDetailMobile.dc.html" class="item-title">The Benefits of Trail Running</a>
+        <div class="meta"><span class="badge s-approved">Approved</span></div>
+      </div>
+      <button class="btn btn-sm" style="background: transparent; border: 1px dashed oklch(0.87 0.004 264); color: oklch(0.45 0 0);">Set date</button>
+    </div>
+    <div class="item">
+      <div style="flex: 1 1 auto; min-width: 0;">
+        <a href="ArticleDetailMobile.dc.html" class="item-title">Running Shoe Maintenance 101</a>
+        <div class="meta"><span class="badge s-scheduled">Scheduled</span><span class="badge s-failed">Late</span><span>Oct 12</span></div>
+      </div>
+    </div>
+    <div class="item">
+      <div style="flex: 1 1 auto; min-width: 0;">
+        <a href="ArticleDetailMobile.dc.html" class="item-title">Why Compression Socks Work</a>
+        <div class="meta"><span class="badge s-published">Published</span><span>Oct 1</span></div>
+      </div>
+      <a href="#" class="btn btn-ghost btn-sm" aria-label="Open live page" style="width: 36px; padding: 0;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
+      </a>
+    </div>
+    <div class="item">
+      <div style="flex: 1 1 auto; min-width: 0;">
+        <a href="ArticleDetailMobile.dc.html" class="item-title">Top 5 Marathons in Southeast Asia</a>
+        <div class="meta"><span class="badge s-failed">Failed</span><span>WordPress 403</span></div>
+      </div>
+      <button class="btn btn-outline btn-sm">Retry</button>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

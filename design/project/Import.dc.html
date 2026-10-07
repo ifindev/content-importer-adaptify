@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Import</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.app{font-family:'Geist',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;color:oklch(0.145 0 0);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.nav-item{display:flex;align-items:center;gap:10px;height:32px;padding:0 10px;border-radius:7px;color:oklch(0.45 0 0);text-decoration:none;font-size:13.5px;font-weight:500}
+.nav-item svg{color:oklch(0.62 0 0)}
+.nav-item:hover{background:oklch(0.955 0 0);color:oklch(0.145 0 0)}
+.nav-item.on{background:oklch(1 0 0);color:oklch(0.145 0 0);box-shadow:0 0 0 1px oklch(0.93 0.006 264),0 1px 2px oklch(0 0 0 / 0.05)}
+.nav-item.on svg{color:oklch(0.145 0 0)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:32px;padding:0 12px;box-sizing:border-box;border-radius:8px;font-family:inherit;font-size:13px;font-weight:500;line-height:1;white-space:nowrap;text-decoration:none;cursor:pointer}
+.btn-sm{height:28px;padding:0 10px;border-radius:7px;font-size:12.5px}
+.icon-btn{padding:0;width:32px}
+.btn-outline{background:oklch(1 0 0);color:oklch(0.145 0 0);border:1px solid oklch(0.93 0.006 264);box-shadow:0 1px 2px oklch(0 0 0 / 0.04)}
+.btn-outline:hover{background:oklch(0.975 0 0)}
+.btn-ghost{background:transparent;color:oklch(0.45 0 0);border:1px solid transparent}
+.btn-ghost:hover{background:oklch(0.96 0 0);color:oklch(0.145 0 0)}
+.muted{color:oklch(0.556 0 0)}
+.card{background:oklch(1 0 0);border:1px solid oklch(0.93 0.006 264);border-radius:10px;box-shadow:0 1px 2px oklch(0 0 0 / 0.03)}
+.tab{height:28px;padding:0 12px;border:none;border-radius:7px;background:transparent;color:oklch(0.45 0 0);font-family:inherit;font-size:13px;font-weight:500;cursor:pointer}
+.tab.on{background:oklch(1 0 0);color:oklch(0.145 0 0);box-shadow:0 0 0 1px oklch(0.93 0.006 264),0 1px 2px oklch(0 0 0 / 0.06)}
+.drop:hover{background:oklch(0.98 0 0);border-color:oklch(0.8 0.004 264)}
+.frow{display:flex;align-items:center;gap:12px;padding:12px 14px;border-top:1px solid oklch(0.955 0.003 264)}
+.frow:first-child{border-top:none}
+.ficon{width:32px;height:32px;border-radius:8px;background:oklch(0.965 0 0);display:flex;align-items:center;justify-content:center;flex:0 0 auto;color:oklch(0.5 0 0)}
+</style>
+</helmet>
+<div class="app" style="width: 100%; min-height: 840px; box-sizing: border-box; display: flex; flex-wrap: wrap; background: oklch(0.98 0 0);">
+
+  <aside style="width: 232px; flex: 0 0 232px; box-sizing: border-box; padding: 14px 10px 10px; display: flex; flex-direction: column; gap: 2px;">
+    <div style="display: flex; align-items: center; gap: 9px; padding: 4px 8px 14px;">
+      <span style="width: 24px; height: 24px; border-radius: 7px; background: oklch(0.145 0 0); display: flex; align-items: center; justify-content: center; flex: 0 0 auto;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="oklch(1 0 0)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M8 7h9v9"/></svg>
+      </span>
+      <span style="font-size: 13.5px; font-weight: 600; letter-spacing: -0.01em;">Content Importer</span>
+    </div>
+    <button class="btn btn-outline" aria-label="Switch site" style="width: 100%; height: 36px; justify-content: flex-start; gap: 8px; padding: 0 8px; margin-bottom: 14px;">
+      <span style="width: 20px; height: 20px; border-radius: 5px; background: oklch(0.94 0 0); color: oklch(0.35 0 0); font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex: 0 0 auto;">A</span>
+      <span style="flex: 1 1 auto; min-width: 0; text-align: left; overflow: hidden; text-overflow: ellipsis;">acme-running.com</span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="oklch(0.62 0 0)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
+    </button>
+    <a href="Import.dc.html" class="nav-item on">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg>
+      Import
+    </a>
+    <a href="Main.dc.html" class="nav-item">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg>
+      Articles
+    </a>
+    <a href="Report.dc.html" class="nav-item">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M8 16v-4M13 16V8M18 16v-7"/></svg>
+      Report
+    </a>
+    <div style="flex: 1 1 auto;"></div>
+    <a href="Sites.dc.html" class="nav-item" style="margin-bottom: 6px;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      All sites
+    </a>
+    <div style="display: flex; align-items: center; gap: 9px; padding: 12px 4px 2px 8px; border-top: 1px solid oklch(0.93 0.006 264);">
+      <span style="width: 26px; height: 26px; border-radius: 9999px; background: oklch(0.92 0 0); color: oklch(0.35 0 0); font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex: 0 0 auto;">A</span>
+      <span style="flex: 1 1 auto; min-width: 0; font-size: 12.5px; color: oklch(0.45 0 0); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">agency@example.test</span>
+      <a href="Login.dc.html" class="btn btn-ghost btn-sm icon-btn" aria-label="Log out" style="width: 28px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>
+      </a>
+    </div>
+  </aside>
+
+  <main style="flex: 999 1 560px; min-width: 0; margin: 8px 8px 8px 0; box-sizing: border-box; background: oklch(1 0 0); border: 1px solid oklch(0.93 0.006 264); border-radius: 12px; box-shadow: 0 1px 3px oklch(0 0 0 / 0.04); display: flex; flex-direction: column;">
+    <div style="width: 100%; max-width: 760px; box-sizing: border-box; margin: 0 auto; padding: 22px 28px 32px; display: flex; flex-direction: column; gap: 20px;">
+
+      <header>
+        <h1 style="margin: 0; font-size: 20px; font-weight: 600; letter-spacing: -0.015em; line-height: 1.3;">Import</h1>
+        <p class="muted" style="margin: 2px 0 0; font-size: 13px;">Paste an article, or upload one or more .docx files.</p>
+      </header>
+
+      <div role="tablist" aria-label="Import method" style="display: inline-flex; gap: 2px; padding: 3px; background: oklch(0.96 0 0); border-radius: 9px; width: fit-content;">
+        <button role="tab" aria-selected="false" class="tab">Paste</button>
+        <button role="tab" aria-selected="true" class="tab on">Upload .docx</button>
+      </div>
+
+      <label class="drop" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; height: 196px; border: 1px dashed oklch(0.86 0.004 264); border-radius: 12px; background: oklch(0.99 0 0); cursor: pointer; text-align: center;">
+        <span style="width: 40px; height: 40px; border-radius: 10px; background: oklch(1 0 0); border: 1px solid oklch(0.93 0.006 264); box-shadow: 0 1px 2px oklch(0 0 0 / 0.05); display: flex; align-items: center; justify-content: center; margin-bottom: 12px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="oklch(0.45 0 0)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/></svg>
+        </span>
+        <span style="font-size: 14px; font-weight: 500;">Drop .docx files here, or <span style="text-decoration: underline; text-underline-offset: 3px;">browse</span></span>
+        <span class="muted" style="font-size: 12.5px;">Each file becomes one Draft article</span>
+        <input type="file" accept=".docx" multiple style="display: none;">
+      </label>
+
+      <section>
+        <div style="display: flex; align-items: baseline; gap: 8px; margin-bottom: 10px;">
+          <h2 style="margin: 0; font-size: 14px; font-weight: 600;">Just imported</h2>
+          <span class="muted" style="font-size: 12.5px;">3 files</span>
+        </div>
+        <div class="card">
+          <div class="frow">
+            <span class="ficon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></span>
+            <div style="flex: 1 1 auto; min-width: 0;">
+              <div style="font-size: 13.5px; font-weight: 500;">10-best-running-shoes.docx</div>
+              <div style="display: flex; align-items: center; gap: 5px; font-size: 12.5px;" class="muted">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#047857" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+                Converted cleanly
+              </div>
+            </div>
+            <a href="ArticleDetail.dc.html" class="btn btn-outline btn-sm">Open</a>
+          </div>
+          <div class="frow">
+            <span class="ficon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></span>
+            <div style="flex: 1 1 auto; min-width: 0;">
+              <div style="font-size: 13.5px; font-weight: 500;">marathon-training-guide.docx</div>
+              <div style="display: flex; align-items: center; gap: 5px; font-size: 12.5px; color: #92400e;">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg>
+                3 images dropped · Fonts and colors stripped
+              </div>
+            </div>
+            <a href="ArticleDetail.dc.html" class="btn btn-outline btn-sm">Open</a>
+          </div>
+          <div class="frow">
+            <span class="ficon" style="background: oklch(0.96 0.015 27.325); color: oklch(0.5 0.22 27.325);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg></span>
+            <div style="flex: 1 1 auto; min-width: 0;">
+              <div style="font-size: 13.5px; font-weight: 500;">trail-shoe-notes.docx</div>
+              <div style="font-size: 12.5px; color: oklch(0.5 0.22 27.325);">Couldn't read this file. Try re-saving it as .docx.</div>
+            </div>
+            <button class="btn btn-ghost btn-sm">Remove</button>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":840}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,183 @@
+{
+  "v": 3,
+  "attachments": {},
+  "boards": {
+    "AddSite.dc.html": {
+      "expand": "fill",
+      "h": 840,
+      "title": "Add site — connection failed",
+      "w": 1280,
+      "x": 2720,
+      "y": 2184
+    },
+    "ArticleDetail.dc.html": {
+      "expand": "fill",
+      "h": 840,
+      "title": "Article detail — desktop",
+      "w": 1280,
+      "x": 4080,
+      "y": 0
+    },
+    "ArticleDetailMobile.dc.html": {
+      "h": 844,
+      "title": "Article detail — mobile",
+      "w": 390,
+      "x": 470,
+      "y": 960
+    },
+    "ArticleReader.dc.html": {
+      "h": 844,
+      "title": "Article reader (client)",
+      "w": 390,
+      "x": 1410,
+      "y": 960
+    },
+    "Import.dc.html": {
+      "expand": "fill",
+      "h": 840,
+      "title": "Import",
+      "w": 1280,
+      "x": 1360,
+      "y": 0
+    },
+    "Login.dc.html": {
+      "expand": "fill",
+      "h": 840,
+      "title": "Login",
+      "w": 1280,
+      "x": 0,
+      "y": 0
+    },
+    "Main.dc.html": {
+      "expand": "fill",
+      "h": 840,
+      "title": "Articles — desktop",
+      "w": 1280,
+      "x": 2720,
+      "y": 0
+    },
+    "Mobile.dc.html": {
+      "h": 844,
+      "title": "Articles — mobile",
+      "w": 390,
+      "x": 0,
+      "y": 960
+    },
+    "Report.dc.html": {
+      "expand": "fill",
+      "h": 840,
+      "title": "Report",
+      "w": 1280,
+      "x": 5440,
+      "y": 0
+    },
+    "ReviewPage.dc.html": {
+      "h": 844,
+      "title": "Review page (client)",
+      "w": 390,
+      "x": 940,
+      "y": 960
+    },
+    "Sites.dc.html": {
+      "expand": "fill",
+      "h": 840,
+      "title": "All sites",
+      "w": 1280,
+      "x": 1360,
+      "y": 2184
+    },
+    "SitesEmpty.dc.html": {
+      "expand": "fill",
+      "h": 840,
+      "title": "Zero sites — empty state",
+      "w": 1280,
+      "x": 4080,
+      "y": 2184
+    },
+    "SwitcherOpen.dc.html": {
+      "expand": "fill",
+      "h": 840,
+      "title": "Site switcher — open",
+      "w": 1280,
+      "x": 0,
+      "y": 2184
+    },
+    "ReviewDesktop.dc.html": {
+      "x": 1880,
+      "y": 960,
+      "w": 1280,
+      "h": 844,
+      "expand": "fill",
+      "title": "Article review (client) — desktop"
+    },
+    "ArticleReaderChanges.dc.html": {
+      "x": 3240,
+      "y": 960,
+      "w": 390,
+      "h": 844,
+      "title": "Request changes (client) — mobile"
+    },
+    "ReviewDesktopChanges.dc.html": {
+      "x": 3710,
+      "y": 960,
+      "w": 1280,
+      "h": 844,
+      "expand": "fill",
+      "title": "Request changes (client) — desktop"
+    }
+  },
+  "createdOnFiles": {
+    "at": "2026-10-07T03:00:00Z",
+    "v": 1
+  },
+  "designSystems": [
+    {
+      "artifact": "https://claude.ai/code/artifact/8a39a812-7cca-4268-ae9c-347933c93585",
+      "copiedAt": "2026-10-07T03:00:00Z",
+      "namespace": "shadcn",
+      "title": "shadcn/ui Design System",
+      "version": null
+    }
+  ],
+  "launch": {
+    "view": "canvas"
+  },
+  "notes": {
+    "t1": {
+      "kind": "title1",
+      "maxW": 6720,
+      "text": "Agency app (shadcn/ui)",
+      "w": 240,
+      "x": 0,
+      "y": -260
+    },
+    "t3": {
+      "kind": "title1",
+      "maxW": 5360,
+      "text": "Sites (T-032)",
+      "w": 240,
+      "x": 0,
+      "y": 1924
+    }
+  },
+  "order": [
+    "Login.dc.html",
+    "Import.dc.html",
+    "Main.dc.html",
+    "ArticleDetail.dc.html",
+    "Report.dc.html",
+    "Mobile.dc.html",
+    "ArticleDetailMobile.dc.html",
+    "ReviewPage.dc.html",
+    "ArticleReader.dc.html",
+    "ReviewDesktop.dc.html",
+    "ArticleReaderChanges.dc.html",
+    "ReviewDesktopChanges.dc.html",
+    "SwitcherOpen.dc.html",
+    "Sites.dc.html",
+    "AddSite.dc.html",
+    "SitesEmpty.dc.html"
+  ],
+  "pages": [],
+  "title": "Content Importer UI Brainstorm"
+}

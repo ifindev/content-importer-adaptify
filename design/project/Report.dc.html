@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Report</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.app{font-family:'Geist',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;color:oklch(0.145 0 0);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.nav-item{display:flex;align-items:center;gap:10px;height:32px;padding:0 10px;border-radius:7px;color:oklch(0.45 0 0);text-decoration:none;font-size:13.5px;font-weight:500}
+.nav-item svg{color:oklch(0.62 0 0)}
+.nav-item:hover{background:oklch(0.955 0 0);color:oklch(0.145 0 0)}
+.nav-item.on{background:oklch(1 0 0);color:oklch(0.145 0 0);box-shadow:0 0 0 1px oklch(0.93 0.006 264),0 1px 2px oklch(0 0 0 / 0.05)}
+.nav-item.on svg{color:oklch(0.145 0 0)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:32px;padding:0 12px;box-sizing:border-box;border-radius:8px;font-family:inherit;font-size:13px;font-weight:500;line-height:1;white-space:nowrap;text-decoration:none;cursor:pointer}
+.btn-sm{height:28px;padding:0 10px;border-radius:7px;font-size:12.5px}
+.icon-btn{padding:0;width:32px}
+.btn-outline{background:oklch(1 0 0);color:oklch(0.145 0 0);border:1px solid oklch(0.93 0.006 264);box-shadow:0 1px 2px oklch(0 0 0 / 0.04)}
+.btn-ghost{background:transparent;color:oklch(0.45 0 0);border:1px solid transparent}
+.btn-ghost:hover{background:oklch(0.96 0 0);color:oklch(0.145 0 0)}
+.badge{display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:9999px;font-size:12px;font-weight:500;white-space:nowrap;line-height:1}
+.s-failed{background:oklch(0.95 0.02 27.325);color:oklch(0.5 0.22 27.325)}
+.muted{color:oklch(0.556 0 0)}
+.card{background:oklch(1 0 0);border:1px solid oklch(0.93 0.006 264);border-radius:12px;box-shadow:0 1px 2px oklch(0 0 0 / 0.03)}
+.lnk{display:inline-flex;align-items:center;gap:5px;color:oklch(0.45 0 0);text-decoration:none}
+.lnk:hover{color:oklch(0.145 0 0);text-decoration:underline;text-underline-offset:3px}
+.kpi{padding:18px 20px}
+.kpi-label{font-size:13px;font-weight:500;color:oklch(0.45 0 0)}
+.kpi-value{margin-top:10px;font-size:28px;font-weight:600;letter-spacing:-0.025em;line-height:1.1;font-variant-numeric:tabular-nums}
+.kpi-unit{margin-left:6px;font-size:14px;font-weight:500;letter-spacing:0;color:oklch(0.556 0 0)}
+.kpi-note{margin-top:6px;font-size:12.5px;color:oklch(0.556 0 0)}
+.badge{display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:9999px;font-size:12px;font-weight:500;white-space:nowrap;line-height:1}
+.s-draft{background:oklch(0.955 0 0);color:oklch(0.45 0 0)}
+.s-awaiting{background:#eff6ff;color:#1d4ed8}
+.s-changes{background:#fffbeb;color:#b45309}
+.s-approved{background:#ecfdf5;color:#047857}
+.s-scheduled{background:oklch(0.94 0.035 300);color:oklch(0.42 0.18 300)}
+.s-published{background:oklch(0.93 0.05 180);color:oklch(0.4 0.09 180)}
+.srow{display:flex;align-items:center;gap:10px;height:46px;padding:0 6px 0 0;border-top:1px solid oklch(0.955 0.003 264);text-decoration:none;color:inherit}
+.srow:hover{background:oklch(0.985 0 0)}
+.srow-count{margin-left:auto;font-size:14px;font-weight:500;font-variant-numeric:tabular-nums}
+.srow svg{color:oklch(0.75 0 0);flex:0 0 auto}
+.lrow{display:flex;align-items:center;gap:10px;min-height:46px;padding:0 14px;border-top:1px solid oklch(0.955 0.003 264);text-decoration:none;color:inherit;font-size:13.5px}
+.lrow:first-child{border-top:none}
+a.lrow:hover{background:oklch(0.985 0 0)}
+.sec-head{display:flex;align-items:baseline;gap:8px;margin-bottom:10px}
+.sec-head h2{margin:0;font-size:14px;font-weight:600}
+.trunc{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+</style>
+</helmet>
+<div class="app" style="width: 100%; min-height: 840px; box-sizing: border-box; display: flex; flex-wrap: wrap; background: oklch(0.98 0 0);">
+
+  <aside style="width: 232px; flex: 0 0 232px; box-sizing: border-box; padding: 14px 10px 10px; display: flex; flex-direction: column; gap: 2px;">
+    <div style="display: flex; align-items: center; gap: 9px; padding: 4px 8px 14px;">
+      <span style="width: 24px; height: 24px; border-radius: 7px; background: oklch(0.145 0 0); display: flex; align-items: center; justify-content: center; flex: 0 0 auto;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="oklch(1 0 0)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M8 7h9v9"/></svg>
+      </span>
+      <span style="font-size: 13.5px; font-weight: 600; letter-spacing: -0.01em;">Content Importer</span>
+    </div>
+    <a href="SwitcherOpen.dc.html" class="btn btn-outline" aria-label="Switch site" style="width: 100%; height: 36px; justify-content: flex-start; gap: 8px; padding: 0 8px; margin-bottom: 14px;">
+      <span style="width: 20px; height: 20px; border-radius: 5px; background: oklch(0.94 0 0); color: oklch(0.35 0 0); font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex: 0 0 auto;">A</span>
+      <span style="flex: 1 1 auto; min-width: 0; text-align: left; overflow: hidden; text-overflow: ellipsis;">acme-running.com</span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="oklch(0.62 0 0)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
+    </a>
+    <a href="Import.dc.html" class="nav-item">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg>
+      Import
+    </a>
+    <a href="Main.dc.html" class="nav-item">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg>
+      Articles
+    </a>
+    <a href="Report.dc.html" class="nav-item on">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M8 16v-4M13 16V8M18 16v-7"/></svg>
+      Report
+    </a>
+    <div style="flex: 1 1 auto;"></div>
+    <a href="Sites.dc.html" class="nav-item" style="margin-bottom: 6px;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      All sites
+    </a>
+    <div style="display: flex; align-items: center; gap: 9px; padding: 12px 4px 2px 8px; border-top: 1px solid oklch(0.93 0.006 264);">
+      <span style="width: 26px; height: 26px; border-radius: 9999px; background: oklch(0.92 0 0); color: oklch(0.35 0 0); font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex: 0 0 auto;">A</span>
+      <span style="flex: 1 1 auto; min-width: 0; font-size: 12.5px; color: oklch(0.45 0 0); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">agency@example.test</span>
+      <a href="Login.dc.html" class="btn btn-ghost btn-sm icon-btn" aria-label="Log out" style="width: 28px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>
+      </a>
+    </div>
+  </aside>
+
+  <main style="flex: 999 1 560px; min-width: 0; margin: 8px 8px 8px 0; box-sizing: border-box; background: oklch(1 0 0); border: 1px solid oklch(0.93 0.006 264); border-radius: 12px; box-shadow: 0 1px 3px oklch(0 0 0 / 0.04); padding: 22px 28px 32px; display: flex; flex-direction: column; gap: 20px;">
+
+    <header>
+      <h1 style="margin: 0; font-size: 20px; font-weight: 600; letter-spacing: -0.015em; line-height: 1.3;">Report</h1>
+      <p class="muted" style="margin: 2px 0 0; font-size: 13px;">October 2026</p>
+    </header>
+
+    <section aria-label="Key metrics" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px;">
+      <div class="card kpi">
+        <div class="kpi-label">Published this month</div>
+        <div class="kpi-value">4</div>
+        <div class="kpi-note">22 published in total</div>
+      </div>
+      <div class="card kpi">
+        <div class="kpi-label">Time to approval</div>
+        <div class="kpi-value">1.8<span class="kpi-unit">days</span></div>
+        <div class="kpi-note">Average, from first sent to approved</div>
+      </div>
+      <div class="card kpi">
+        <div class="kpi-label">Change rounds</div>
+        <div class="kpi-value">0.6<span class="kpi-unit">per article</span></div>
+        <div class="kpi-note">Average client change requests</div>
+      </div>
+    </section>
+
+    <section class="card" style="padding: 16px 20px 8px;">
+      <div style="display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 8px;">
+        <h2 style="margin: 0; font-size: 14px; font-weight: 600;">Articles by status</h2>
+        <span class="muted" style="font-size: 12.5px;">42 total</span>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 40px;">
+        <div>
+          <a href="Main.dc.html" class="srow"><span class="badge s-draft">Draft</span><span class="srow-count">5</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></a>
+          <a href="Main.dc.html" class="srow"><span class="badge s-awaiting">Awaiting approval</span><span class="srow-count">4</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></a>
+          <a href="Main.dc.html" class="srow"><span class="badge s-changes">Changes requested</span><span class="srow-count">2</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></a>
+          <a href="Main.dc.html" class="srow"><span class="badge s-approved">Approved</span><span class="srow-count">3</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></a>
+        </div>
+        <div>
+          <a href="Main.dc.html" class="srow"><span class="badge s-scheduled">Scheduled</span><span class="srow-count">5</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></a>
+          <a href="Main.dc.html" class="srow"><span class="badge s-published">Published</span><span class="srow-count">22</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></a>
+          <a href="Main.dc.html" class="srow"><span class="badge s-failed">Failed</span><span class="srow-count">1</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></a>
+        </div>
+      </div>
+    </section>
+
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px;">
+      <section>
+        <div class="sec-head"><h2>Needs attention</h2><span class="muted" style="font-size: 12.5px;">2</span></div>
+        <div class="card">
+          <a href="Main.dc.html" class="lrow">
+            <span class="badge s-failed">Failed</span>
+            <span class="trunc">Top 5 Marathons in Southeast Asia</span>
+            <span class="muted" style="font-size: 12.5px; flex: 0 0 auto;">WordPress 403</span>
+          </a>
+          <a href="Main.dc.html" class="lrow">
+            <span class="badge s-failed">Late</span>
+            <span class="trunc">Running Shoe Maintenance 101</span>
+            <span class="muted" style="font-size: 12.5px; flex: 0 0 auto;">Due Oct 12</span>
+          </a>
+        </div>
+      </section>
+
+      <section>
+        <div class="sec-head"><h2>Upcoming</h2><span class="muted" style="font-size: 12.5px;">5</span></div>
+        <div class="card">
+          <div class="lrow"><span class="trunc">Running Shoe Maintenance 101</span><span class="muted" style="font-size: 12.5px; flex: 0 0 auto;">Oct 12</span></div>
+          <div class="lrow"><span class="trunc">Hill Repeats for Beginners</span><span class="muted" style="font-size: 12.5px; flex: 0 0 auto;">Oct 15</span></div>
+          <div class="lrow"><span class="trunc">What to Eat the Night Before a Race</span><span class="muted" style="font-size: 12.5px; flex: 0 0 auto;">Oct 19</span></div>
+        </div>
+      </section>
+
+      <section style="grid-column: 1 / -1;">
+        <div class="sec-head"><h2>Published</h2><span class="muted" style="font-size: 12.5px;">22</span></div>
+        <div class="card">
+          <div class="lrow">
+            <span class="trunc">Why Compression Socks Work</span>
+            <span class="muted" style="font-size: 12.5px; flex: 0 0 auto; width: 90px;">Oct 1</span>
+            <a href="#" class="lnk" style="font-size: 12.5px; flex: 0 0 auto;">acme-running.com/compression-socks
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
+            </a>
+          </div>
+          <div class="lrow">
+            <span class="trunc">10 Best Running Shoes for Flat Feet</span>
+            <span class="muted" style="font-size: 12.5px; flex: 0 0 auto; width: 90px;">Sep 22</span>
+            <a href="#" class="lnk" style="font-size: 12.5px; flex: 0 0 auto;">acme-running.com/best-shoes-flat-feet
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
+            </a>
+          </div>
+        </div>
+      </section>
+    </div>
+
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":840}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

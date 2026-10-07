@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Article detail — mobile</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.app{font-family:'Geist',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;color:oklch(0.145 0 0);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:44px;padding:0 16px;box-sizing:border-box;border-radius:10px;font-family:inherit;font-size:14.5px;font-weight:500;line-height:1;white-space:nowrap;text-decoration:none;cursor:pointer}
+.icon-btn{padding:0;width:44px}
+.btn-primary{background:oklch(0.488 0.243 264.376);color:oklch(1 0 0);border:1px solid oklch(0.44 0.22 264.376);box-shadow:inset 0 1px 0 oklch(1 0 0 / 0.14),0 1px 2px oklch(0 0 0 / 0.1)}
+.btn-outline{background:oklch(1 0 0);color:oklch(0.145 0 0);border:1px solid oklch(0.93 0.006 264);box-shadow:0 1px 2px oklch(0 0 0 / 0.04)}
+.btn-ghost{background:transparent;color:oklch(0.35 0 0);border:1px solid transparent}
+.badge{display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:9999px;font-size:12px;font-weight:500;white-space:nowrap;line-height:1}
+.s-changes{background:#fffbeb;color:#b45309}
+.muted{color:oklch(0.556 0 0)}
+.prose{font-size:16px;line-height:1.7;color:oklch(0.26 0 0)}
+.prose h3{margin:24px 0 6px;font-size:17px;font-weight:600;color:oklch(0.145 0 0)}
+.prose p{margin:0 0 14px}
+.sec{margin:0 0 10px;font-size:13px;font-weight:600}
+.tool{min-width:40px;height:40px;padding:0 8px;box-sizing:border-box;border:none;background:transparent;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;gap:4px;color:oklch(0.45 0 0);font-family:inherit;font-size:14px;font-weight:500;flex:0 0 auto}
+.tool.is-active{background:oklch(0.94 0 0);color:oklch(0.145 0 0)}
+.tsep{width:1px;height:20px;background:oklch(0.93 0.006 264);margin:0 4px;flex:0 0 auto}
+.tl{position:relative;display:flex;gap:12px;padding-bottom:16px}
+.tl-line{position:absolute;left:4px;top:16px;bottom:0;width:1px;background:oklch(0.93 0.006 264)}
+.tl-dot{width:9px;height:9px;border-radius:9999px;box-sizing:border-box;margin-top:6px;flex:0 0 auto;background:oklch(1 0 0);border:2px solid oklch(0.8 0 0)}
+</style>
+</helmet>
+<div class="app" style="width: 100%; min-height: 844px; box-sizing: border-box; display: flex; flex-direction: column; background: oklch(1 0 0);">
+
+  <header style="height: 52px; flex: 0 0 auto; box-sizing: border-box; display: flex; align-items: center; gap: 4px; padding: 0 12px 0 4px; border-bottom: 1px solid oklch(0.93 0.006 264);">
+    <a href="Mobile.dc.html" class="btn btn-ghost icon-btn" aria-label="Back to articles">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+    </a>
+    <span class="muted" style="flex: 1 1 auto; font-size: 14px;">Articles</span>
+    <span class="badge s-changes">Changes requested</span>
+  </header>
+
+  <div role="toolbar" aria-label="Formatting" style="flex: 0 0 auto; display: flex; align-items: center; gap: 2px; height: 48px; padding: 0 8px; overflow-x: auto; border-bottom: 1px solid oklch(0.93 0.006 264);">
+    <button class="tool" aria-label="Undo"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></button>
+    <span class="tsep"></span>
+    <button class="tool" aria-label="Text style" aria-haspopup="menu">Paragraph <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+    <button class="tool" aria-label="Bulleted list"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></svg></button>
+    <span class="tsep"></span>
+    <button class="tool is-active" aria-label="Bold" aria-pressed="true" style="font-weight: 700;">B</button>
+    <button class="tool" aria-label="Italic" aria-pressed="false" style="font-style: italic; font-family: Georgia, serif; font-size: 16px;">I</button>
+    <button class="tool" aria-label="Link"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></button>
+  </div>
+
+  <div style="flex: 1 1 auto; overflow-y: auto; padding: 20px 16px 104px;">
+    <input aria-label="Title" value="Beginner's Guide to Marathon Training" style="display: block; width: 100%; box-sizing: border-box; border: none; padding: 0; background: transparent; font-family: inherit; font-size: 22px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.3; color: oklch(0.145 0 0);">
+    <div class="muted" style="display: flex; align-items: center; margin-top: 6px; font-size: 13px;">
+      <span>/</span>
+      <input aria-label="Slug" value="beginners-guide-to-marathon-training" style="flex: 1 1 auto; min-width: 0; border: none; padding: 0; background: transparent; font-family: inherit; font-size: 13px; color: oklch(0.45 0 0);">
+    </div>
+
+    <section style="margin-top: 22px;">
+      <h2 class="sec">Client feedback</h2>
+      <div style="padding: 14px; border-radius: 10px; background: oklch(0.985 0.012 85); border: 1px solid oklch(0.93 0.035 85);">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+          <span style="width: 22px; height: 22px; border-radius: 9999px; background: oklch(0.93 0.05 80); color: oklch(0.45 0.1 60); font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center;">J</span>
+          <span style="font-size: 13px; font-weight: 500;">Jordan</span>
+          <span class="muted" style="font-size: 12px;">Oct 9</span>
+        </div>
+        <p style="margin: 0; font-size: 14px; line-height: 1.55; color: oklch(0.26 0 0);">Please shorten the intro and mention our free trial for first-timers.</p>
+      </div>
+      <button class="btn btn-outline" style="width: 100%; margin-top: 10px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="oklch(0.45 0 0)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 17v4M17 19h4"/></svg>
+        Draft this change
+      </button>
+    </section>
+
+    <div class="prose" style="margin-top: 24px; padding-top: 20px; border-top: 1px solid oklch(0.93 0.006 264);">
+      <p>Training for your first marathon doesn't have to be complicated. Start with a base of easy running, then layer in one long run per week.</p>
+      <h3>Build your base</h3>
+      <p>Spend the first four weeks simply getting used to running on consecutive days.</p>
+    </div>
+
+    <section style="margin-top: 12px; padding-top: 20px; border-top: 1px solid oklch(0.93 0.006 264);">
+      <h2 class="sec" style="margin-bottom: 14px;">Activity</h2>
+      <ol style="list-style: none; margin: 0; padding: 0;">
+        <li class="tl">
+          <span class="tl-line"></span>
+          <span class="tl-dot" style="border-color: #d97706;"></span>
+          <div><div style="font-size: 13.5px;"><span style="font-weight: 500;">Jordan</span> requested changes</div><div class="muted" style="font-size: 12px;">Oct 9, 2:14 PM</div></div>
+        </li>
+        <li class="tl" style="padding-bottom: 0;">
+          <span class="tl-dot"></span>
+          <div><div style="font-size: 13.5px;"><span style="font-weight: 500;">Sarah</span> sent for review</div><div class="muted" style="font-size: 12px;">Oct 8, 10:02 AM</div></div>
+        </li>
+      </ol>
+    </section>
+  </div>
+
+  <div style="position: fixed; left: 0; right: 0; bottom: 0; box-sizing: border-box; display: flex; gap: 10px; padding: 12px 16px 16px; background: oklch(1 0 0); border-top: 1px solid oklch(0.93 0.006 264);">
+    <button class="btn btn-outline" style="flex: 1 1 0;">Save</button>
+    <button class="btn btn-primary" style="flex: 2 1 0;">Send for review</button>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Article detail</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.app{font-family:'Geist',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;color:oklch(0.145 0 0);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.nav-item{display:flex;align-items:center;gap:10px;height:32px;padding:0 10px;border-radius:7px;color:oklch(0.45 0 0);text-decoration:none;font-size:13.5px;font-weight:500}
+.nav-item svg{color:oklch(0.62 0 0)}
+.nav-item:hover{background:oklch(0.955 0 0);color:oklch(0.145 0 0)}
+.nav-item.on{background:oklch(1 0 0);color:oklch(0.145 0 0);box-shadow:0 0 0 1px oklch(0.93 0.006 264),0 1px 2px oklch(0 0 0 / 0.05)}
+.nav-item.on svg{color:oklch(0.145 0 0)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:32px;padding:0 12px;box-sizing:border-box;border-radius:8px;font-family:inherit;font-size:13px;font-weight:500;line-height:1;white-space:nowrap;text-decoration:none;cursor:pointer}
+.btn-sm{height:28px;padding:0 10px;border-radius:7px;font-size:12.5px}
+.icon-btn{padding:0;width:32px}
+.btn-primary{background:oklch(0.488 0.243 264.376);color:oklch(1 0 0);border:1px solid oklch(0.44 0.22 264.376);box-shadow:inset 0 1px 0 oklch(1 0 0 / 0.14),0 1px 2px oklch(0 0 0 / 0.1)}
+.btn-primary:hover{background:oklch(0.45 0.225 264.376)}
+.btn-outline{background:oklch(1 0 0);color:oklch(0.145 0 0);border:1px solid oklch(0.93 0.006 264);box-shadow:0 1px 2px oklch(0 0 0 / 0.04)}
+.btn-outline:hover{background:oklch(0.975 0 0)}
+.btn-ghost{background:transparent;color:oklch(0.45 0 0);border:1px solid transparent}
+.btn-ghost:hover{background:oklch(0.96 0 0);color:oklch(0.145 0 0)}
+.badge{display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:9999px;font-size:12px;font-weight:500;white-space:nowrap;line-height:1}
+.s-changes{background:#fffbeb;color:#b45309}
+.muted{color:oklch(0.556 0 0)}
+.faint{color:oklch(0.708 0 0)}
+.lnk{color:oklch(0.556 0 0);text-decoration:none}
+.lnk:hover{color:oklch(0.145 0 0)}
+.tool{min-width:32px;height:32px;padding:0 6px;box-sizing:border-box;border:none;background:transparent;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;gap:4px;color:oklch(0.45 0 0);font-family:inherit;font-size:13px;font-weight:500;cursor:pointer}
+.tool:hover{background:oklch(0.96 0 0);color:oklch(0.145 0 0)}
+.tool.is-active{background:oklch(0.94 0 0);color:oklch(0.145 0 0)}
+.tool:disabled{color:oklch(0.78 0 0);cursor:default;background:transparent}
+.sep{width:1px;height:20px;background:oklch(0.93 0.006 264);margin:0 6px;flex:0 0 auto}
+.bubble{position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:2px;padding:4px;background:oklch(1 0 0);border:1px solid oklch(0.93 0.006 264);border-radius:10px;box-shadow:0 8px 24px -6px oklch(0 0 0 / 0.16),0 2px 4px oklch(0 0 0 / 0.04);white-space:nowrap;line-height:1}
+.bubble .tool{min-width:28px;height:28px;border-radius:6px}
+.sel{position:relative;background:oklch(0.488 0.243 264.376 / 0.16);border-radius:2px}
+.prose{font-size:15.5px;line-height:1.75;color:oklch(0.26 0 0)}
+.prose h2{margin:32px 0 8px;font-size:19px;font-weight:600;color:oklch(0.145 0 0);letter-spacing:-0.015em;line-height:1.35}
+.prose p{margin:0 0 16px}
+.prose ul{margin:0 0 16px;padding-left:22px}
+.prose li{margin:4px 0}
+.prose a{color:oklch(0.145 0 0);text-decoration:underline;text-decoration-color:oklch(0.8 0 0);text-underline-offset:3px}
+.tl{position:relative;display:flex;gap:12px;padding-bottom:18px}
+.tl-line{position:absolute;left:4px;top:16px;bottom:0;width:1px;background:oklch(0.93 0.006 264)}
+.tl-dot{width:9px;height:9px;border-radius:9999px;box-sizing:border-box;margin-top:6px;flex:0 0 auto;background:oklch(1 0 0);border:2px solid oklch(0.8 0 0)}
+</style>
+</helmet>
+<div class="app" style="width: 100%; min-height: 840px; box-sizing: border-box; display: flex; flex-wrap: wrap; background: oklch(0.98 0 0);">
+
+  <aside style="width: 232px; flex: 0 0 232px; box-sizing: border-box; padding: 14px 10px 10px; display: flex; flex-direction: column; gap: 2px;">
+    <div style="display: flex; align-items: center; gap: 9px; padding: 4px 8px 14px;">
+      <span style="width: 24px; height: 24px; border-radius: 7px; background: oklch(0.145 0 0); display: flex; align-items: center; justify-content: center; flex: 0 0 auto;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="oklch(1 0 0)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M8 7h9v9"/></svg>
+      </span>
+      <span style="font-size: 13.5px; font-weight: 600; letter-spacing: -0.01em;">Content Importer</span>
+    </div>
+    <a href="SwitcherOpen.dc.html" class="btn btn-outline" aria-label="Switch site" style="width: 100%; height: 36px; justify-content: flex-start; gap: 8px; padding: 0 8px; margin-bottom: 14px;">
+      <span style="width: 20px; height: 20px; border-radius: 5px; background: oklch(0.94 0 0); color: oklch(0.35 0 0); font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex: 0 0 auto;">A</span>
+      <span style="flex: 1 1 auto; min-width: 0; text-align: left; overflow: hidden; text-overflow: ellipsis;">acme-running.com</span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="oklch(0.62 0 0)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
+    </a>
+    <a href="Import.dc.html" class="nav-item">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg>
+      Import
+    </a>
+    <a href="Main.dc.html" class="nav-item on">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg>
+      Articles
+    </a>
+    <a href="Report.dc.html" class="nav-item">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M8 16v-4M13 16V8M18 16v-7"/></svg>
+      Report
+    </a>
+    <div style="flex: 1 1 auto;"></div>
+    <a href="Sites.dc.html" class="nav-item" style="margin-bottom: 6px;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      All sites
+    </a>
+    <div style="display: flex; align-items: center; gap: 9px; padding: 12px 4px 2px 8px; border-top: 1px solid oklch(0.93 0.006 264);">
+      <span style="width: 26px; height: 26px; border-radius: 9999px; background: oklch(0.92 0 0); color: oklch(0.35 0 0); font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex: 0 0 auto;">A</span>
+      <span style="flex: 1 1 auto; min-width: 0; font-size: 12.5px; color: oklch(0.45 0 0); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">agency@example.test</span>
+      <a href="Login.dc.html" class="btn btn-ghost btn-sm icon-btn" aria-label="Log out" style="width: 28px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>
+      </a>
+    </div>
+  </aside>
+
+  <main style="flex: 999 1 560px; min-width: 0; margin: 8px 8px 8px 0; box-sizing: border-box; background: oklch(1 0 0); border: 1px solid oklch(0.93 0.006 264); border-radius: 12px; box-shadow: 0 1px 3px oklch(0 0 0 / 0.04); display: flex; flex-direction: column; overflow: hidden;">
+
+    <div style="height: 52px; flex: 0 0 auto; box-sizing: border-box; display: flex; align-items: center; gap: 12px; padding: 0 14px 0 20px; border-bottom: 1px solid oklch(0.93 0.006 264);">
+      <nav aria-label="Breadcrumb" style="display: flex; align-items: center; gap: 6px; flex: 1 1 auto; min-width: 0; font-size: 13px;">
+        <a href="Main.dc.html" class="lnk">Articles</a>
+        <span class="faint">/</span>
+        <span style="font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Beginner's Guide to Marathon Training</span>
+        <span class="badge s-changes" style="margin-left: 6px;">Changes requested</span>
+      </nav>
+      <span class="faint" style="font-size: 12.5px;">Saved</span>
+      <button class="btn btn-primary">Send for review</button>
+    </div>
+
+    <div style="flex: 1 1 auto; min-height: 0; display: flex;">
+
+      <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column;">
+
+        <div role="toolbar" aria-label="Formatting" style="flex: 0 0 auto; display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 2px; min-height: 48px; padding: 0 12px; border-bottom: 1px solid oklch(0.93 0.006 264);">
+          <button class="tool" aria-label="Undo"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></button>
+          <button class="tool" aria-label="Redo" disabled><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m15 14 5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></svg></button>
+          <span class="sep"></span>
+          <button class="tool" aria-label="Text style" aria-haspopup="menu" style="padding: 0 8px 0 10px; gap: 6px;">Paragraph <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+          <button class="tool" aria-label="Bulleted list" aria-pressed="false"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></svg></button>
+          <button class="tool" aria-label="Numbered list" aria-pressed="false"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M10 6h11M10 12h11M10 18h11"/><path d="M4 6h1v4"/><path d="M4 10h2"/><path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg></button>
+          <span class="sep"></span>
+          <button class="tool is-active" aria-label="Bold" aria-pressed="true" style="font-weight: 700; font-size: 14px;">B</button>
+          <button class="tool" aria-label="Italic" aria-pressed="false" style="font-style: italic; font-family: Georgia, serif; font-size: 15px;">I</button>
+          <button class="tool" aria-label="Link"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></button>
+        </div>
+
+        <div style="flex: 1 1 auto; overflow-y: auto;">
+          <div style="max-width: 680px; margin: 0 auto; padding: 40px 32px 64px;">
+            <input aria-label="Title" value="Beginner's Guide to Marathon Training" style="display: block; width: 100%; box-sizing: border-box; border: none; padding: 0; background: transparent; font-family: inherit; font-size: 28px; font-weight: 600; letter-spacing: -0.025em; line-height: 1.25; color: oklch(0.145 0 0);">
+            <div class="muted" style="display: flex; align-items: center; margin: 8px 0 28px; font-size: 13px;">
+              <span>acme-running.com/</span>
+              <input aria-label="Slug" value="beginners-guide-to-marathon-training" style="flex: 1 1 auto; min-width: 0; border: none; padding: 0; background: transparent; font-family: inherit; font-size: 13px; color: oklch(0.45 0 0);">
+            </div>
+
+            <div class="prose">
+              <p>Training for your first marathon doesn't have to be complicated. Start with a base of easy running, then layer in <strong class="sel" style="font-weight: 600; color: oklch(0.145 0 0);">one long run per week<span class="bubble" role="toolbar" aria-label="Selection formatting"><button class="tool is-active" aria-label="Bold" aria-pressed="true" style="font-weight: 700;">B</button><button class="tool" aria-label="Italic" aria-pressed="false" style="font-style: italic; font-family: Georgia, serif;">I</button><span class="sep" style="height: 16px; margin: 0 3px;"></span><button class="tool" aria-label="Link"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></button></span></strong>.</p>
+              <h2>Build your base</h2>
+              <p>Spend the first four weeks simply getting used to running on consecutive days. Keep the pace conversational.</p>
+              <ul>
+                <li>Three easy runs per week</li>
+                <li>One rest day between harder efforts</li>
+                <li>A weekly long run, adding 10% distance each week</li>
+              </ul>
+              <p>Sign up for a local <a href="#">beginner training group</a> if you want structure and company.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <aside style="width: 320px; flex: 0 0 320px; box-sizing: border-box; border-left: 1px solid oklch(0.93 0.006 264); overflow-y: auto; padding: 20px;">
+        <h2 style="margin: 0 0 10px; font-size: 13px; font-weight: 600;">Client feedback</h2>
+        <div style="padding: 14px; border-radius: 10px; background: oklch(0.985 0.012 85); border: 1px solid oklch(0.93 0.035 85);">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+            <span style="width: 22px; height: 22px; border-radius: 9999px; background: oklch(0.93 0.05 80); color: oklch(0.45 0.1 60); font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center;">J</span>
+            <span style="font-size: 13px; font-weight: 500;">Jordan</span>
+            <span class="muted" style="font-size: 12px;">Oct 9</span>
+          </div>
+          <p style="margin: 0; font-size: 13.5px; line-height: 1.55; color: oklch(0.26 0 0);">Please shorten the intro and mention our free trial for first-timers.</p>
+        </div>
+        <button class="btn btn-outline" style="width: 100%; margin-top: 10px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="oklch(0.45 0 0)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 17v4M17 19h4"/></svg>
+          Draft this change
+        </button>
+
+        <div style="height: 1px; background: oklch(0.93 0.006 264); margin: 24px 0 20px;"></div>
+
+        <h2 style="margin: 0 0 14px; font-size: 13px; font-weight: 600;">Activity</h2>
+        <ol style="list-style: none; margin: 0; padding: 0;">
+          <li class="tl">
+            <span class="tl-line"></span>
+            <span class="tl-dot" style="border-color: #d97706;"></span>
+            <div><div style="font-size: 13px;"><span style="font-weight: 500;">Jordan</span> requested changes</div><div class="muted" style="font-size: 12px;">Oct 9, 2:14 PM</div></div>
+          </li>
+          <li class="tl">
+            <span class="tl-line"></span>
+            <span class="tl-dot"></span>
+            <div><div style="font-size: 13px;"><span style="font-weight: 500;">Sarah</span> sent for review</div><div class="muted" style="font-size: 12px;">Oct 8, 10:02 AM</div></div>
+          </li>
+          <li class="tl" style="padding-bottom: 0;">
+            <span class="tl-dot"></span>
+            <div><div style="font-size: 13px;"><span style="font-weight: 500;">Sarah</span> imported from .docx</div><div class="muted" style="font-size: 12px;">Oct 8, 9:40 AM</div></div>
+          </li>
+        </ol>
+      </aside>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":840}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

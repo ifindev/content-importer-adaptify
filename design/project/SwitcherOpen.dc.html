@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Site switcher</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.app{font-family:'Geist',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;color:oklch(0.145 0 0);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.nav-item{display:flex;align-items:center;gap:10px;height:32px;padding:0 10px;border-radius:7px;color:oklch(0.45 0 0);text-decoration:none;font-size:13.5px;font-weight:500}
+.nav-item svg{color:oklch(0.62 0 0)}
+.nav-item.on{background:oklch(1 0 0);color:oklch(0.145 0 0);box-shadow:0 0 0 1px oklch(0.93 0.006 264),0 1px 2px oklch(0 0 0 / 0.05)}
+.nav-item.on svg{color:oklch(0.145 0 0)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:32px;padding:0 12px;box-sizing:border-box;border-radius:8px;font-family:inherit;font-size:13px;font-weight:500;line-height:1;white-space:nowrap;text-decoration:none;cursor:pointer}
+.btn-sm{height:28px;padding:0 10px;border-radius:7px;font-size:12.5px}
+.icon-btn{padding:0;width:32px}
+.btn-outline{background:oklch(1 0 0);color:oklch(0.145 0 0);border:1px solid oklch(0.93 0.006 264);box-shadow:0 1px 2px oklch(0 0 0 / 0.04)}
+.btn-ghost{background:transparent;color:oklch(0.45 0 0);border:1px solid transparent}
+.input{height:30px;box-sizing:border-box;padding:0 10px 0 30px;border:1px solid oklch(0.93 0.006 264);border-radius:7px;background:oklch(1 0 0);font-family:inherit;font-size:13px;color:oklch(0.145 0 0)}
+.input::placeholder{color:oklch(0.62 0 0)}
+.mlabel{padding:6px 8px 4px;font-size:11.5px;font-weight:500;color:oklch(0.556 0 0)}
+.mitem{display:flex;align-items:center;gap:9px;width:100%;height:34px;padding:0 8px;box-sizing:border-box;border:none;border-radius:6px;background:transparent;font-family:inherit;font-size:13px;color:oklch(0.145 0 0);text-decoration:none;text-align:left;cursor:pointer}
+.mitem:hover,.mitem.hl{background:oklch(0.96 0 0)}
+.mav{width:20px;height:20px;border-radius:5px;background:oklch(0.94 0 0);color:oklch(0.35 0 0);font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.skel{background:oklch(0.955 0 0);border-radius:6px}
+</style>
+</helmet>
+<div class="app" style="width: 100%; min-height: 840px; box-sizing: border-box; display: flex; flex-wrap: wrap; background: oklch(0.98 0 0);">
+
+  <aside style="position: relative; width: 232px; flex: 0 0 232px; box-sizing: border-box; padding: 14px 10px 10px; display: flex; flex-direction: column; gap: 2px;">
+    <div style="display: flex; align-items: center; gap: 9px; padding: 4px 8px 14px;">
+      <span style="width: 24px; height: 24px; border-radius: 7px; background: oklch(0.145 0 0); display: flex; align-items: center; justify-content: center; flex: 0 0 auto;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="oklch(1 0 0)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M8 7h9v9"/></svg>
+      </span>
+      <span style="font-size: 13.5px; font-weight: 600; letter-spacing: -0.01em;">Content Importer</span>
+    </div>
+    <a href="Main.dc.html" class="btn btn-outline" aria-label="Switch site" aria-expanded="true" style="width: 100%; height: 36px; justify-content: flex-start; gap: 8px; padding: 0 8px; margin-bottom: 14px; background: oklch(0.975 0 0); box-shadow: 0 0 0 3px oklch(0.488 0.243 264.376 / 0.12); border-color: oklch(0.488 0.243 264.376 / 0.45);">
+      <span style="width: 20px; height: 20px; border-radius: 5px; background: oklch(0.94 0 0); color: oklch(0.35 0 0); font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex: 0 0 auto;">A</span>
+      <span style="flex: 1 1 auto; min-width: 0; text-align: left; overflow: hidden; text-overflow: ellipsis;">acme-running.com</span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="oklch(0.62 0 0)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
+    </a>
+    <a href="Import.dc.html" class="nav-item">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg>
+      Import
+    </a>
+    <a href="Main.dc.html" class="nav-item on">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg>
+      Articles
+    </a>
+    <a href="Report.dc.html" class="nav-item">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M8 16v-4M13 16V8M18 16v-7"/></svg>
+      Report
+    </a>
+    <div style="flex: 1 1 auto;"></div>
+    <a href="Sites.dc.html" class="nav-item" style="margin-bottom: 6px;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      All sites
+    </a>
+    <div style="display: flex; align-items: center; gap: 9px; padding: 12px 4px 2px 8px; border-top: 1px solid oklch(0.93 0.006 264);">
+      <span style="width: 26px; height: 26px; border-radius: 9999px; background: oklch(0.92 0 0); color: oklch(0.35 0 0); font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex: 0 0 auto;">A</span>
+      <span style="flex: 1 1 auto; min-width: 0; font-size: 12.5px; color: oklch(0.45 0 0); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">agency@example.test</span>
+      <a href="Login.dc.html" class="btn btn-ghost btn-sm icon-btn" aria-label="Log out" style="width: 28px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>
+      </a>
+    </div>
+
+    <div role="menu" aria-label="Sites" style="position: absolute; top: 98px; left: 10px; z-index: 10; width: 264px; box-sizing: border-box; padding: 6px; background: oklch(1 0 0); border: 1px solid oklch(0.93 0.006 264); border-radius: 10px; box-shadow: 0 12px 32px -8px oklch(0 0 0 / 0.18), 0 2px 6px oklch(0 0 0 / 0.05);">
+      <label style="position: relative; display: block; padding: 2px 2px 6px;">
+        <svg style="position: absolute; left: 11px; top: 9px;" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="oklch(0.62 0 0)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input class="input" type="search" aria-label="Find a site" placeholder="Find a site" style="width: 100%;">
+      </label>
+      <div class="mlabel">Sites</div>
+      <a href="Main.dc.html" role="menuitemradio" aria-checked="true" class="mitem hl">
+        <span class="mav">A</span>
+        <span style="flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">acme-running.com</span>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="oklch(0.145 0 0)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+      </a>
+      <a href="Main.dc.html" role="menuitemradio" aria-checked="false" class="mitem">
+        <span class="mav">B</span>
+        <span style="flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">brightsmile-dental.com</span>
+      </a>
+      <a href="Main.dc.html" role="menuitemradio" aria-checked="false" class="mitem">
+        <span class="mav">N</span>
+        <span style="flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">northpeak-outdoors.com</span>
+        <span title="Can't connect to WordPress" style="width: 7px; height: 7px; border-radius: 9999px; background: #dc2626; flex: 0 0 auto;"></span>
+        <span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0);">Can't connect to WordPress</span>
+      </a>
+      <a href="Main.dc.html" role="menuitemradio" aria-checked="false" class="mitem">
+        <span class="mav">L</span>
+        <span style="flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">lumen-yoga.studio</span>
+      </a>
+      <div style="height: 1px; background: oklch(0.93 0.006 264); margin: 6px -6px;"></div>
+      <a href="Sites.dc.html" role="menuitem" class="mitem" style="color: oklch(0.35 0 0);">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="oklch(0.556 0 0)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        All sites
+      </a>
+      <a href="AddSite.dc.html" role="menuitem" class="mitem" style="color: oklch(0.35 0 0);">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="oklch(0.556 0 0)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+        Add site
+      </a>
+    </div>
+  </aside>
+
+  <main aria-hidden="true" style="flex: 999 1 560px; min-width: 0; margin: 8px 8px 8px 0; box-sizing: border-box; background: oklch(1 0 0); border: 1px solid oklch(0.93 0.006 264); border-radius: 12px; box-shadow: 0 1px 3px oklch(0 0 0 / 0.04); padding: 22px 28px; display: flex; flex-direction: column; gap: 14px;">
+    <h1 style="margin: 0; font-size: 20px; font-weight: 600; letter-spacing: -0.015em;">Articles</h1>
+    <div class="skel" style="width: 120px; height: 12px;"></div>
+    <div style="display: flex; gap: 8px; margin: 10px 0 6px;"><div class="skel" style="width: 260px; height: 32px;"></div><div class="skel" style="width: 120px; height: 32px;"></div></div>
+    <div class="skel" style="height: 14px; width: 92%;"></div>
+    <div class="skel" style="height: 14px; width: 86%;"></div>
+    <div class="skel" style="height: 14px; width: 90%;"></div>
+    <div class="skel" style="height: 14px; width: 80%;"></div>
+    <div class="skel" style="height: 14px; width: 88%;"></div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":840}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

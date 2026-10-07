@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Review page — client</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.app{font-family:'Geist',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;color:oklch(0.145 0 0);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:36px;padding:0 14px;box-sizing:border-box;border-radius:8px;font-family:inherit;font-size:13.5px;font-weight:500;line-height:1;white-space:nowrap;text-decoration:none;cursor:pointer}
+.btn-primary{background:oklch(0.488 0.243 264.376);color:oklch(1 0 0);border:1px solid oklch(0.44 0.22 264.376);box-shadow:inset 0 1px 0 oklch(1 0 0 / 0.14),0 1px 2px oklch(0 0 0 / 0.1)}
+.muted{color:oklch(0.556 0 0)}
+.card{background:oklch(1 0 0);border:1px solid oklch(0.93 0.006 264);border-radius:12px;box-shadow:0 1px 2px oklch(0 0 0 / 0.03)}
+.sec-head{display:flex;align-items:baseline;gap:8px;margin:0 0 10px}
+.sec-head h2{margin:0;font-size:14px;font-weight:600}
+.lrow{display:flex;align-items:center;gap:12px;min-height:56px;padding:10px 14px;box-sizing:border-box;border-top:1px solid oklch(0.955 0.003 264);text-decoration:none;color:inherit}
+.lrow:first-child{border-top:none}
+.lnk{display:inline-flex;align-items:center;gap:5px;min-height:44px;color:oklch(0.45 0 0);font-size:13px;font-weight:500;text-decoration:none}
+</style>
+</helmet>
+<div class="app" style="width: 100%; min-height: 844px; box-sizing: border-box; background: oklch(0.98 0 0);">
+
+  <header style="background: oklch(1 0 0); border-bottom: 1px solid oklch(0.93 0.006 264); padding: 18px 20px 16px;">
+    <div style="font-size: 16px; font-weight: 600; letter-spacing: -0.01em;">acme-running.com</div>
+    <div class="muted" style="font-size: 13px; margin-top: 1px;">Articles for your review</div>
+  </header>
+
+  <div style="padding: 20px 16px 32px; display: flex; flex-direction: column; gap: 28px;">
+
+    <section>
+      <div class="sec-head"><h2>Waiting for your review</h2><span class="muted" style="font-size: 13px;">1</span></div>
+      <div class="card" style="padding: 16px;">
+        <div style="font-size: 15px; font-weight: 500; line-height: 1.4;">How to Choose a Treadmill for Home Use</div>
+        <div class="muted" style="font-size: 12.5px; margin-top: 4px;">Sent Oct 7</div>
+        <a href="ArticleReader.dc.html" class="btn btn-primary" style="width: 100%; height: 44px; margin-top: 14px; border-radius: 10px; font-size: 14.5px;">Read and review</a>
+      </div>
+    </section>
+
+    <section>
+      <div class="sec-head"><h2>Upcoming</h2><span class="muted" style="font-size: 13px;">1</span></div>
+      <div class="card">
+        <div class="lrow">
+          <div style="flex: 1 1 auto; min-width: 0;">
+            <div style="font-size: 14px; font-weight: 500;">Running Shoe Maintenance 101</div>
+            <div class="muted" style="font-size: 12.5px;">Publishes Oct 12</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="sec-head"><h2>Published</h2><span class="muted" style="font-size: 13px;">2</span></div>
+      <div class="card">
+        <div class="lrow">
+          <div style="flex: 1 1 auto; min-width: 0;">
+            <div style="font-size: 14px; font-weight: 500;">Why Compression Socks Work</div>
+            <div class="muted" style="font-size: 12.5px;">Oct 1</div>
+          </div>
+          <a href="#" class="lnk">View
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
+          </a>
+        </div>
+        <div class="lrow">
+          <div style="flex: 1 1 auto; min-width: 0;">
+            <div style="font-size: 14px; font-weight: 500;">10 Best Running Shoes for Flat Feet</div>
+            <div class="muted" style="font-size: 12.5px;">Sep 22</div>
+          </div>
+          <a href="#" class="lnk">View
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
+          </a>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

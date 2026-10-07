@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Article reader — client</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.app{font-family:'Geist',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;color:oklch(0.145 0 0);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:44px;padding:0 16px;box-sizing:border-box;border-radius:10px;font-family:inherit;font-size:14.5px;font-weight:500;line-height:1;white-space:nowrap;text-decoration:none;cursor:pointer}
+.icon-btn{padding:0;width:44px}
+.btn-primary{background:oklch(0.488 0.243 264.376);color:oklch(1 0 0);border:1px solid oklch(0.44 0.22 264.376);box-shadow:inset 0 1px 0 oklch(1 0 0 / 0.14),0 1px 2px oklch(0 0 0 / 0.1)}
+.btn-outline{background:oklch(1 0 0);color:oklch(0.145 0 0);border:1px solid oklch(0.93 0.006 264);box-shadow:0 1px 2px oklch(0 0 0 / 0.04)}
+.btn-ghost{background:transparent;color:oklch(0.35 0 0);border:1px solid transparent}
+.input{height:44px;box-sizing:border-box;padding:0 12px;border:1px solid oklch(0.93 0.006 264);border-radius:10px;background:oklch(1 0 0);font-family:inherit;font-size:16px;color:oklch(0.145 0 0)}
+.input::placeholder{color:oklch(0.62 0 0)}
+.muted{color:oklch(0.556 0 0)}
+.prose{font-size:16.5px;line-height:1.75;color:oklch(0.26 0 0)}
+.prose h3{margin:26px 0 6px;font-size:18px;font-weight:600;letter-spacing:-0.01em;color:oklch(0.145 0 0)}
+.prose p{margin:0 0 16px}
+.prose ul{margin:0 0 16px;padding-left:22px}
+.prose a{color:oklch(0.145 0 0);text-decoration:underline;text-decoration-color:oklch(0.8 0 0);text-underline-offset:3px}
+</style>
+</helmet>
+<div class="app" style="width: 100%; min-height: 844px; box-sizing: border-box; display: flex; flex-direction: column; background: oklch(1 0 0);">
+
+  <header style="height: 52px; flex: 0 0 auto; box-sizing: border-box; display: flex; align-items: center; gap: 4px; padding: 0 4px; border-bottom: 1px solid oklch(0.93 0.006 264);">
+    <a href="ReviewPage.dc.html" class="btn btn-ghost icon-btn" aria-label="Back to all articles">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+    </a>
+    <span class="muted" style="font-size: 14px;">acme-running.com</span>
+  </header>
+
+  <article style="flex: 1 1 auto; overflow-y: auto; padding: 24px 20px 220px;">
+    <h1 style="margin: 0; font-size: 24px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.3;">How to Choose a Treadmill for Home Use</h1>
+    <p class="muted" style="margin: 8px 0 24px; font-size: 13px;">Sent for your review on Oct 7</p>
+    <div class="prose">
+      <p>A good home treadmill comes down to three things: motor strength, belt size, and how much shock absorption the deck gives your joints.</p>
+      <h3>Motor power</h3>
+      <p>Look for at least 2.5 continuous horsepower if you plan to run rather than walk. Anything less will strain under sustained speed.</p>
+      <h3>Belt size</h3>
+      <ul>
+        <li>At least 20" wide for a natural stride</li>
+        <li>60" or longer if you're over 6 feet tall</li>
+      </ul>
+      <p>See our <a href="#">full treadmill comparison chart</a> for specific models.</p>
+    </div>
+  </article>
+
+  <div style="position: fixed; left: 0; right: 0; bottom: 0; box-sizing: border-box; padding: 14px 16px 16px; background: oklch(1 0 0); border-top: 1px solid oklch(0.93 0.006 264); box-shadow: 0 -4px 16px oklch(0 0 0 / 0.04); display: flex; flex-direction: column; gap: 12px;">
+    <label style="display: flex; flex-direction: column; gap: 6px;">
+      <span style="font-size: 13px; font-weight: 500;">Your name</span>
+      <input class="input" type="text" autocomplete="name" placeholder="So the agency knows who decided">
+    </label>
+    <div style="display: flex; gap: 10px;">
+      <a href="ArticleReaderChanges.dc.html" class="btn btn-outline" style="flex: 1 1 0;">Request changes</a>
+      <button class="btn btn-primary" style="flex: 1 1 0;">Approve</button>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

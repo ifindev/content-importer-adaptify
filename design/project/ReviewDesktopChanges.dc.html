@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Request changes — desktop</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.app{font-family:'Geist',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;color:oklch(0.145 0 0);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:36px;padding:0 14px;box-sizing:border-box;border-radius:8px;font-family:inherit;font-size:13.5px;font-weight:500;line-height:1;white-space:nowrap;text-decoration:none;cursor:pointer}
+.btn-primary{background:oklch(0.488 0.243 264.376);color:oklch(1 0 0);border:1px solid oklch(0.44 0.22 264.376);box-shadow:inset 0 1px 0 oklch(1 0 0 / 0.14),0 1px 2px oklch(0 0 0 / 0.1)}
+.btn-primary:hover{background:oklch(0.45 0.225 264.376)}
+.btn-outline{background:oklch(1 0 0);color:oklch(0.145 0 0);border:1px solid oklch(0.93 0.006 264);box-shadow:0 1px 2px oklch(0 0 0 / 0.04)}
+.btn-outline:hover{background:oklch(0.975 0 0)}
+.input{width:100%;height:36px;box-sizing:border-box;padding:0 11px;border:1px solid oklch(0.93 0.006 264);border-radius:8px;background:oklch(1 0 0);font-family:inherit;font-size:13.5px;color:oklch(0.145 0 0);box-shadow:0 1px 2px oklch(0 0 0 / 0.03)}
+.input::placeholder{color:oklch(0.62 0 0)}
+.input:focus{outline:none;border-color:oklch(0.488 0.243 264.376 / 0.5);box-shadow:0 0 0 3px oklch(0.488 0.243 264.376 / 0.12)}
+.muted{color:oklch(0.556 0 0)}
+.group{margin:0;padding:16px 12px 6px;font-size:12px;font-weight:500;color:oklch(0.556 0 0);display:flex;align-items:baseline;gap:6px}
+.group span{color:oklch(0.708 0 0)}
+.item{display:block;padding:9px 12px;border-radius:8px;text-decoration:none;color:inherit}
+.item:hover{background:oklch(0.96 0 0)}
+.item.on{background:oklch(1 0 0);box-shadow:0 0 0 1px oklch(0.93 0.006 264),0 1px 2px oklch(0 0 0 / 0.05)}
+.item-title{display:block;font-size:13.5px;font-weight:500;line-height:1.35}
+.item-meta{display:flex;align-items:center;gap:6px;margin-top:2px;font-size:12px;color:oklch(0.556 0 0)}
+.dot{width:6px;height:6px;border-radius:9999px;background:oklch(0.488 0.243 264.376);flex:0 0 auto}
+.prose{font-size:17px;line-height:1.75;color:oklch(0.26 0 0)}
+.prose h2{margin:32px 0 8px;font-size:20px;font-weight:600;letter-spacing:-0.015em;color:oklch(0.145 0 0)}
+.prose p{margin:0 0 18px}
+.prose ul{margin:0 0 18px;padding-left:24px}
+.prose li{margin:4px 0}
+.prose a{color:oklch(0.145 0 0);text-decoration:underline;text-decoration-color:oklch(0.8 0 0);text-underline-offset:3px}
+</style>
+</helmet>
+<div class="app" style="width: 100%; min-height: 844px; box-sizing: border-box; display: flex; flex-direction: column; background: oklch(0.98 0 0);">
+
+  <header style="height: 56px; flex: 0 0 auto; box-sizing: border-box; display: flex; align-items: center; gap: 12px; padding: 0 24px; background: oklch(1 0 0); border-bottom: 1px solid oklch(0.93 0.006 264);">
+    <span style="width: 28px; height: 28px; border-radius: 8px; background: oklch(0.94 0 0); color: oklch(0.35 0 0); font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex: 0 0 auto;">A</span>
+    <div style="display: flex; align-items: baseline; gap: 10px; min-width: 0;">
+      <span style="font-size: 15px; font-weight: 600; letter-spacing: -0.01em;">acme-running.com</span>
+      <span class="muted" style="font-size: 13px;">Article review</span>
+    </div>
+  </header>
+
+  <div style="flex: 1 1 auto; min-height: 0; display: flex; flex-wrap: wrap;">
+
+    <nav aria-label="Articles" style="width: 280px; flex: 0 0 280px; box-sizing: border-box; padding: 4px 12px 24px; overflow-y: auto;">
+      <h2 class="group">Waiting for your review <span>(1)</span></h2>
+      <a href="#" class="item on" aria-current="page">
+        <span class="item-title">How to Choose a Treadmill for Home Use</span>
+        <span class="item-meta"><span class="dot"></span>Sent Oct 7</span>
+      </a>
+
+      <h2 class="group">Upcoming <span>(1)</span></h2>
+      <a href="#" class="item">
+        <span class="item-title">Running Shoe Maintenance 101</span>
+        <span class="item-meta">Publishes Oct 12</span>
+      </a>
+
+      <h2 class="group">Published <span>(2)</span></h2>
+      <a href="#" class="item">
+        <span class="item-title">Why Compression Socks Work</span>
+        <span class="item-meta">Oct 1</span>
+      </a>
+      <a href="#" class="item">
+        <span class="item-title">10 Best Running Shoes for Flat Feet</span>
+        <span class="item-meta">Sep 22</span>
+      </a>
+    </nav>
+
+    <main style="flex: 999 1 560px; min-width: 0; margin: 12px 12px 12px 0; box-sizing: border-box; background: oklch(1 0 0); border: 1px solid oklch(0.93 0.006 264); border-radius: 12px; box-shadow: 0 1px 3px oklch(0 0 0 / 0.04); display: flex; flex-wrap: wrap; overflow: hidden;">
+
+      <article style="flex: 999 1 480px; min-width: 0; overflow-y: auto; padding: 48px 56px 64px; box-sizing: border-box;">
+        <div style="max-width: 640px; margin: 0 auto;">
+          <h1 style="margin: 0; font-size: 30px; font-weight: 600; letter-spacing: -0.025em; line-height: 1.25;">How to Choose a Treadmill for Home Use</h1>
+          <p class="muted" style="margin: 10px 0 32px; font-size: 13.5px;">Sent for your review on Oct 7</p>
+          <div class="prose">
+            <p>A good home treadmill comes down to three things: motor strength, belt size, and how much shock absorption the deck gives your joints.</p>
+            <h2>Motor power</h2>
+            <p>Look for at least 2.5 continuous horsepower if you plan to run rather than walk. Anything less will strain under sustained speed.</p>
+            <h2>Belt size</h2>
+            <ul>
+              <li>At least 20" wide for a natural stride</li>
+              <li>60" or longer if you're over 6 feet tall</li>
+            </ul>
+            <p>See our <a href="#">full treadmill comparison chart</a> for specific models.</p>
+          </div>
+        </div>
+      </article>
+
+      <aside aria-label="Your decision" style="width: 300px; flex: 1 1 300px; max-width: 340px; box-sizing: border-box; border-left: 1px solid oklch(0.93 0.006 264); padding: 24px;">
+        <div style="position: sticky; top: 24px; display: flex; flex-direction: column; gap: 16px;">
+          <div>
+            <h2 style="margin: 0; font-size: 15px; font-weight: 600;">Request changes</h2>
+            <p class="muted" style="margin: 4px 0 0; font-size: 13px; line-height: 1.5;">The agency sees this note on the article and sends it back for your approval.</p>
+          </div>
+          <label style="display: flex; flex-direction: column; gap: 6px;">
+            <span style="font-size: 13px; font-weight: 500;">What should change?</span>
+            <textarea class="input" rows="7" style="height: auto; padding: 10px 12px; line-height: 1.5; resize: vertical;">Can we add a short section on folding treadmills? Many of our customers live in small apartments.</textarea>
+            <span class="muted" style="font-size: 12px;">Be specific: mention the section or sentence.</span>
+          </label>
+          <label style="display: flex; flex-direction: column; gap: 6px;">
+            <span style="font-size: 13px; font-weight: 500;">Your name</span>
+            <input class="input" type="text" autocomplete="name" value="Jordan Lee">
+            <span class="muted" style="font-size: 12px;">Remembered on this device</span>
+          </label>
+          <div style="display: flex; gap: 8px;">
+            <a href="ReviewDesktop.dc.html" class="btn btn-outline" style="flex: 1 1 0;">Cancel</a>
+            <button class="btn btn-primary" style="flex: 1 1 0;">Send request</button>
+          </div>
+        </div>
+      </aside>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

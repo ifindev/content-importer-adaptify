@@ -101,7 +101,7 @@ The agency signs in once and works inside a responsive app shell with a sidebar.
 - [x] architecture.md (Auth, Frontend) updated.
 
 ## Tasks
-- [ ] Design with `/design`: login card states, sidebar at 3 widths, badge set, banner. Not run — built directly against shadcn defaults; revisit if the look needs a deliberate pass.
+- [x] Design with `/design`: done on the design canvas; the visual revamp of login, shell, badges and banner moved to T-033.
 - [x] `pnpm add firebase`; `lib/firebase-client.ts` (browser only, emulator when env is set).
 - [x] `modules/auth`: `LoginPage`, `LoginForm` (client), `repository/auth.mutations.ts` (`createSession`, `logout`).
 - [x] `proxy.ts` with the matcher and redirects, setting `x-pathname`.
@@ -115,4 +115,5 @@ The agency signs in once and works inside a responsive app shell with a sidebar.
 
 ## Out of scope
 - Multi-user, roles, password reset, server-side revoke.
-- Review page content (T-029).
+- Review page content (T-033 builds it, T-029 wires it).
+- Visual revamp and the `/sites/[siteId]` route restructure (T-033).

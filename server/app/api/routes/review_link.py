@@ -2,12 +2,13 @@ from fastapi import APIRouter, Depends, Request
 
 from app.api.auth import require_session
 from app.api.schemas import ReviewLinkOut
+from app.api.tags import REVIEW_LINK
 from app.core.ports.article_repository import ArticleRepository
 from app.core.ports.clock import Clock
 from app.core.ports.secret_store import SecretStore
 from app.core.use_cases.review_link import get_or_create_review_link, reset_review_link
 
-router = APIRouter(dependencies=[Depends(require_session)])
+router = APIRouter(tags=[REVIEW_LINK], dependencies=[Depends(require_session)])
 
 
 def get_repository(request: Request) -> ArticleRepository:

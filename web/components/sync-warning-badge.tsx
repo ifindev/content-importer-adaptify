@@ -9,5 +9,9 @@ const SYNC_WARNING_LABEL = {
 export type SyncWarning = keyof typeof SYNC_WARNING_LABEL;
 
 export function SyncWarningBadge({ warning }: { warning: SyncWarning }) {
-  return <Badge variant="destructive">{SYNC_WARNING_LABEL[warning]}</Badge>;
+  return (
+    <Badge className="bg-status-failed text-status-failed-fg h-5 px-[7px] text-[11.5px]">
+      {SYNC_WARNING_LABEL[warning]}
+    </Badge>
+  );
 }

@@ -108,7 +108,13 @@ content-importer/
 │   │   │   ├── http_errors.py           # API-layer exception classes (not business rules)
 │   │   │   ├── deps.py
 │   │   │   ├── auth.py                  # Firebase session cookie check for agency routes
-│   │   │   ├── schemas.py
+│   │   │   ├── schemas/                 # one module per route, grouping its request/response shapes
+│   │   │   │   ├── auth.py
+│   │   │   │   ├── articles.py
+│   │   │   │   ├── imports.py
+│   │   │   │   ├── public_review.py
+│   │   │   │   ├── review_link.py
+│   │   │   │   └── report.py
 │   │   │   ├── tags.py                  # Swagger section names, in display order
 │   │   │   └── routes/
 │   │   │       ├── auth.py              # create session cookie from ID token

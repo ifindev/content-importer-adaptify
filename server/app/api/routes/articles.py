@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, Query, Request
 
 from app.api.auth import require_session
+from app.api.http_errors import ArticleNotFoundError, EmptyUpdateError, PayloadTooLargeError
 from app.api.schemas import ArticleDetail, ArticleSummary, ArticleUpdate, EventOut, ScheduleRequest
 from app.core.domain.statuses import Status
 from app.core.ports.article_repository import ArticleRepository
@@ -14,18 +15,6 @@ from app.core.use_cases.schedule import retry, schedule
 router = APIRouter(dependencies=[Depends(require_session)])
 
 PATCH_BODY_MAX_BYTES = 2 * 1024 * 1024
-
-
-class ArticleNotFoundError(Exception):
-    pass
-
-
-class EmptyUpdateError(Exception):
-    pass
-
-
-class PayloadTooLargeError(Exception):
-    pass
 
 
 def get_repository(request: Request) -> ArticleRepository:

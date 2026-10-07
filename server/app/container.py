@@ -1,20 +1,24 @@
 import logging
 from dataclasses import dataclass
+from pathlib import Path
 
 from google.cloud import firestore
 
 from app.adapters.clock import SystemClock
 from app.adapters.documents.parser import RealDocumentParser
 from app.adapters.firestore.repository import FirestoreArticleRepository
+from app.adapters.secret_store import LocalFileSecretStore
 from app.adapters.testing.in_memory_repository import InMemoryArticleRepository
 from app.adapters.wordpress.publisher import WordPressPublisher
 from app.core.ports.article_repository import ArticleRepository
 from app.core.ports.clock import Clock
 from app.core.ports.document_parser import DocumentParser
 from app.core.ports.publisher import Publisher
+from app.core.ports.secret_store import SecretStore
 from app.settings import Settings
 
 SITE_ID = "default"
+SECRET_STORE_PATH = Path(__file__).resolve().parent.parent / ".secrets.local.json"
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +29,8 @@ class Container:
     publisher: Publisher
     article_repository: ArticleRepository
     document_parser: DocumentParser
+    secret_store: SecretStore
+    web_base_url: str
 
 
 def build_container(settings: Settings) -> Container:
@@ -51,4 +57,6 @@ def build_container(settings: Settings) -> Container:
         ),
         article_repository=article_repository,
         document_parser=RealDocumentParser(),
+        secret_store=LocalFileSecretStore(SECRET_STORE_PATH),
+        web_base_url=settings.web_base_url,
     )

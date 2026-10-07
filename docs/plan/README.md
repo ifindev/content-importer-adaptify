@@ -2,7 +2,7 @@
 
 Phases and the master list of tickets. How tickets work: [workflow.md](../workflow.md). Ticket template: [_template.md](_template.md).
 
-**Current phase:** 3. API
+**Current phase:** 4. Frontend
 
 ## Phases
 
@@ -75,13 +75,15 @@ Phases and the master list of tickets. How tickets work: [workflow.md](../workfl
 | ID | Ticket | Refs | Status |
 | --- | --- | --- | --- |
 | T-026 | [Access control and app shell](026-ui-access-shell.md) | R8.1, R8.2, architecture: Auth | done |
-| T-033 | [UI revamp: every screen on fixtures](033-ui-revamp-all-screens.md) | spec: Screens, design canvas | analyzed |
+| T-033 | [UI revamp: every screen on fixtures](033-ui-revamp-all-screens.md) | spec: Screens, design canvas | in progress |
+| T-034 | [Delete draft articles](034-api-delete-draft-articles.md) | R2.5 | analyzed |
+| T-035 | [Edit and delete sites](035-api-edit-delete-sites.md) | spec: Screens (Sites) | analyzed |
 | T-032 | [Sites: wiring for the switcher, sites list and Add Site](032-ui-site-switcher-add-site.md) | spec: Screens, E8 Access | analyzed |
 | T-027 | [API data layer](027-ui-data-layer.md) | E1–E6, architecture: Frontend | analyzed |
 | T-028 | [Agency screens: wiring](028-ui-agency-screens.md) | E1, E2, E4, R3.2, R3.5–R3.7, R5.1–R5.3, R6.1–R6.4 | analyzed |
 | T-029 | [Client review: wiring and full-flow test](029-ui-client-review-e2e.md) | R3.3–R3.5, R6.5, R8.2 | analyzed |
 
-Build order for this phase: T-026 (done) → T-033 (all UI on fixtures, no API needed) → T-027 → T-032 → T-028 → T-029. T-031 (multi-site API) is already built, so the generated schema covers every endpoint, sites included. UI first: T-033 builds and tests every screen on fixtures typed from that schema; the wiring tickets then swap each module's fixtures for T-027's functions. Design canvas: [claude.ai artifact](https://claude.ai/artifact/QCpMywgpasGi231uuWrAMn), offline copy `design/canvas.html`.
+Build order for this phase: T-026 (done) → T-033 (all UI on fixtures, no API needed) → T-034 → T-035 → T-027 → T-032 → T-028 → T-029. T-031 (multi-site API) is already built, so the generated schema covers every endpoint, sites included. UI first: T-033 builds every screen on fixtures typed from that schema; the wiring tickets then swap each module's fixtures for T-027's functions. Design canvas: [claude.ai artifact](https://claude.ai/artifact/QCpMywgpasGi231uuWrAMn), offline copy `design/canvas.html`.
 
 ### Phase 5: Deploy
 

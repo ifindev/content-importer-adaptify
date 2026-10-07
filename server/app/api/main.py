@@ -5,11 +5,13 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
 from app.api.auth import InvalidSessionError
-from app.api.routes.articles import ArticleNotFoundError
+from app.api.routes.articles import ArticleNotFoundError, PayloadTooLargeError
 from app.api.routes.articles import router as articles_router
 from app.api.routes.auth import router as auth_router
+from app.api.routes.imports import NoFilesError, TooManyFilesError
+from app.api.routes.imports import router as imports_router
 from app.container import build_container
-from app.core.domain.errors import WordPressError
+from app.core.domain.errors import EmptyContentError, WordPressError
 from app.settings import Settings
 
 logging.basicConfig(level=logging.INFO)
@@ -52,8 +54,25 @@ def create_app() -> FastAPI:
     def article_not_found_handler(request: Request, exc: ArticleNotFoundError) -> JSONResponse:
         return JSONResponse(status_code=404, content={"code": "not_found"})
 
+    @app.exception_handler(EmptyContentError)
+    def empty_content_handler(request: Request, exc: EmptyContentError) -> JSONResponse:
+        return JSONResponse(status_code=422, content={"code": "empty_content"})
+
+    @app.exception_handler(PayloadTooLargeError)
+    def payload_too_large_handler(request: Request, exc: PayloadTooLargeError) -> JSONResponse:
+        return JSONResponse(status_code=413, content={"code": "payload_too_large"})
+
+    @app.exception_handler(NoFilesError)
+    def no_files_handler(request: Request, exc: NoFilesError) -> JSONResponse:
+        return JSONResponse(status_code=422, content={"code": "no_files"})
+
+    @app.exception_handler(TooManyFilesError)
+    def too_many_files_handler(request: Request, exc: TooManyFilesError) -> JSONResponse:
+        return JSONResponse(status_code=422, content={"code": "too_many_files"})
+
     app.include_router(auth_router)
     app.include_router(articles_router)
+    app.include_router(imports_router)
 
     return app
 

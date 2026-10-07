@@ -15,6 +15,7 @@ from app.core.ports.clock import Clock
 from app.core.ports.document_parser import DocumentParser
 from app.core.ports.publisher import Publisher
 from app.core.ports.secret_store import SecretStore
+from app.core.use_cases.sync_status import SyncCache
 from app.settings import Settings
 
 SITE_ID = "default"
@@ -31,6 +32,7 @@ class Container:
     document_parser: DocumentParser
     secret_store: SecretStore
     web_base_url: str
+    sync_cache: SyncCache
 
 
 def build_container(settings: Settings) -> Container:
@@ -59,4 +61,5 @@ def build_container(settings: Settings) -> Container:
         document_parser=RealDocumentParser(),
         secret_store=LocalFileSecretStore(SECRET_STORE_PATH),
         web_base_url=settings.web_base_url,
+        sync_cache=SyncCache(),
     )

@@ -41,7 +41,59 @@ services:
     depends_on:
       - api
 
+  mariadb:
+    image: mariadb:11
+    env_file: .env
+    environment:
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+      MARIADB_DATABASE: ${MARIADB_DATABASE}
+      MARIADB_USER: ${MARIADB_USER}
+      MARIADB_PASSWORD: ${MARIADB_PASSWORD}
+    volumes:
+      - mariadb-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  wordpress:
+    image: wordpress:6-apache
+    env_file: .env
+    environment:
+      WORDPRESS_DB_HOST: mariadb
+      WORDPRESS_DB_NAME: ${MARIADB_DATABASE}
+      WORDPRESS_DB_USER: ${MARIADB_USER}
+      WORDPRESS_DB_PASSWORD: ${MARIADB_PASSWORD}
+      WORDPRESS_CONFIG_EXTRA: |
+        define('WP_ENVIRONMENT_TYPE', 'local');
+        define('DISABLE_WP_CRON', true);
+    ports:
+      - "8080:80"
+    volumes:
+      - wordpress-data:/var/www/html
+    depends_on:
+      mariadb:
+        condition: service_healthy
+
+  wp-cli:
+    image: wordpress:cli
+    profiles: ["tools"] # never starts with `make up`; only via `docker compose run`
+    env_file: .env
+    environment:
+      WORDPRESS_DB_HOST: mariadb
+      WORDPRESS_DB_NAME: ${MARIADB_DATABASE}
+      WORDPRESS_DB_USER: ${MARIADB_USER}
+      WORDPRESS_DB_PASSWORD: ${MARIADB_PASSWORD}
+    volumes:
+      - wordpress-data:/var/www/html
+    depends_on:
+      mariadb:
+        condition: service_healthy
+
 volumes:
   server-venv:
   web-node-modules:
   firebase-data:
+  mariadb-data:
+  wordpress-data:

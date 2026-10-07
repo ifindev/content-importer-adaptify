@@ -32,6 +32,8 @@ async def test_lifespan_logs_error_with_bad_credentials_and_keeps_running(caplog
             assert response.status_code == 200
 
     assert "WordPress credential check failed" in caplog.text
+    assert "WP_APP_PASSWORD" in caplog.text
+    assert "The API will keep running" in caplog.text
 
     monkeypatch.delenv("WP_APP_PASSWORD", raising=False)
     importlib.reload(main_module)

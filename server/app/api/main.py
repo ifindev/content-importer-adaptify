@@ -18,11 +18,12 @@ async def lifespan(app: FastAPI):
         await app.state.container.publisher.check_credentials()
         logger.info("WordPress credentials OK")
     except WordPressError as exc:
+        detail = (exc.message or str(exc)).rstrip(".")
         logger.error(
-            "WordPress credential check failed (%s): check WP_BASE_URL and WP_USERNAME "
-            "in .env — %s",
+            "WordPress credential check failed (%s): check WP_BASE_URL, WP_USERNAME, and "
+            "WP_APP_PASSWORD in .env — %s. The API will keep running.",
             exc.code,
-            exc.message or exc,
+            detail,
         )
     yield
 

@@ -67,6 +67,30 @@ class ReviewLinkOut(BaseModel):
     created_at: datetime = Field(..., description="When this token was generated, UTC.")
 
 
+class ArticleCard(BaseModel):
+    id: str = Field(..., description="Article id.")
+    title: str = Field(..., description="Article title.")
+    slug: str = Field(..., description="URL slug.")
+    published_url: str | None = Field(None, description="Live URL, once published.")
+    publish_at_utc: datetime | None = Field(None, description="Scheduled publish time, UTC.")
+
+
+class ReviewPageOut(BaseModel):
+    site_name: str = Field(..., description="The site's name.")
+    waiting: list[ArticleCard] = Field(..., description="Awaiting the client's review.")
+    upcoming: list[ArticleCard] = Field(..., description="Scheduled to publish.")
+    published: list[ArticleCard] = Field(..., description="Already live.")
+
+
+class ReviewArticleOut(BaseModel):
+    id: str = Field(..., description="Article id.")
+    title: str = Field(..., description="Article title.")
+    slug: str = Field(..., description="URL slug.")
+    body_html: str = Field(..., description="Article body, as HTML.")
+    version: int = Field(..., description="Increments on every body edit.")
+    status: Status = Field(..., description="Current lifecycle status.")
+
+
 class ArticlePaste(BaseModel):
     html: str = Field(..., description="Pasted article HTML, raw body capped at 2 MB.")
 

@@ -1,6 +1,6 @@
 # T-021 WordPress status sync
 
-**Phase:** 3 · API · **Status:** analyzed · **Size:** M
+**Phase:** 3 · API · **Status:** done · **Size:** M
 **Refs:** R5.1–R5.4, spec: Sync warnings, WordPress integration (Status check)
 **Depends on:** T-020
 
@@ -35,22 +35,28 @@ No new routes. This modifies the response of three existing/later ones:
 | Cache hit mid-TTL, but an article was just scheduled (new `wp_post_id`) by a concurrent request | Acceptable staleness for the MVP — one-minute cache is a product decision already in the spec (R5.4), not a bug |
 
 ## Acceptance criteria
-- [ ] A Scheduled article whose WordPress post is now `publish` becomes Published with the live URL, and a `published` event is recorded.
-- [ ] A Scheduled article still `future` but past its date shows Late without changing status.
-- [ ] A Scheduled article now `draft`/`private` in WordPress shows Changed in WordPress without changing status.
-- [ ] A Scheduled article whose post is missing from the WordPress reply shows Missing in WordPress without changing status.
-- [ ] A WordPress request failure changes nothing and flags `wordpress_unreachable`.
-- [ ] Two calls to `GET /articles` inside one minute trigger only one WordPress request.
-- [ ] Swagger updated for the new response fields on `GET /articles` and `GET /review/{token}`.
+- [x] A Scheduled article whose WordPress post is now `publish` becomes Published with the live URL, and a `published` event is recorded.
+- [x] A Scheduled article still `future` but past its date shows Late without changing status.
+- [x] A Scheduled article now `draft`/`private` in WordPress shows Changed in WordPress without changing status.
+- [x] A Scheduled article whose post is missing from the WordPress reply shows Missing in WordPress without changing status.
+- [x] A WordPress request failure changes nothing and flags `wordpress_unreachable`.
+- [x] Two calls to `GET /articles` inside one minute trigger only one WordPress request.
+- [x] Swagger updated for the new response fields on `GET /articles` and `GET /review/{token}`.
 
 ## Tasks
-- [ ] `core/ports/publisher.py`: `get_statuses`.
-- [ ] `adapters/wordpress/publisher.py`: implement `get_statuses`.
-- [ ] `core/use_cases/sync_status.py`: mapping function, cache, published-recheck throttle.
-- [ ] Wire into `GET /articles` (T-013) and `GET /review/{token}` (T-018) routes.
-- [ ] Unit tests: the full mapping table from the spec, cache hit/miss, 24h throttle, with a fixed `Clock` and scripted publisher.
-- [ ] Integration test: local WordPress container — schedule a post, change it to draft directly via the WP admin REST call, confirm the next `GET /articles` shows Changed in WordPress.
-- [ ] `pnpm gen:api`.
+- [x] `core/ports/publisher.py`: `get_statuses`. Already implemented since T-009 — nothing to add.
+- [x] `adapters/wordpress/publisher.py`: implement `get_statuses`. Already implemented since T-009 — nothing to add.
+- [x] `core/use_cases/sync_status.py`: mapping function, cache, published-recheck throttle.
+- [x] Wire into `GET /articles` (T-013) and `GET /review/{token}` (T-018) routes.
+- [x] Unit tests: the full mapping table from the spec, cache hit/miss, 24h throttle, with a fixed `Clock` and scripted publisher.
+- [x] Integration test: local WordPress container — schedule a post, change it to draft directly via the WP admin REST call, confirm the next `GET /articles` shows Changed in WordPress.
+- [x] `pnpm gen:api`.
+
+### Deviations from the analysis above
+- Dropped the `sync_statuses(site_id)` parameter — `ArticleRepository` is already single-site (no `site_id` anywhere in its interface), so the use case takes `(repository, publisher, clock, cache)` instead.
+- Simplified away the proposed `SyncResult(warnings_by_article_id, unreachable)` return shape. `Article.sync_warning` and `Article.last_checked_at` already exist as persisted fields on the domain model (added in an earlier ticket), so `sync_statuses` writes the warning straight onto each article via the existing `repository.save_article` and returns just `SyncResult(unreachable: bool)`. Routes re-list articles as normal afterward — the warning rides along on the article they already fetch.
+- The one-minute cache is a small `SyncCache` class (not a `Protocol`/port — it's single-process internal state, not an adapter boundary) held as a new field on `Container` and shared by both routes via `Depends`, so `/articles` and `/review/{token}` loads within the same minute share one WordPress request.
+- `GET /articles`'s response, previously an ad-hoc `dict[str, list[ArticleSummary]]`, is now the named `ArticlesOut` model (`articles`, `wordpress_unreachable`) — brings it in line with every other route's typed response and gives the new flag a proper OpenAPI type.
 
 ## Out of scope
 - A background job / polling (spec's decision: check only on page load).

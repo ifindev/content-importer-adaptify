@@ -1,6 +1,6 @@
 # T-022 Agency report
 
-**Phase:** 3 · API · **Status:** analyzed · **Size:** M
+**Phase:** 3 · API · **Status:** done · **Size:** M
 **Refs:** R6.1–R6.4, spec: Reporting (Agency report), API endpoints (Agency)
 **Depends on:** T-017, T-021
 
@@ -39,21 +39,21 @@ The agency sees where every article stands, how fast clients approve, and what w
 | WordPress unreachable during the report's own status check | Report still renders from stored data; `wordpress_unreachable: true`, Needs attention still shows anything already known (e.g. stored Failed), just not fresh sync warnings |
 
 ## Acceptance criteria
-- [ ] Status counts match a hand-built fixture set of articles across all seven statuses.
-- [ ] Published-this-month counts only `published` events within the current UTC month.
-- [ ] Approval speed averages only articles that reached Approved, using the first send-for-review timestamp.
-- [ ] Change rounds count matches the number of `changes_requested` events per article.
-- [ ] Needs attention lists Failed articles and every sync-warning case from T-021.
-- [ ] Swagger and Postman updated.
+- [x] Status counts match a hand-built fixture set of articles across all seven statuses.
+- [x] Published-this-month counts only `published` events within the current UTC month.
+- [x] Approval speed averages only articles that reached Approved, using the first send-for-review timestamp.
+- [x] Change rounds count matches the number of `changes_requested` events per article.
+- [x] Needs attention lists Failed articles and every sync-warning case from T-021.
+- [x] Swagger and Postman updated.
 
 ## Tasks
-- [ ] `core/domain/report.py`: pure calculation functions.
-- [ ] `core/use_cases/build_report.py`.
-- [ ] `api/routes/report.py`: `GET /report`.
-- [ ] `api/schemas.py`: `ReportOut` and its nested shapes.
-- [ ] Unit tests: one fixture event history per block (counts, approval speed with/without pull-backs, change rounds, needs attention), using a fixed `Clock`.
-- [ ] Integration test: Firestore emulator, end-to-end report over a small seeded article set.
-- [ ] `pnpm gen:api`.
+- [x] `core/domain/report.py`: pure calculation functions.
+- [x] `core/use_cases/build_report.py`.
+- [x] `api/routes/report.py`: `GET /report`.
+- [x] `api/schemas.py`: `ReportOut` and its nested shapes.
+- [x] Unit tests: one fixture event history per block (counts, approval speed with/without pull-backs, change rounds, needs attention), using a fixed `Clock`.
+- [x] Integration test: Firestore emulator, end-to-end report over a small seeded article set.
+- [x] `pnpm gen:api`.
 
 ## Out of scope
 - Search performance reporting (spec: Out of scope).

@@ -22,7 +22,7 @@ const CLIENT_METHODS = ["get", "post", "patch", "delete", "postForm"] as const;
  * visit. `x-pathname` comes from proxy.ts, which runs on every agency route.
  */
 async function redirectToLogin(): Promise<never> {
-  const pathname = (await headers()).get("x-pathname") ?? "/articles";
+  const pathname = (await headers()).get("x-pathname") ?? "/";
   redirect(`/login?next=${encodeURIComponent(pathname)}`);
 }
 

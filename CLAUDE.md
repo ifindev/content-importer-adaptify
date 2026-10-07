@@ -17,3 +17,4 @@
 - Server: `core/` never imports SDKs or HTTP clients; import-linter enforces it.
 - Server: external API adapters log request/response per `docs/architecture.md`'s Logging convention.
 - Frontend: thin routes in `app/`, features in `modules/`; reads in Server Components, writes in Server Actions; API types are generated, never hand-written.
+- Frontend testing: Playwright (or any browser e2e suite) is out of scope for UI work, and so are new vitest tests. Verify UI changes by hand in the browser (render, 375px with no horizontal scroll, keyboard and Escape, the main flows) plus `pnpm typecheck`. If a ticket asks for either, drop it and update the ticket.

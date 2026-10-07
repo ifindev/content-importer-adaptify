@@ -1,6 +1,6 @@
 # T-018 Client review page
 
-**Phase:** 3 · API · **Status:** analyzed · **Size:** M
+**Phase:** 3 · API · **Status:** done · **Size:** M
 **Refs:** R3.3, R6.5, R8.2, spec: Client journey, Data model Decision (token hash), API endpoints (Client)
 **Depends on:** T-013, T-016
 
@@ -48,19 +48,19 @@ Someone with the review link, and no account, sees the site's articles grouped b
 - Rate limiting: in-process token-bucket per IP (e.g. `slowapi` if already a dependency-light fit, else a small hand-rolled limiter — pick at implementation time per the ladder: stdlib first). No new dependency unless the hand-rolled version is clearly worse.
 
 ## Acceptance criteria
-- [ ] A valid review link groups articles correctly into waiting/upcoming/published; Draft/Changes requested/Failed never appear.
-- [ ] An unknown or reset token returns 404 (not 403) on both routes.
-- [ ] Reading a specific article hides Draft/Changes requested/Failed articles even with a correct token and a real article id.
-- [ ] Excessive requests from one IP get 429.
-- [ ] Swagger and Postman updated.
+- [x] A valid review link groups articles correctly into waiting/upcoming/published; Draft/Changes requested/Failed never appear.
+- [x] An unknown or reset token returns 404 (not 403) on both routes.
+- [x] Reading a specific article hides Draft/Changes requested/Failed articles even with a correct token and a real article id.
+- [x] Excessive requests from one IP get 429.
+- [x] Swagger and Postman updated.
 
 ## Tasks
-- [ ] `core/use_cases/review.py`: add the two read functions, token hashing/compare.
-- [ ] `api/routes/public_review.py`: both routes, no session dependency (token-only, per R8.2).
-- [ ] Rate limiter wired into `public_review.py` only (agency routes stay session-gated, not IP-limited).
-- [ ] Unit tests: grouping logic, hidden statuses, token mismatch.
-- [ ] Integration test: Firestore emulator, real token round-trip (generate via T-016, verify via T-018).
-- [ ] `pnpm gen:api`.
+- [x] `core/use_cases/review.py`: add the two read functions, token hashing/compare.
+- [x] `api/routes/public_review.py`: both routes, no session dependency (token-only, per R8.2).
+- [x] Rate limiter wired into `public_review.py` only (agency routes stay session-gated, not IP-limited).
+- [x] Unit tests: grouping logic, hidden statuses, token mismatch.
+- [x] Integration test: Firestore emulator, real token round-trip (generate via T-016, verify via T-018).
+- [x] `pnpm gen:api`.
 
 ## Out of scope
 - Approve / request changes (T-019).

@@ -15,4 +15,5 @@
 - Never run `git commit` until the user has reviewed the changes and explicitly says to commit, in that same request. Approval of a plan that mentions committing is not commit approval — ask again once the diff is ready.
 - Tooling: uv for Python (`server/`), pnpm for the web app (`web/`). Use the Makefile targets when they exist.
 - Server: `core/` never imports SDKs or HTTP clients; import-linter enforces it.
+- Server: external API adapters log request/response per `docs/architecture.md`'s Logging convention.
 - Frontend: thin routes in `app/`, features in `modules/`; reads in Server Components, writes in Server Actions; API types are generated, never hand-written.

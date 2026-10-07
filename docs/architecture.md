@@ -151,6 +151,12 @@ content-importer/
 
 `import-linter`, a Python tool that fails CI on a forbidden import, enforces this table.
 
+### Logging
+
+Every adapter that calls an external API logs one INFO line per call: method, path, status, and a short summary of the request's and response's identifying fields (ids, slugs, statuses) — never the full payload (e.g. article HTML), to keep logs small and free of sensitive content. On failure, log the upstream error code and message.
+
+This lives in the adapter itself, next to the HTTP call — there's no shared logging port yet, since `WordPressPublisher` is still the only external adapter. Add a small shared helper when a second one (Vertex AI, P2) needs the same pattern, so it isn't copy-pasted.
+
 ## Frontend
 
 The web app is a Next.js App Router project in `web/`. It splits into two directories that answer two different questions:

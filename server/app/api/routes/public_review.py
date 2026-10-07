@@ -9,6 +9,7 @@ from app.api.schemas import (
     ReviewArticleOut,
     ReviewPageOut,
 )
+from app.api.tags import CLIENT_REVIEW
 from app.core.domain.statuses import Status
 from app.core.ports.article_repository import ArticleRepository
 from app.core.ports.clock import Clock
@@ -19,7 +20,7 @@ from app.core.use_cases.review import (
     request_changes,
 )
 
-router = APIRouter()
+router = APIRouter(tags=[CLIENT_REVIEW])
 
 
 def get_repository(request: Request) -> ArticleRepository:

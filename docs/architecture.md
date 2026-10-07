@@ -192,38 +192,49 @@ The web app is a Next.js App Router project in `web/`. It splits into two direct
 ```
 web/
 ├── app/                                  # routing only
+│   ├── page.tsx                          # → /sites/{first site}/articles, or /sites when there are none
 │   ├── (agency)/
-│   │   ├── layout.tsx                    # sidebar shell (SidebarProvider + AppSidebar)
-│   │   ├── import/page.tsx
-│   │   ├── articles/page.tsx             # ?status= filter lives in the URL
-│   │   ├── articles/[id]/page.tsx
-│   │   └── report/page.tsx
+│   │   ├── layout.tsx                    # inset sidebar shell with the site switcher
+│   │   ├── sites/page.tsx                # all sites; ?add=1 opens the Add site dialog
+│   │   └── sites/[siteId]/
+│   │       ├── import/page.tsx
+│   │       ├── articles/page.tsx         # ?status= and ?q= filters live in the URL
+│   │       ├── articles/loading.tsx
+│   │       ├── articles/[id]/page.tsx
+│   │       └── report/page.tsx
 │   ├── login/page.tsx
 │   └── review/[token]/                   # client pages: no login, no agency navigation
-│       ├── layout.tsx                    # site name header, noindex
-│       ├── not-found.tsx                 # generic "link isn't valid"
+│       ├── layout.tsx                    # noindex, toaster
+│       ├── not-found.tsx                 # "link isn't valid"
+│       ├── error.tsx                     # rate limited
 │       ├── page.tsx
 │       └── articles/[id]/page.tsx
 ├── modules/
 │   ├── articles/                         # import, list, detail
 │   │   ├── pages/                        # screen composition: ImportPage, ArticlesPage, ArticleDetailPage
 │   │   ├── components/                   # all components of this domain, no smart/dumb split
-│   │   ├── repository/
-│   │   │   ├── articles.queries.ts       # reads, called by Server Components
-│   │   │   └── articles.mutations.ts     # writes, "use server"
+│   │   ├── data.ts                       # reads: the only data import for pages
+│   │   ├── actions.ts                    # writes: importable from client components
+│   │   ├── fixtures/                     # T-033 only; deleted at wiring
+│   │   ├── repository/                   # T-027: articles.queries.ts, articles.mutations.ts ("use server")
 │   │   └── schemas/                      # zod: form and URL filter schemas
+│   ├── sites/                            # sites list, Add site dialog, site switcher
 │   ├── review/                           # same shape
 │   ├── report/
 │   └── auth/
 ├── components/
 │   ├── ui/                               # shadcn components
-│   └── *.tsx                             # shared domain components: StatusBadge, SyncWarningBadge, WordPressBanner, LocalTime
+│   └── *.tsx                             # shared: StatusBadge, SyncWarningBadge, WordPressBanner, LocalTime, PageHeader, ArticleEditor
 ├── hooks/
-│   └── use-filter-params.ts
+│   ├── use-filter-params.ts
+│   └── use-mobile.ts
 └── lib/
     ├── http.ts                           # generic HttpClient + ApiError
     ├── api-server.ts                     # server-only client: base URL, cookie, client IP
     ├── api/schema.ts                     # GENERATED from FastAPI openapi.json, never edited
+    ├── api/types.ts                      # ApiResponse<>, Schemas alias
+    ├── error-messages.ts                 # messageFor(code)
+    ├── fixtures/                         # T-033 only: shared seed store + scenario cookie
     ├── types/page-props.ts
     └── query-string.ts
 ├── proxy.ts                              # optimistic session-cookie redirect (Next 16's middleware)
@@ -249,6 +260,10 @@ export default async function Page({ params }: PageProps<{ id: string }>) {
 ```
 
 **Module pages compose, components own their data.** A module page assembles the components a screen needs and passes down IDs. Each component fetches the data it actually needs, instead of one page fetching everything.
+
+**The data seam.** Pages and components get data only from `modules/<m>/data.ts` (reads) and `modules/<m>/actions.ts` (writes). Both are one-line re-exports, so swapping fixtures for the API repository is one change per module. Writes have their own file because a client component can't import a module that also pulls in `server-only` reads.
+
+**Fixtures (until wiring).** In Phase 4 the seam points at `modules/<m>/fixtures/`, typed from `lib/api/schema.ts` with T-027's function signatures. Fixture mutations are real Server Actions: a short delay, then a `MutationResult`, and they change an in-memory store (`lib/fixtures/store.ts`, reset when the dev server restarts). A `fixture_scenario` cookie picks a state: `empty`, `no-sites`, `one-site`, `wordpress-down`, `slow`, `rate-limited`, or `error:<code>` (every mutation fails with that code). The sites fixtures add `connection_ok`, `connection_checked_at` and article counts to `SiteOut`, the one exception to "types come from the API", until an API ticket adds them (T-031's design follow-ups). Fixtures, store and cookie are deleted during wiring.
 
 **Reads are Server Components, writes are Server Actions.**
 
@@ -284,9 +299,11 @@ type MutationResult<T> = { ok: true; data: T } | { ok: false; code: string }
 
 **Dates.** Server Components render in the server's timezone (UTC). Every date shown to a user goes through `LocalTime`, a client component that formats in the browser's timezone.
 
-**Responsive.** Mobile-first Tailwind. Every screen works at 375, 768, and 1280px with no horizontal scroll. Lists are tables at `md` (768px) and up, cards below. The agency sidebar (shadcn Sidebar) is expanded at `lg`, an icon rail between `md` and `lg`, and a Sheet behind a hamburger below `md`. The review pages are designed mobile-first.
+**Responsive.** Mobile-first Tailwind. Every screen works at 375, 768, and 1280px with no horizontal scroll. Lists are tables at `md` (768px) and up, stacked rows below. The agency sidebar (shadcn Sidebar, `inset` variant) is expanded at `lg`, an icon rail between `md` and `lg`, and a Sheet behind the menu button below `md`; `PageHeader` puts that button, the title and the page's actions in one bar on phones. The client review is one 3-column page at `lg` and up (list, reader, decision panel); below `lg` the list and the reader are separate screens.
 
-**Editor.** The import and detail screens use one Tiptap editor (`modules/articles/components/ArticleEditor`). Its extensions are limited to the tags the server's nh3 list keeps, so the editor never produces markup the server strips.
+**Design tokens.** `app/globals.css` holds the canvas tokens on top of shadcn's: the border color, `--app` (the shell background behind the inset panel), `--faint` text, and a background/foreground pair per status (`--status-draft` … `--status-failed`) that `StatusBadge` uses. Primary blue goes only on the one primary action per screen. The font is Geist.
+
+**Editor.** The import and detail screens use one Tiptap editor (`components/article-editor.tsx`): StarterKit (which includes Link in Tiptap 3) and `TableKit`, with a toolbar and a bubble menu on selection. Its extensions are limited to the tags the server's nh3 list keeps (h2–h4, p, lists, a, strong, em, table), so the editor never produces markup the server strips. `editable={false}` makes it a reader. The body typography (`components/prose.ts`) is shared with the client reader.
 
 **Review page HTML.** The reader renders the article body with `dangerouslySetInnerHTML`. The server already cleans every body with nh3 at import and on every edit, so the browser adds no second sanitizer.
 

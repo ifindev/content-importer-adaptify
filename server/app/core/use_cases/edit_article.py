@@ -6,12 +6,13 @@ from app.core.domain.statuses import EventType, Status
 from app.core.ports.article_repository import ArticleRepository
 from app.core.ports.clock import Clock
 from app.core.ports.document_parser import DocumentParser
+from app.core.ports.publisher import Publisher
 
 EDITABLE_STATUSES = {Status.DRAFT, Status.CHANGES_REQUESTED, Status.APPROVED, Status.SCHEDULED}
 RESET_STATUSES = {Status.APPROVED, Status.SCHEDULED}
 
 
-def edit_article(
+async def edit_article(
     article: Article,
     title: str | None,
     slug: str | None,
@@ -19,6 +20,7 @@ def edit_article(
     repository: ArticleRepository,
     parser: DocumentParser,
     clock: Clock,
+    publisher: Publisher,
     actor: str,
 ) -> Article:
     if article.status not in EDITABLE_STATUSES:
@@ -46,4 +48,6 @@ def edit_article(
         data={"reset_from": reset_from} if reset_from else None,
     )
     repository.save_article(updated, event)
+    if reset_from == Status.SCHEDULED.value:
+        await publisher.set_draft(article.wp_post_id)
     return updated

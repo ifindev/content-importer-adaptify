@@ -3,14 +3,8 @@ from fastapi import APIRouter, Depends, File, UploadFile
 from app.api.auth import require_session
 from app.api.http_errors import NoFilesError, PayloadTooLargeError, TooManyFilesError
 from app.api.routes.articles import get_clock, get_document_parser, get_repository
-from app.api.schemas import (
-    ArticleDetail,
-    ArticlePaste,
-    ArticleSummary,
-    EventOut,
-    UploadFileResult,
-    UploadResponse,
-)
+from app.api.schemas.articles import ArticleDetail, ArticleSummary, EventOut
+from app.api.schemas.imports import ArticlePaste, UploadFileResult, UploadResponse
 from app.api.tags import IMPORT
 from app.core.ports.article_repository import ArticleRepository
 from app.core.ports.clock import Clock

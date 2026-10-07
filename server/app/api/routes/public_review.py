@@ -13,12 +13,14 @@ from app.api.tags import CLIENT_REVIEW
 from app.core.domain.statuses import Status
 from app.core.ports.article_repository import ArticleRepository
 from app.core.ports.clock import Clock
+from app.core.ports.publisher import Publisher
 from app.core.use_cases.review import (
     approve,
     get_review_article,
     get_review_page,
     request_changes,
 )
+from app.core.use_cases.sync_status import SyncCache, sync_statuses
 
 router = APIRouter(tags=[CLIENT_REVIEW])
 
@@ -31,6 +33,14 @@ def get_clock(request: Request) -> Clock:
     return request.app.state.container.clock
 
 
+def get_publisher(request: Request) -> Publisher:
+    return request.app.state.container.publisher
+
+
+def get_sync_cache(request: Request) -> SyncCache:
+    return request.app.state.container.sync_cache
+
+
 def _client_ip(request: Request) -> str:
     forwarded = request.headers.get("x-forwarded-for")
     if forwarded:
@@ -39,18 +49,23 @@ def _client_ip(request: Request) -> str:
 
 
 @router.get("/review/{token}")
-def get_review(
+async def get_review(
     token: str,
     request: Request,
     repository: ArticleRepository = Depends(get_repository),
+    publisher: Publisher = Depends(get_publisher),
+    clock: Clock = Depends(get_clock),
+    cache: SyncCache = Depends(get_sync_cache),
 ) -> ReviewPageOut:
     check_rate_limit(_client_ip(request))
+    result = await sync_statuses(repository, publisher, clock, cache)
     site, groups = get_review_page(repository, token)
     return ReviewPageOut(
         site_name=site.name,
         waiting=[ArticleCard(**a.model_dump()) for a in groups[Status.AWAITING_APPROVAL]],
         upcoming=[ArticleCard(**a.model_dump()) for a in groups[Status.SCHEDULED]],
         published=[ArticleCard(**a.model_dump()) for a in groups[Status.PUBLISHED]],
+        wordpress_unreachable=result.unreachable,
     )
 
 

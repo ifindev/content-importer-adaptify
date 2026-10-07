@@ -15,6 +15,7 @@ from app.api.routes.public_review import router as public_review_router
 from app.api.routes.review_link import router as review_link_router
 from app.container import build_container
 from app.core.domain.errors import (
+    ArticleChangedError,
     EmptyContentError,
     NotAwaitingApprovalError,
     NotEditableError,
@@ -109,6 +110,10 @@ def create_app() -> FastAPI:
     @app.exception_handler(RateLimitedError)
     def rate_limited_handler(request: Request, exc: RateLimitedError) -> JSONResponse:
         return JSONResponse(status_code=429, content={"code": "rate_limited"})
+
+    @app.exception_handler(ArticleChangedError)
+    def article_changed_handler(request: Request, exc: ArticleChangedError) -> JSONResponse:
+        return JSONResponse(status_code=409, content={"code": "article_changed"})
 
     app.include_router(auth_router)
     app.include_router(articles_router)

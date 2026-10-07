@@ -1,8 +1,11 @@
 import logging
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 
+from app.api.auth import InvalidSessionError
+from app.api.routes.auth import router as auth_router
 from app.container import build_container
 from app.core.domain.errors import WordPressError
 from app.settings import Settings
@@ -34,6 +37,12 @@ def create_app() -> FastAPI:
     @app.get("/health")
     def health() -> dict[str, str]:
         return {"status": "ok"}
+
+    @app.exception_handler(InvalidSessionError)
+    def invalid_session_handler(request: Request, exc: InvalidSessionError) -> JSONResponse:
+        return JSONResponse(status_code=401, content={"code": "invalid_token"})
+
+    app.include_router(auth_router)
 
     return app
 

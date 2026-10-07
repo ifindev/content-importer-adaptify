@@ -1,6 +1,6 @@
 # T-031 Multi-site: sites collection, siteId-scoped routes, encrypted credentials
 
-**Phase:** 3 · API · **Status:** todo · **Size:** L
+**Phase:** 3 · API · **Status:** done · **Size:** L
 **Refs:** spec: Data model, Out of scope ("Client site setup and WordPress connection"), R8.1 (unchanged)
 **Depends on:** T-013, T-009 (WordPress publish check — its connectivity logic is reused here)
 
@@ -19,7 +19,7 @@ An agency can create and list several client sites instead of operating against 
 - **No site removal/archive, no cross-site report rollup, no duplicate-base-URL guard** — out of scope for this pass.
 
 ### Flow
-1. `POST /sites` — agency submits `name`, `wp_base_url`, `wp_app_password`. The route calls the existing WordPress connectivity check (T-009) against those exact credentials. On failure: `422 {code: "wp_connection_failed"}`, nothing persisted. On success: generate a `siteId`, encrypt the app password, create the `sites/{siteId}` document, and reset its review token (same token-generation logic T-016 already has, just no longer tied to startup).
+1. `POST /sites` — agency submits `name`, `wp_base_url`, `wp_username`, `wp_app_password`. The route calls the existing WordPress connectivity check (T-009) against those exact credentials. On failure: `422 {code: "wp_connection_failed"}`, nothing persisted. On success: generate a `siteId`, encrypt the app password, create the `sites/{siteId}` document, and reset its review token (same token-generation logic T-016 already has, just no longer tied to startup).
 2. `GET /sites` — lists every site (`id`, `name`, `wp_base_url`; never the credential) for the switcher.
 3. Every route from T-014 onward that currently assumes the single site now takes `siteId` from the path and resolves that site's repository/credentials instead of the `SITE_ID` constant.
 
@@ -30,6 +30,7 @@ An agency can create and list several client sites instead of operating against 
 | --- | --- | --- |
 | `name` | string | required |
 | `wp_base_url` | string (URL) | required |
+| `wp_username` | string | required; HTTP Basic auth needs the user an application password belongs to |
 | `wp_app_password` | string | required, never echoed back |
 
 | Case | Status | Body |
@@ -65,6 +66,11 @@ An agency can create and list several client sites instead of operating against 
 
 ### Open questions
 - Encryption key source (Secret Manager key vs. local-dev equivalent) — implementation detail, resolve while building, not a product decision.
+
+### Follow-ups raised by the design (T-033), not built here
+- The Add Site design has a **Test connection** button separate from submit. Proposal: `POST /sites/test-connection` with the same body minus `name`; `200` or `422 {code: "wp_connection_failed"}`, persists nothing, reuses the same checker.
+- The Sites list and switcher show each site's **connection status** and **article / needs-attention counts**. Proposal: store the last check result on the site (`connection_ok`, `connection_checked_at`, set on create and on test), and have `GET /sites` return it plus `article_count` and `needs_attention_count` computed from stored statuses, no live WordPress call.
+- Both need a new API ticket if kept; otherwise T-033 drops the button and those columns.
 
 ## Acceptance criteria
 - [ ] `POST /sites` tests the WordPress connection before persisting; failure leaves no document behind.

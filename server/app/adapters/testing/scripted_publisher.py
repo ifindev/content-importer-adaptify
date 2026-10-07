@@ -13,6 +13,8 @@ class ScriptedPublisher:
         self.create_error: WordPressError | None = None
         self.update_error: WordPressError | None = None
         self.find_by_slug_result: int | None = None
+        self.get_statuses_result: list[PostStatus] = []
+        self.get_statuses_error: WordPressError | None = None
         self._next_id = 1
 
     async def check_credentials(self) -> None:
@@ -61,4 +63,6 @@ class ScriptedPublisher:
         return self.find_by_slug_result
 
     async def get_statuses(self, post_ids: list[int]) -> list[PostStatus]:
-        return []
+        if self.get_statuses_error is not None:
+            raise self.get_statuses_error
+        return self.get_statuses_result

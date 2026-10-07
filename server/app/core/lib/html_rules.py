@@ -1,0 +1,26 @@
+ALLOWED_TAGS = {
+    "h1",
+    "h2",
+    "h3",
+    "h4",
+    "h5",
+    "h6",
+    "p",
+    "br",
+    "ul",
+    "ol",
+    "li",
+    "a",
+    "strong",
+    "b",
+    "em",
+    "i",
+    "table",
+    "thead",
+    "tbody",
+    "tr",
+    "th",
+    "td",
+}
+
+ALLOWED_ATTRIBUTES = {"a": {"href", "title"}}

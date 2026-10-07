@@ -9,6 +9,20 @@ services:
     volumes:
       - ./server:/app
       - server-venv:/app/.venv
+    depends_on:
+      - firebase
+
+  firebase:
+    build: ./infra/firebase
+    # firebase-tools only runs its --export-on-exit hook on SIGINT, not SIGTERM
+    # (what `docker stop` sends by default).
+    stop_signal: SIGINT
+    ports:
+      - "4000:4000"
+      - "8081:8081"
+      - "9099:9099"
+    volumes:
+      - firebase-data:/data
 
   web:
     build:
@@ -30,3 +44,4 @@ services:
 volumes:
   server-venv:
   web-node-modules:
+  firebase-data:

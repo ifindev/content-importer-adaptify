@@ -12,6 +12,7 @@ from app.api.auth import require_session
 from app.api.main import app
 from app.api.routes.articles import get_clock as get_articles_clock
 from app.api.routes.articles import get_repository
+from app.api.routes.public_review import get_clock as get_public_review_clock
 from app.api.routes.public_review import get_repository as get_public_review_repository
 from app.api.routes.review_link import get_clock, get_secret_store, get_web_base_url
 from app.api.routes.review_link import get_repository as get_review_link_repository
@@ -173,3 +174,53 @@ def test_public_review_routes_work_against_the_firestore_emulator(repository):
     assert hidden_response.json()["code"] == "not_found"
     assert wrong_token_response.status_code == 404
     assert wrong_token_response.json()["code"] == "not_found"
+
+
+def test_approve_and_request_changes_routes_work_against_the_firestore_emulator(repository):
+    repository.ensure_site_bootstrapped("Test Site", "https://wp.example.com")
+    token = generate_token()
+    repository.save_site(
+        repository.get_site().model_copy(update={"review_token_hash": hash_token(token)})
+    )
+    repository.create_article(_article("approve-me", Status.AWAITING_APPROVAL))
+    repository.create_article(_article("request-changes-me", Status.AWAITING_APPROVAL))
+
+    app.dependency_overrides[get_public_review_repository] = lambda: repository
+    app.dependency_overrides[get_public_review_clock] = lambda: FixedClock(datetime.now(UTC))
+    try:
+        client = TestClient(app)
+        approve_response = client.post(
+            f"/review/{token}/articles/approve-me/approve",
+            json={"client_name": "Jane Client", "version": 1},
+        )
+        stale_response = client.post(
+            f"/review/{token}/articles/approve-me/approve",
+            json={"client_name": "Jane Client", "version": 1},
+        )
+        request_changes_response = client.post(
+            f"/review/{token}/articles/request-changes-me/request-changes",
+            json={"client_name": "Jane Client", "comment": "please fix the intro", "version": 1},
+        )
+        missing_response = client.post(
+            f"/review/{token}/articles/missing/approve",
+            json={"client_name": "Jane Client", "version": 1},
+        )
+    finally:
+        app.dependency_overrides.clear()
+
+    assert approve_response.status_code == 200
+    assert approve_response.json() == {"id": "approve-me", "status": "approved"}
+    assert repository.get_article("approve-me").approved_version == 1
+
+    assert stale_response.status_code == 409
+    assert stale_response.json()["code"] == "not_awaiting_approval"
+
+    assert request_changes_response.status_code == 200
+    assert request_changes_response.json() == {
+        "id": "request-changes-me",
+        "status": "changes_requested",
+    }
+    assert repository.get_article("request-changes-me").client_comment == "please fix the intro"
+
+    assert missing_response.status_code == 404
+    assert missing_response.json()["code"] == "not_found"

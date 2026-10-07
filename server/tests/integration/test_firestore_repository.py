@@ -10,6 +10,7 @@ from app.adapters.testing.clock import FixedClock
 from app.adapters.testing.secret_store import InMemorySecretStore
 from app.api.auth import require_session
 from app.api.main import app
+from app.api.routes.articles import get_clock as get_articles_clock
 from app.api.routes.articles import get_repository
 from app.api.routes.review_link import get_clock, get_secret_store, get_web_base_url
 from app.api.routes.review_link import get_repository as get_review_link_repository
@@ -96,6 +97,24 @@ def test_articles_routes_work_against_the_firestore_emulator(repository):
     assert [a["id"] for a in list_response.json()["articles"]] == ["a1"]
     assert detail_response.status_code == 200
     assert detail_response.json()["id"] == "a1"
+
+
+def test_send_for_review_route_works_against_the_firestore_emulator(repository):
+    repository.create_article(_article("a1", Status.DRAFT))
+    app.dependency_overrides[require_session] = lambda: "test-uid"
+    app.dependency_overrides[get_repository] = lambda: repository
+    app.dependency_overrides[get_articles_clock] = lambda: FixedClock(datetime.now(UTC))
+    try:
+        client = TestClient(app)
+        response = client.post("/articles/a1/send-for-review")
+    finally:
+        app.dependency_overrides.clear()
+
+    assert response.status_code == 200
+    assert response.json()["status"] == "awaiting_approval"
+    events = repository.list_events("a1")
+    assert events[-1].type == EventType.SENT_FOR_REVIEW
+    assert events[-1].actor == "test-uid"
 
 
 def test_review_link_routes_work_against_the_firestore_emulator(repository):

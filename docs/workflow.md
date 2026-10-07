@@ -18,7 +18,7 @@ How the work on this project is planned, done, and kept in sync with the docs.
 | 1 | Bootstrap | Backend skeleton and Next.js app, fully set up, with folder structure |
 | 2 | Local infra | Docker compose with emulators and WordPress; a real publish to WordPress works |
 | 3 | API | Every endpoint, by epic; the end-to-end test passes through the API alone |
-| 4 | Frontend | Data layer → design per screen → build each screen on real data |
+| 4 | Frontend | Every screen's UI on fixtures → data layer → wire each screen to real data |
 | 5 | Deploy | GCP, VPS WordPress, CI |
 | 6 | Demo readiness | README, seed data |
 | 7 | AI (P2) | Change drafting |
@@ -72,8 +72,9 @@ The status lives in the master list, [plan/README.md](plan/README.md), and in th
 ### Frontend tickets
 
 1. **Data layer:** one ticket for the whole app: `*.queries.ts` and `*.mutations.ts` for every module, typed from `lib/api/schema.ts`. Mutations return `{ ok, code }` for expected errors.
-2. **Screen tickets** may group several screens. Each one lists every state of its screens (loading, empty, error codes from the API tickets, sync warnings, banners) and every UI element. Its first task is the design pass, done manually with `/design`. Then the screens are built on the real data layer, matching the design. Use MSW only if an endpoint isn't ready yet.
-3. **Responsive:** every screen works at 375, 768, and 1280px with no horizontal scroll, and is usable by keyboard.
+2. **UI ticket:** one ticket builds every screen from the design canvas (made with `/design`) on fixtures typed from `lib/api/schema.ts`, in every state (loading, empty, error codes from the API tickets, sync warnings, banners), and validates them with a Playwright UI suite. Pages read data only through `modules/<m>/data.ts`.
+3. **Wiring tickets** may group several screens. Each points its modules' `data.ts` at the data layer, deletes the fixtures, and checks every flow and error code against the real API.
+4. **Responsive:** every screen works at 375, 768, and 1280px with no horizontal scroll, and is usable by keyboard.
 
 Frontend tickets may be size L.
 

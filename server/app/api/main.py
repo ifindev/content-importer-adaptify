@@ -12,7 +12,13 @@ from app.api.routes.imports import NoFilesError, TooManyFilesError
 from app.api.routes.imports import router as imports_router
 from app.api.routes.review_link import router as review_link_router
 from app.container import build_container
-from app.core.domain.errors import EmptyContentError, NotEditableError, WordPressError
+from app.core.domain.errors import (
+    EmptyContentError,
+    NotAwaitingApprovalError,
+    NotEditableError,
+    NotSendableError,
+    WordPressError,
+)
 from app.settings import Settings
 
 logging.basicConfig(level=logging.INFO)
@@ -78,6 +84,16 @@ def create_app() -> FastAPI:
     @app.exception_handler(EmptyUpdateError)
     def empty_update_handler(request: Request, exc: EmptyUpdateError) -> JSONResponse:
         return JSONResponse(status_code=422, content={"code": "empty_update"})
+
+    @app.exception_handler(NotSendableError)
+    def not_sendable_handler(request: Request, exc: NotSendableError) -> JSONResponse:
+        return JSONResponse(status_code=409, content={"code": "not_sendable"})
+
+    @app.exception_handler(NotAwaitingApprovalError)
+    def not_awaiting_approval_handler(
+        request: Request, exc: NotAwaitingApprovalError
+    ) -> JSONResponse:
+        return JSONResponse(status_code=409, content={"code": "not_awaiting_approval"})
 
     app.include_router(auth_router)
     app.include_router(articles_router)

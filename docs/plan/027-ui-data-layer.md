@@ -76,11 +76,12 @@ Review mutations revalidate `/review/{token}`.
 - [ ] Unit test: `toIsoWithOffset` (two offsets, DST edge) and `messageFor` fallback.
 
 ## Tasks
+- T-033 already added `lib/error-messages.ts` (`messageFor`), `components/local-time.tsx`, and the `data.ts` / `actions.ts` seam per module; wiring swaps their re-exports instead of building these again.
 - [ ] Wait for T-022 and T-031 to land; `make gen-api`.
 - [ ] Sites, articles, review, report repositories.
 - [ ] `lib/error-messages.ts`, `components/local-time.tsx`, zod schemas.
 - [ ] `next.config` body size limit.
-- [ ] Add a minimal test runner if none exists (`vitest`, one config) and the unit test.
+- [ ] ~~Add a minimal test runner and the unit test.~~ Out of scope: no new vitest tests for UI work (CLAUDE.md).
 
 ## Out of scope
 - UI (T-028, T-029). AI draft endpoints (Phase 7).

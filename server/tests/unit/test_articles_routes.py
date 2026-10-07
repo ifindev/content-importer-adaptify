@@ -146,3 +146,52 @@ def test_patch_article_malformed_slug_returns_422(client, repository):
     repository.create_article(_article("a1"))
     response = client.patch("/articles/a1", json={"slug": "Not A Slug!"})
     assert response.status_code == 422
+
+
+@pytest.mark.parametrize("status", [Status.DRAFT, Status.CHANGES_REQUESTED])
+def test_send_for_review_from_sendable_status(client, repository, status):
+    repository.create_article(_article("a1", status))
+    response = client.post("/articles/a1/send-for-review")
+    assert response.status_code == 200
+    body = response.json()
+    assert body["status"] == "awaiting_approval"
+    assert body["events"][-1]["type"] == "sent_for_review"
+
+
+@pytest.mark.parametrize(
+    "status", [Status.AWAITING_APPROVAL, Status.APPROVED, Status.PUBLISHED, Status.FAILED]
+)
+def test_send_for_review_from_other_status_returns_409(client, repository, status):
+    repository.create_article(_article("a1", status))
+    response = client.post("/articles/a1/send-for-review")
+    assert response.status_code == 409
+    assert response.json() == {"code": "not_sendable"}
+
+
+def test_send_for_review_not_found_returns_404(client):
+    response = client.post("/articles/missing/send-for-review")
+    assert response.status_code == 404
+    assert response.json() == {"code": "not_found"}
+
+
+def test_pull_back_from_awaiting_approval(client, repository):
+    repository.create_article(_article("a1", Status.AWAITING_APPROVAL))
+    response = client.post("/articles/a1/pull-back")
+    assert response.status_code == 200
+    body = response.json()
+    assert body["status"] == "draft"
+    assert body["events"][-1]["type"] == "pulled_back"
+
+
+@pytest.mark.parametrize("status", [Status.DRAFT, Status.APPROVED, Status.PUBLISHED])
+def test_pull_back_from_other_status_returns_409(client, repository, status):
+    repository.create_article(_article("a1", status))
+    response = client.post("/articles/a1/pull-back")
+    assert response.status_code == 409
+    assert response.json() == {"code": "not_awaiting_approval"}
+
+
+def test_pull_back_not_found_returns_404(client):
+    response = client.post("/articles/missing/pull-back")
+    assert response.status_code == 404
+    assert response.json() == {"code": "not_found"}

@@ -21,3 +21,15 @@ class NotEditableError(Exception):
 
 class EmptyContentError(Exception):
     pass
+
+
+class NotSendableError(Exception):
+    def __init__(self, status: str) -> None:
+        self.status = status
+        super().__init__(f"Article in status {status} cannot be sent for review")
+
+
+class NotAwaitingApprovalError(Exception):
+    def __init__(self, status: str) -> None:
+        self.status = status
+        super().__init__(f"Article in status {status} is not awaiting approval")

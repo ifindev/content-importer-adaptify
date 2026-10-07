@@ -23,7 +23,9 @@ class FakeParser:
         return ParsedDocument(title=None, body_html=f"cleaned:{html}")
 
 
-def _article(status: Status, approved_version: int | None = 2) -> Article:
+def _article(
+    status: Status, approved_version: int | None = 2, client_comment: str | None = None
+) -> Article:
     return Article(
         id="a1",
         title="Old Title",
@@ -33,6 +35,7 @@ def _article(status: Status, approved_version: int | None = 2) -> Article:
         status=status,
         version=3,
         approved_version=approved_version,
+        client_comment=client_comment,
         created_at=CREATED,
         updated_at=CREATED,
     )
@@ -126,6 +129,15 @@ def test_edit_body_html_is_recleaned(repository, clock):
     )
 
     assert updated.body_html == "cleaned:<script>evil()</script>"
+
+
+def test_edit_clears_client_comment(repository, clock):
+    article = _article(Status.CHANGES_REQUESTED, client_comment="please fix the intro")
+    repository.create_article(article)
+
+    updated = edit_article(article, None, None, None, repository, FakeParser(), clock, "uid")
+
+    assert updated.client_comment is None
 
 
 def test_edit_partial_update_leaves_other_fields(repository, clock):

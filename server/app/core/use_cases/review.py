@@ -1,11 +1,15 @@
 import hmac
 
+from app.core.domain import lifecycle
+from app.core.domain.errors import NotAwaitingApprovalError, NotSendableError
 from app.core.domain.models import Article, Site
-from app.core.domain.statuses import Status
+from app.core.domain.statuses import EventType, Status
 from app.core.lib.tokens import hash_token
 from app.core.ports.article_repository import ArticleRepository
+from app.core.ports.clock import Clock
 
 VISIBLE_STATUSES = {Status.AWAITING_APPROVAL, Status.SCHEDULED, Status.PUBLISHED}
+SENDABLE_STATUSES = {Status.DRAFT, Status.CHANGES_REQUESTED}
 
 
 class InvalidTokenError(Exception):
@@ -44,3 +48,25 @@ def get_review_article(repository: ArticleRepository, token: str, article_id: st
     if article is None or article.status not in VISIBLE_STATUSES:
         raise ArticleNotVisibleError
     return article
+
+
+def send_for_review(
+    article: Article, repository: ArticleRepository, clock: Clock, actor: str
+) -> Article:
+    if article.status not in SENDABLE_STATUSES:
+        raise NotSendableError(article.status)
+    updated, event = lifecycle.transition(
+        article, Status.AWAITING_APPROVAL, actor, EventType.SENT_FOR_REVIEW, clock.now()
+    )
+    repository.save_article(updated, event)
+    return updated
+
+
+def pull_back(article: Article, repository: ArticleRepository, clock: Clock, actor: str) -> Article:
+    if article.status != Status.AWAITING_APPROVAL:
+        raise NotAwaitingApprovalError(article.status)
+    updated, event = lifecycle.transition(
+        article, Status.DRAFT, actor, EventType.PULLED_BACK, clock.now()
+    )
+    repository.save_article(updated, event)
+    return updated

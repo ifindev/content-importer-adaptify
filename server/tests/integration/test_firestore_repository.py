@@ -6,9 +6,13 @@ from fastapi.testclient import TestClient
 from google.cloud import firestore
 
 from app.adapters.firestore.repository import FirestoreArticleRepository
+from app.adapters.testing.clock import FixedClock
+from app.adapters.testing.secret_store import InMemorySecretStore
 from app.api.auth import require_session
 from app.api.main import app
 from app.api.routes.articles import get_repository
+from app.api.routes.review_link import get_clock, get_secret_store, get_web_base_url
+from app.api.routes.review_link import get_repository as get_review_link_repository
 from app.core.domain.models import Article, Event
 from app.core.domain.statuses import EventType, Status
 
@@ -92,3 +96,26 @@ def test_articles_routes_work_against_the_firestore_emulator(repository):
     assert [a["id"] for a in list_response.json()["articles"]] == ["a1"]
     assert detail_response.status_code == 200
     assert detail_response.json()["id"] == "a1"
+
+
+def test_review_link_routes_work_against_the_firestore_emulator(repository):
+    repository.ensure_site_bootstrapped("Test Site", "https://wp.example.com")
+    secret_store = InMemorySecretStore()
+    app.dependency_overrides[require_session] = lambda: "test-uid"
+    app.dependency_overrides[get_review_link_repository] = lambda: repository
+    app.dependency_overrides[get_secret_store] = lambda: secret_store
+    app.dependency_overrides[get_clock] = lambda: FixedClock(datetime.now(UTC))
+    app.dependency_overrides[get_web_base_url] = lambda: "https://app.example.com"
+    try:
+        client = TestClient(app)
+        first = client.get("/review-link")
+        second = client.get("/review-link")
+        reset = client.post("/review-link/reset")
+    finally:
+        app.dependency_overrides.clear()
+
+    assert first.status_code == 200
+    assert first.json()["url"] == second.json()["url"]
+    assert reset.status_code == 200
+    assert reset.json()["url"] != first.json()["url"]
+    assert repository.get_site().review_token_hash is not None

@@ -1,8 +1,11 @@
+import re
 from datetime import datetime
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from app.core.domain.statuses import EventType, Status, SyncWarning
+
+_SLUG_RE = re.compile(r"[a-z0-9-]+")
 
 
 class SessionRequest(BaseModel):
@@ -76,3 +79,18 @@ class UploadResponse(BaseModel):
     results: list[UploadFileResult] = Field(
         ..., description="One result per uploaded file, in request order."
     )
+
+
+class ArticleUpdate(BaseModel):
+    title: str | None = Field(None, min_length=1, max_length=200, description="New title.")
+    slug: str | None = Field(None, description="New slug: lowercase letters, digits, hyphens.")
+    body_html: str | None = Field(
+        None, min_length=1, description="New body HTML, cleaned like import, capped at 2 MB."
+    )
+
+    @field_validator("slug")
+    @classmethod
+    def _validate_slug(cls, value: str | None) -> str | None:
+        if value is not None and not _SLUG_RE.fullmatch(value):
+            raise ValueError("slug must be lowercase letters, digits, and hyphens")
+        return value

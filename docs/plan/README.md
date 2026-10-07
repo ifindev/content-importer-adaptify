@@ -57,7 +57,7 @@ Phases and the master list of tickets. How tickets work: [workflow.md](../workfl
 | T-013 | [Lifecycle core: model, Firestore repository, list and detail](013-api-lifecycle-core.md) | R2.4 | done |
 | T-014 | [Import articles](014-api-import-articles.md) | R1.1–R1.7 | done |
 | T-015 | [Edit article](015-api-edit-article.md) | R2.1–R2.3 | done |
-| T-016 | [Review link](016-api-review-link.md) | R3.1, R3.2, R3.7 | analyzed |
+| T-016 | [Review link](016-api-review-link.md) | R3.1, R3.2, R3.7 | done |
 | T-017 | [Send for review and pull back](017-api-send-for-review-pull-back.md) | R3.6 | analyzed |
 | T-018 | [Client review page](018-api-client-review-page.md) | R3.3, R6.5, R8.2 | analyzed |
 | T-019 | [Client approve and request changes](019-api-client-approve-request-changes.md) | R3.4, R3.5 | analyzed |

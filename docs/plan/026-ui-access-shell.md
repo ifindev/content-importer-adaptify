@@ -1,6 +1,6 @@
 # T-026 Access control and app shell
 
-**Phase:** 4 · Frontend · **Status:** analyzed · **Size:** L
+**Phase:** 4 · Frontend · **Status:** in progress · **Size:** L
 **Refs:** R8.1, R8.2, spec: Screens, API endpoints; architecture: Auth, Frontend
 **Depends on:** T-012, T-018
 
@@ -89,29 +89,29 @@ The agency signs in once and works inside a responsive app shell with a sidebar.
 - No server-side revoke on logout. Add it with multi-user.
 
 ## Acceptance criteria
-- [ ] Logged out, `/articles`, `/articles/x`, `/import`, `/report` redirect to `/login?next=…`; after login the user lands on `next`.
-- [ ] A tampered `session` cookie redirects to `/login` on the first page load.
-- [ ] `/login` while logged in redirects to `/articles`; an external `next` is ignored.
-- [ ] Logout clears the cookie and agency pages redirect again.
-- [ ] `/review/<valid>` works logged out, shows no sidebar, sends `Referrer-Policy: no-referrer` and `noindex`.
-- [ ] `/review/<bad>` shows the generic 404 page.
-- [ ] Sidebar: expanded at 1280px, icon rail at 768px, Sheet at 375px; keyboard can reach every nav item and Logout.
-- [ ] No horizontal scroll at 375, 768, 1280px on login and the shell.
-- [ ] `make agency-user` creates the account; running it twice is harmless.
-- [ ] architecture.md (Auth, Frontend) updated.
+- [x] Logged out, `/articles`, `/articles/x`, `/import`, `/report` redirect to `/login?next=…`; after login the user lands on `next`.
+- [ ] A tampered `session` cookie redirects to `/login` on the first page load. Mechanism is built and code-reviewed (`lib/api-server.ts`'s 401 handling), but no page calls the API yet to exercise it live — needs T-027.
+- [x] `/login` while logged in redirects to `/articles`; an external `next` is ignored.
+- [x] Logout clears the cookie and agency pages redirect again.
+- [ ] `/review/<valid>` works logged out, shows no sidebar, sends `Referrer-Policy: no-referrer` and `noindex`. Layout/headers verified; "valid" needs T-018's `GET /review/{token}` wired into a real page — that's T-029.
+- [ ] `/review/<bad>` shows the generic 404 page. `not-found.tsx` exists; nothing calls `notFound()` yet since the review page is still a stub — needs T-029.
+- [x] Sidebar: expanded at 1280px, icon rail at 768px, Sheet at 375px; keyboard can reach every nav item and Logout.
+- [x] No horizontal scroll at 375, 768, 1280px on login and the shell.
+- [x] `make agency-user` creates the account; running it twice is harmless.
+- [x] architecture.md (Auth, Frontend) updated.
 
 ## Tasks
-- [ ] Design with `/design`: login card states, sidebar at 3 widths, badge set, banner.
-- [ ] `pnpm add firebase`; `lib/firebase-client.ts` (browser only, emulator when env is set).
-- [ ] `modules/auth`: `LoginPage`, `LoginForm` (client), `repository/auth.mutations.ts` (`createSession`, `logout`).
-- [ ] `proxy.ts` with the matcher and redirects, setting `x-pathname`.
-- [ ] `lib/api-server.ts`: 401 → `redirect('/login?next=…')`.
-- [ ] shadcn components; `AppSidebar`; `(agency)/layout.tsx`, `loading.tsx`, `error.tsx`, `not-found.tsx`.
-- [ ] `components/status-badge.tsx`, `sync-warning-badge.tsx`, `wordpress-banner.tsx`.
-- [ ] `app/review/[token]/layout.tsx`, `not-found.tsx`, `error.tsx`; `next.config` headers.
-- [ ] `.env.example`, compose, `make agency-user`.
-- [ ] Unit test: the `next` sanitizer (relative path kept, `//x` and absolute URLs dropped).
-- [ ] Docs: architecture.md Auth + Frontend.
+- [ ] Design with `/design`: login card states, sidebar at 3 widths, badge set, banner. Not run — built directly against shadcn defaults; revisit if the look needs a deliberate pass.
+- [x] `pnpm add firebase`; `lib/firebase-client.ts` (browser only, emulator when env is set).
+- [x] `modules/auth`: `LoginPage`, `LoginForm` (client), `repository/auth.mutations.ts` (`createSession`, `logout`).
+- [x] `proxy.ts` with the matcher and redirects, setting `x-pathname`.
+- [x] `lib/api-server.ts`: 401 → `redirect('/login?next=…')`.
+- [x] shadcn components; `AppSidebar`; `(agency)/layout.tsx`, `loading.tsx`, `error.tsx`, `not-found.tsx`.
+- [x] `components/status-badge.tsx`, `sync-warning-badge.tsx`, `wordpress-banner.tsx`.
+- [x] `app/review/[token]/layout.tsx`, `not-found.tsx`, `error.tsx`; `next.config` headers.
+- [x] `.env.example`, compose, `make agency-user`.
+- [x] Unit test: the `next` sanitizer (relative path kept, `//x` and absolute URLs dropped).
+- [x] Docs: architecture.md Auth + Frontend.
 
 ## Out of scope
 - Multi-user, roles, password reset, server-side revoke.

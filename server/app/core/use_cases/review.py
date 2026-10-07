@@ -1,7 +1,7 @@
 import hmac
 
 from app.core.domain import lifecycle
-from app.core.domain.errors import NotAwaitingApprovalError, NotSendableError
+from app.core.domain.errors import ArticleChangedError, NotAwaitingApprovalError, NotSendableError
 from app.core.domain.models import Article, Site
 from app.core.domain.statuses import EventType, Status
 from app.core.lib.tokens import hash_token
@@ -58,6 +58,7 @@ def send_for_review(
     updated, event = lifecycle.transition(
         article, Status.AWAITING_APPROVAL, actor, EventType.SENT_FOR_REVIEW, clock.now()
     )
+    updated = updated.model_copy(update={"client_comment": None})
     repository.save_article(updated, event)
     return updated
 
@@ -68,5 +69,61 @@ def pull_back(article: Article, repository: ArticleRepository, clock: Clock, act
     updated, event = lifecycle.transition(
         article, Status.DRAFT, actor, EventType.PULLED_BACK, clock.now()
     )
+    repository.save_article(updated, event)
+    return updated
+
+
+def _get_awaiting_approval_article(
+    repository: ArticleRepository, token: str, article_id: str, version: int
+) -> Article:
+    site = repository.get_site()
+    _verify_token(site, token)
+
+    article = repository.get_article(article_id)
+    if article is None:
+        raise ArticleNotVisibleError
+    if article.status != Status.AWAITING_APPROVAL:
+        raise NotAwaitingApprovalError(article.status)
+    if article.version != version:
+        raise ArticleChangedError(article.version, version)
+    return article
+
+
+def approve(
+    repository: ArticleRepository,
+    clock: Clock,
+    token: str,
+    article_id: str,
+    client_name: str,
+    version: int,
+) -> Article:
+    article = _get_awaiting_approval_article(repository, token, article_id, version)
+    updated, event = lifecycle.transition(
+        article, Status.APPROVED, client_name, EventType.APPROVED, clock.now()
+    )
+    updated = updated.model_copy(update={"approved_version": version, "client_comment": None})
+    repository.save_article(updated, event)
+    return updated
+
+
+def request_changes(
+    repository: ArticleRepository,
+    clock: Clock,
+    token: str,
+    article_id: str,
+    client_name: str,
+    comment: str,
+    version: int,
+) -> Article:
+    article = _get_awaiting_approval_article(repository, token, article_id, version)
+    updated, event = lifecycle.transition(
+        article,
+        Status.CHANGES_REQUESTED,
+        client_name,
+        EventType.CHANGES_REQUESTED,
+        clock.now(),
+        data={"comment": comment},
+    )
+    updated = updated.model_copy(update={"client_comment": comment})
     repository.save_article(updated, event)
     return updated

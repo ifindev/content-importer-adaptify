@@ -89,7 +89,7 @@ The MVP builds one thin slice through all five steps the roadmap entry names. Ea
 | Import            | Paste into an editor, or upload one or more `.docx` files. Each becomes one article.                  |
 | Customer approval | One private review link per client site. The client approves or requests changes, without an account. |
 | Scheduling        | The agency sets a publish date per approved article. WordPress publishes it on that date.             |
-| Publishing        | One pre-configured WordPress site, through the WordPress REST API.                                    |
+| Publishing        | One or more client WordPress sites, each through the WordPress REST API.                              |
 | Reporting         | A workflow report from the app's own data: statuses, approval speed, change rounds, published URLs.   |
 
 
@@ -103,7 +103,6 @@ One AI feature sits on top, at low priority: drafting the client's requested cha
 | Google Docs API, URL import, CMS migration                            | Each adds auth or scraping. Paste and `.docx` cover the same writers.                                     |
 | Images inside documents                                               | Need upload, storage, and re-linking in WordPress. The importer warns when a document has images.         |
 | SEO title and meta description                                        | Not part of core WordPress. They need an SEO plugin, and each plugin stores them its own way.             |
-| Client site setup and WordPress connection                            | Adaptify already has this. The MVP uses one pre-configured site.                                          |
 | Any CMS other than WordPress                                          | One publisher proves the flow.                                                                            |
 | Email notifications                                                   | A separate Planned item on Adaptify's roadmap. The agency shares the review link through its own channel. |
 | Search performance reports (clicks, rankings)                         | Needs Google Search Console. A test site has almost no search traffic, so the numbers would be empty.     |
@@ -476,7 +475,7 @@ ai_usage/{yyyy-mm}
 
 | Collection  | Key fields                                                                                                                                                                                                                 | Notes                                                                                                                                                                                                                             |
 | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `sites`     | name, wp_base_url, review_token_hash, review_token_created_at                                                                                                                                                              | One document, created from config at startup. WordPress credentials live in config and Secret Manager, never in Firestore.                                                                                                        |
+| `sites`     | name, wp_base_url, wp_username, wp_app_password_encrypted, review_token_hash, review_token_created_at                                                                                                                      | One document per agency-managed client site, created through `POST /sites`. The WordPress app password is encrypted at rest (a symmetric key from config/Secret Manager); the plaintext review token still never touches Firestore (see the Decision below).                                                                                        |
 | `articles`  | title, slug, body_html, source (paste or docx), source_filename, warnings, status, sync_warning, version, approved_version, publish_at_utc, wp_post_id, published_url, last_error, last_checked_at, client_comment, created_at, updated_at | `version` goes up on every body edit. `approved_version` records which version the client approved. `client_comment` holds the client's latest change request; cleared when the agency edits or resubmits the article.                                                                                                                               |
 | `events`    | type, actor, at, data                                                                                                                                                                                                      | The history log. Types: imported, edited, sent_for_review, pulled_back, approved, changes_requested, scheduled, date_changed, published, failed, retried, ai_draft_created, ai_draft_accepted. `data` holds the comment or error. |
 | `ai_drafts` | revised_html, change_summary, not_done, status (open, accepted, discarded), cost_usd, created_at                                                                                                                           | P2.                                                                                                                                                                                                                               |
@@ -494,24 +493,26 @@ Agency routes need a Firebase **session cookie**: the web app exchanges the Fire
 ### Agency
 
 
-| Method | Path                                         | Purpose                                                           |
-| ------ | -------------------------------------------- | ----------------------------------------------------------------- |
-| POST   | `/auth/session`                              | Exchange a Firebase ID token for a session cookie.                |
-| POST   | `/articles/paste`                            | Create a Draft from pasted HTML.                                  |
-| POST   | `/articles/upload`                           | Create one Draft per uploaded `.docx` file.                       |
-| GET    | `/articles`                                  | List articles, filter by status. Runs the status check.           |
-| GET    | `/articles/{id}`                             | Article with comment and history.                                 |
-| PATCH  | `/articles/{id}`                             | Edit title, slug, body. Applies the approval reset rule.          |
-| POST   | `/articles/{id}/send-for-review`             | Draft or Changes requested to Awaiting approval.                  |
-| POST   | `/articles/{id}/pull-back`                   | Awaiting approval to Draft.                                       |
-| POST   | `/articles/{id}/schedule`                    | Set or change the publish time. Body: `publish_at` with timezone. |
-| POST   | `/articles/{id}/retry`                       | Retry a Failed WordPress call.                                    |
-| GET    | `/review-link`                               | The current review URL.                                           |
-| POST   | `/review-link/reset`                         | New token; the old link stops working.                            |
-| GET    | `/report`                                    | Agency report. Runs the status check.                             |
-| POST   | `/articles/{id}/ai-drafts`                   | P2. Draft the requested change.                                   |
-| POST   | `/articles/{id}/ai-drafts/{draftId}/accept`  | P2. Replace the body with the draft.                              |
-| POST   | `/articles/{id}/ai-drafts/{draftId}/discard` | P2.                                                               |
+| Method | Path                                                     | Purpose                                                           |
+| ------ | --------------------------------------------------------- | ----------------------------------------------------------------- |
+| POST   | `/auth/session`                                          | Exchange a Firebase ID token for a session cookie.                |
+| POST   | `/sites`                                                 | Create a client site: tests the WordPress connection, stores the app password encrypted, and mints its review token. |
+| GET    | `/sites`                                                 | List the agency's client sites.                                   |
+| POST   | `/sites/{siteId}/articles/paste`                         | Create a Draft from pasted HTML.                                  |
+| POST   | `/sites/{siteId}/articles/upload`                        | Create one Draft per uploaded `.docx` file.                       |
+| GET    | `/sites/{siteId}/articles`                               | List articles, filter by status. Runs the status check.           |
+| GET    | `/sites/{siteId}/articles/{id}`                          | Article with comment and history.                                 |
+| PATCH  | `/sites/{siteId}/articles/{id}`                          | Edit title, slug, body. Applies the approval reset rule.          |
+| POST   | `/sites/{siteId}/articles/{id}/send-for-review`          | Draft or Changes requested to Awaiting approval.                  |
+| POST   | `/sites/{siteId}/articles/{id}/pull-back`                | Awaiting approval to Draft.                                       |
+| POST   | `/sites/{siteId}/articles/{id}/schedule`                 | Set or change the publish time. Body: `publish_at` with timezone. |
+| POST   | `/sites/{siteId}/articles/{id}/retry`                    | Retry a Failed WordPress call.                                    |
+| GET    | `/sites/{siteId}/review-link`                            | The current review URL.                                           |
+| POST   | `/sites/{siteId}/review-link/reset`                      | New token; the old link stops working.                            |
+| GET    | `/sites/{siteId}/report`                                 | Agency report. Runs the status check.                             |
+| POST   | `/sites/{siteId}/articles/{id}/ai-drafts`                | P2. Draft the requested change.                                   |
+| POST   | `/sites/{siteId}/articles/{id}/ai-drafts/{draftId}/accept`  | P2. Replace the body with the draft.                            |
+| POST   | `/sites/{siteId}/articles/{id}/ai-drafts/{draftId}/discard` | P2.                                                              |
 
 
 
@@ -526,6 +527,7 @@ Agency routes need a Firebase **session cookie**: the web app exchanges the Fire
 | POST   | `/review/{token}/articles/{id}/approve`         | Body: `client_name`, `version`.                                                        |
 | POST   | `/review/{token}/articles/{id}/request-changes` | Body: `client_name`, `comment`, `version`.                                             |
 
+Client routes carry no `siteId` — the API resolves which site a token belongs to from the token's hash, not from the path.
 
 **Decision:** A wrong or reset token returns 404, not 403, so the page doesn't confirm that a link once existed.
 

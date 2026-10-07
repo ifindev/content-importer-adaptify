@@ -52,7 +52,9 @@ A **port** is an interface the core depends on, written as a Python `Protocol`. 
 | Port                | Job                                                              | Real adapter                              | Test adapter                               |
 | ------------------- | ---------------------------------------------------------------- | ----------------------------------------- | ------------------------------------------ |
 | `DocumentParser`    | Turn pasted HTML or a `.docx` file into clean HTML plus warnings | `mammoth` for `.docx`, `nh3` for cleaning | Same (pure code, no swap needed)           |
-| `ArticleRepository` | Read and write sites, articles, events, drafts                   | Firestore (emulator locally)              | In-memory                                  |
+| `ArticleRepository` | Read and write one site's articles, events, drafts                | Firestore (emulator locally)              | In-memory                                  |
+| `SiteRepository`    | List, create, and look up sites by id or review-token hash        | Firestore (emulator locally)              | In-memory                                  |
+| `CredentialCipher`  | Encrypt/decrypt a site's WordPress app password at rest          | Fernet (`cryptography`)                   | Same (pure code, no swap needed)           |
 | `Publisher`         | Create, update, and check WordPress posts                        | WordPress REST over `httpx`               | Scripted responses                         |
 | `Clock`             | Current time                                                     | System clock                              | Fixed clock, for Late and scheduling tests |
 | `LLMGateway`        | Draft a requested change (P2)                                    | Gemini on Vertex AI via LangChain         | Scripted responses                         |
@@ -77,14 +79,18 @@ content-importer/
 │   │   │   ├── ports/
 │   │   │   │   ├── document_parser.py
 │   │   │   │   ├── article_repository.py
+│   │   │   │   ├── site_repository.py
+│   │   │   │   ├── credential_cipher.py
 │   │   │   │   ├── publisher.py
 │   │   │   │   ├── clock.py
 │   │   │   │   ├── llm.py
 │   │   │   │   └── spend_guard.py
 │   │   │   ├── use_cases/               # one file per user action
+│   │   │   │   ├── create_site.py
 │   │   │   │   ├── import_article.py    # paste and upload
 │   │   │   │   ├── edit_article.py
 │   │   │   │   ├── review.py            # send, pull back, approve, request changes
+│   │   │   │   ├── review_link.py       # get or create, reset
 │   │   │   │   ├── schedule.py          # schedule, change date, retry
 │   │   │   │   ├── sync_status.py       # batched WordPress check
 │   │   │   │   ├── build_report.py
@@ -97,19 +103,22 @@ content-importer/
 │   │   │       └── html_rules.py        # allowed tags and attributes
 │   │   ├── adapters/                    # the only place SDKs and HTTP clients get imported
 │   │   │   ├── firestore/repository.py
+│   │   │   ├── firestore/site_repository.py
+│   │   │   ├── crypto/fernet_cipher.py
 │   │   │   ├── wordpress/publisher.py
 │   │   │   ├── documents/parser.py      # mammoth + nh3
 │   │   │   ├── vertex/llm.py            # P2
 │   │   │   ├── firestore/spend_guard.py # P2
-│   │   │   └── testing/                 # in-memory and scripted adapters
+│   │   │   └── testing/                 # in-memory and scripted adapters, incl. in_memory_site_repository.py
 │   │   ├── api/
 │   │   │   ├── main.py                  # FastAPI app, builds the container
 │   │   │   ├── error_handlers.py        # registers every exception -> HTTP mapping
 │   │   │   ├── http_errors.py           # API-layer exception classes (not business rules)
-│   │   │   ├── deps.py
+│   │   │   ├── deps.py                  # get_site_context / get_public_site_context, shared Depends() getters
 │   │   │   ├── auth.py                  # Firebase session cookie check for agency routes
 │   │   │   ├── schemas/                 # one module per route, grouping its request/response shapes
 │   │   │   │   ├── auth.py
+│   │   │   │   ├── sites.py
 │   │   │   │   ├── articles.py
 │   │   │   │   ├── imports.py
 │   │   │   │   ├── public_review.py
@@ -118,12 +127,13 @@ content-importer/
 │   │   │   ├── tags.py                  # Swagger section names, in display order
 │   │   │   └── routes/
 │   │   │       ├── auth.py              # create session cookie from ID token
-│   │   │       ├── articles.py
-│   │   │       ├── imports.py
-│   │   │       ├── review_link.py
-│   │   │       ├── report.py
+│   │   │       ├── sites.py             # create and list client sites
+│   │   │       ├── articles.py          # mounted under /sites/{site_id}
+│   │   │       ├── imports.py           # mounted under /sites/{site_id}
+│   │   │       ├── review_link.py       # mounted under /sites/{site_id}
+│   │   │       ├── report.py            # mounted under /sites/{site_id}
 │   │   │       ├── ai_drafts.py         # P2
-│   │   │       └── public_review.py     # token-only routes for the client
+│   │   │       └── public_review.py     # token-only routes for the client; resolves its own site
 │   │   ├── container.py                 # composition root
 │   │   └── settings.py                  # pydantic-settings, APP_ENV = local | gcp | test
 │   ├── tests/
@@ -145,7 +155,9 @@ content-importer/
 
 `core/use_cases/` holds one file per user action, not a pipeline of stages.
 
-Swagger at `/docs` groups endpoints by workflow. `api/tags.py` lists the sections, and that list is the order on the page: Health, Auth, Import, Articles, Publishing, Review link, Client review. Within Import, upload is registered before paste, so it is listed first. A new endpoint takes the tag for its section.
+Swagger at `/docs` groups endpoints by workflow. `api/tags.py` lists the sections, and that list is the order on the page: Health, Auth, Sites, Import, Articles, Publishing, Review link, Report, Client review. Within Import, upload is registered before paste, so it is listed first. A new endpoint takes the tag for its section.
+
+**Decision: `site_id`-in-path plus a `SiteContext` dependency.** Every agency route except `/sites` itself is mounted with `include_router(router, prefix="/sites/{site_id}")`. A single `app/api/deps.py` dependency, `get_site_context`, resolves that path param to a `Site` (404 `site_not_found` if missing) and builds the two things every route needs: an `ArticleRepository` and a `Publisher` scoped to that site. Routes depend on one `SiteContext` object instead of re-resolving a repository and a publisher per handler. The public, token-based client routes use the same `SiteContext` shape, resolved by `get_public_site_context` from the review token's hash instead of a path segment — so a review link never exposes a `site_id`. Future tickets that add another site-scoped route follow this same pattern rather than reading `request.app.state.container` directly.
 
 ### Import rules
 
@@ -306,7 +318,7 @@ The app runs on GCP. WordPress runs on your own VPS in Docker. Locally, everythi
 | Cloud Run                                           | Two services: API and web. Both scale to zero when idle. |
 | Firestore                                           | All app data                                             |
 | Firebase Auth                                       | One agency login                                         |
-| Secret Manager                                      | WordPress application password; LangSmith key (P2)       |
+| Secret Manager                                      | `CREDENTIAL_ENCRYPTION_KEY` (encrypts each site's WordPress app password in Firestore); LangSmith key (P2) |
 | Artifact Registry                                   | Docker images                                            |
 | Vertex AI                                           | Gemini, for P2 only                                      |
 | Cloud Billing budget + Pub/Sub + one small function | Spending alert and kill switch (see Cost and limits)     |
@@ -358,7 +370,7 @@ Terraform manages GCP only. The VPS gets set up once by hand from the files in `
 - **Service accounts:** one for the API, one for the web service. Each gets only the roles it needs.
 - **Compute:** Cloud Run services for API and web.
 - **Data:** Firestore database.
-- **Secrets:** Secret Manager entries for the WordPress application password and the LangSmith key. You add the values by hand once, so they never sit in Terraform state.
+- **Secrets:** Secret Manager entries for `CREDENTIAL_ENCRYPTION_KEY` and the LangSmith key. You add the values by hand once, so they never sit in Terraform state. Each site's own WordPress app password lives encrypted in Firestore, not in Secret Manager (see spec.md's Data model).
 - **Cost backstop:** billing budget, Pub/Sub topic, and the kill-switch function.
 
 The Terraform state bucket is the one GCP resource you create by hand, before the first `terraform init`.
@@ -369,7 +381,7 @@ The Terraform state bucket is the one GCP resource you create by hand, before th
 2. Copy `infra/wordpress/`, fill in `.env` (database password, domain), and run `docker compose up -d`.
 3. Add the system cron job that calls `wp-cron.php` every minute.
 4. Finish the WordPress install in the browser, then create an application password under the admin user's profile.
-5. Put the site URL and application password into Secret Manager.
+5. Add the site through `POST /sites` (or the agency UI's Add Site screen), which stores the URL and app password encrypted in Firestore.
 
 
 

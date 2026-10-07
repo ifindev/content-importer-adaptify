@@ -4,11 +4,13 @@ from dataclasses import dataclass
 from google.cloud import firestore
 
 from app.adapters.clock import SystemClock
+from app.adapters.documents.parser import RealDocumentParser
 from app.adapters.firestore.repository import FirestoreArticleRepository
 from app.adapters.testing.in_memory_repository import InMemoryArticleRepository
 from app.adapters.wordpress.publisher import WordPressPublisher
 from app.core.ports.article_repository import ArticleRepository
 from app.core.ports.clock import Clock
+from app.core.ports.document_parser import DocumentParser
 from app.core.ports.publisher import Publisher
 from app.settings import Settings
 
@@ -22,6 +24,7 @@ class Container:
     clock: Clock
     publisher: Publisher
     article_repository: ArticleRepository
+    document_parser: DocumentParser
 
 
 def build_container(settings: Settings) -> Container:
@@ -47,4 +50,5 @@ def build_container(settings: Settings) -> Container:
             app_password=settings.wp_app_password,
         ),
         article_repository=article_repository,
+        document_parser=RealDocumentParser(),
     )

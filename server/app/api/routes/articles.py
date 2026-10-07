@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, Query, Request
 from app.api.auth import require_session
 from app.api.http_errors import ArticleNotFoundError, EmptyUpdateError, PayloadTooLargeError
 from app.api.schemas import ArticleDetail, ArticleSummary, ArticleUpdate, EventOut, ScheduleRequest
+from app.api.tags import ARTICLES, PUBLISHING
 from app.core.domain.statuses import Status
 from app.core.ports.article_repository import ArticleRepository
 from app.core.ports.clock import Clock
@@ -33,7 +34,7 @@ def get_publisher(request: Request) -> Publisher:
     return request.app.state.container.publisher
 
 
-@router.get("/articles")
+@router.get("/articles", tags=[ARTICLES])
 def list_articles(
     status: Status | None = Query(None),
     repository: ArticleRepository = Depends(get_repository),
@@ -42,7 +43,7 @@ def list_articles(
     return {"articles": [ArticleSummary(**a.model_dump()) for a in articles]}
 
 
-@router.get("/articles/{article_id}")
+@router.get("/articles/{article_id}", tags=[ARTICLES])
 def get_article(
     article_id: str,
     repository: ArticleRepository = Depends(get_repository),
@@ -56,7 +57,7 @@ def get_article(
     )
 
 
-@router.patch("/articles/{article_id}")
+@router.patch("/articles/{article_id}", tags=[ARTICLES])
 async def update_article(
     article_id: str,
     body: ArticleUpdate,
@@ -92,7 +93,7 @@ async def update_article(
     )
 
 
-@router.post("/articles/{article_id}/send-for-review")
+@router.post("/articles/{article_id}/send-for-review", tags=[PUBLISHING])
 def send_for_review_route(
     article_id: str,
     repository: ArticleRepository = Depends(get_repository),
@@ -110,7 +111,7 @@ def send_for_review_route(
     )
 
 
-@router.post("/articles/{article_id}/pull-back")
+@router.post("/articles/{article_id}/pull-back", tags=[PUBLISHING])
 def pull_back_route(
     article_id: str,
     repository: ArticleRepository = Depends(get_repository),
@@ -128,7 +129,7 @@ def pull_back_route(
     )
 
 
-@router.post("/articles/{article_id}/schedule")
+@router.post("/articles/{article_id}/schedule", tags=[PUBLISHING])
 async def schedule_route(
     article_id: str,
     body: ScheduleRequest,
@@ -148,7 +149,7 @@ async def schedule_route(
     )
 
 
-@router.post("/articles/{article_id}/retry")
+@router.post("/articles/{article_id}/retry", tags=[PUBLISHING])
 async def retry_route(
     article_id: str,
     repository: ArticleRepository = Depends(get_repository),

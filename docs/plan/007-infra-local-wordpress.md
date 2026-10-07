@@ -1,6 +1,6 @@
 # T-007 Local WordPress
 
-**Phase:** 2 · Local infra · **Status:** analyzed · **Size:** M
+**Phase:** 2 · Local infra · **Status:** done · **Size:** M
 **Refs:** spec: WordPress integration › Authentication; architecture: Infrastructure › Local setup
 **Depends on:** T-006
 
@@ -34,18 +34,23 @@ A local WordPress that behaves like the VPS one for everything the app uses, and
 - Does WordPress redirect REST requests whose Host differs from `siteurl`? **Default:** assume no; verify (see edge cases).
 
 ## Acceptance criteria
-- [ ] `make up && make wp-setup` on a fresh clone gives a working site with an application password in `.env`
-- [ ] From the api container, `GET http://wordpress/wp-json/wp/v2/users/me?context=edit` with Basic auth returns the admin user
-- [ ] Without auth, the same call returns 401
-- [ ] `make wp-cron` returns 200
-- [ ] `make wp-reset` wipes the WordPress and database volumes
-- [ ] `.env.example` lists `WP_BASE_URL`, `WP_USERNAME`, `WP_APP_PASSWORD`, and the database variables
+- [x] `make up && make wp-setup` on a fresh clone gives a working site with an application password in `.env`
+- [x] From the api container, `GET http://wordpress/wp-json/wp/v2/users/me?context=edit` with Basic auth returns the admin user
+- [x] Without auth, the same call returns 401
+- [x] `make wp-cron` returns 200
+- [x] `make wp-reset` wipes the WordPress and database volumes
+- [x] `.env.example` lists `WP_BASE_URL`, `WP_USERNAME`, `WP_APP_PASSWORD`, and the database variables
 
 ## Tasks
-- [ ] Add `wordpress`, `mariadb` to `docker-compose.yml` with named volumes and a healthcheck on MariaDB
-- [ ] `infra/wordpress/local-setup.sh` (wp-cli: install, rewrite structure, application password, write to `.env`)
-- [ ] Makefile targets: `wp-setup`, `wp-cron`, `wp-reset`
-- [ ] Update `.env.example`
+- [x] Add `wordpress`, `mariadb` to `docker-compose.yml` with named volumes and a healthcheck on MariaDB
+- [x] `infra/wordpress/local-setup.sh` (wp-cli: install, rewrite structure, application password, write to `.env`)
+- [x] Makefile targets: `wp-setup`, `wp-cron`, `wp-reset`
+- [x] Update `.env.example`
+
+## Notes
+- Verified by hand (not just reasoned about): WordPress's REST routing does not redirect on a `Host` header mismatch — `curl` from the `api` container to `http://wordpress/wp-json/...` returns 401/200 directly, never a 301/302, even though `siteurl` is `http://localhost:8080`. No `WP_HOME`/`WP_SITEURL` override needed.
+- `wordpress:cli`'s default `CMD` is `["wp", "shell"]`; overriding args via `docker compose run ... wp-cli <args>` replaces the CMD entirely, so the script must pass `wp` explicitly as the first argument (`docker compose run --rm -T wp-cli wp core version`, not `... wp-cli core version`).
+- `unfiltered_html` is already granted to the single-site admin by default — no extra wp-cli call needed; resolves T-009's "if not, record it in spec risks" note.
 
 ## Out of scope
 - VPS setup with Caddy (Phase 5)

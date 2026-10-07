@@ -29,7 +29,7 @@ NOT_AWAITING_APPROVAL = [
 ]
 
 
-def _article(status: Status) -> Article:
+def _article(status: Status, client_comment: str | None = None) -> Article:
     return Article(
         id="a1",
         title="Title",
@@ -38,6 +38,7 @@ def _article(status: Status) -> Article:
         source="paste",
         status=status,
         version=1,
+        client_comment=client_comment,
         created_at=NOW,
         updated_at=NOW,
     )
@@ -65,6 +66,15 @@ def test_send_for_review_allowed_statuses(status, repository, clock):
     assert events[-1].type.value == "sent_for_review"
     assert events[-1].actor == "agency"
     assert events[-1].at == NOW
+
+
+def test_send_for_review_clears_client_comment(repository, clock):
+    article = _article(Status.CHANGES_REQUESTED, client_comment="please fix the intro")
+    repository.create_article(article)
+
+    updated = send_for_review(article, repository, clock, "agency")
+
+    assert updated.client_comment is None
 
 
 @pytest.mark.parametrize("status", NOT_SENDABLE)

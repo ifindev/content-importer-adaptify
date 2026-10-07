@@ -14,3 +14,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=_ROOT_ENV_FILE, extra="ignore")
 
     app_env: Literal["local", "gcp", "test"] = "local"
+
+    wp_base_url: str = ""
+    wp_username: str = ""
+    wp_app_password: str = ""

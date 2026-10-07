@@ -9,6 +9,7 @@ from app.api.routes.auth import router as auth_router
 from app.api.routes.imports import router as imports_router
 from app.api.routes.public_review import router as public_review_router
 from app.api.routes.review_link import router as review_link_router
+from app.api.tags import HEALTH, OPENAPI_TAGS
 from app.container import build_container
 from app.core.domain.errors import WordPressError
 from app.settings import Settings
@@ -39,9 +40,9 @@ async def lifespan(app: FastAPI):
 
 
 def create_app() -> FastAPI:
-    app = FastAPI(title="Content Importer API", lifespan=lifespan)
+    app = FastAPI(title="Content Importer API", lifespan=lifespan, openapi_tags=OPENAPI_TAGS)
 
-    @app.get("/health")
+    @app.get("/health", tags=[HEALTH])
     def health() -> dict[str, str]:
         return {"status": "ok"}
 

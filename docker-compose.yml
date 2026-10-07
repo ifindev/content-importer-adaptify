@@ -38,6 +38,12 @@ services:
       # Fixed service-to-service URL; overrides whatever API_URL is in .env
       # (that value is for the non-Docker `make api`/`make web` path).
       API_URL: http://api:8000
+      # NEXT_PUBLIC_* vars must reach the Next.js dev process to be inlined
+      # into the browser bundle; env_file alone doesn't guarantee that here.
+      NEXT_PUBLIC_FIREBASE_API_KEY: ${NEXT_PUBLIC_FIREBASE_API_KEY}
+      NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ${NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN}
+      NEXT_PUBLIC_FIREBASE_PROJECT_ID: ${NEXT_PUBLIC_FIREBASE_PROJECT_ID}
+      NEXT_PUBLIC_FIREBASE_AUTH_EMULATOR_URL: ${NEXT_PUBLIC_FIREBASE_AUTH_EMULATOR_URL}
     ports:
       - "3000:3000"
     volumes:

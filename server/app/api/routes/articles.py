@@ -1,6 +1,13 @@
-from fastapi import APIRouter, Depends, Query, Request
+from fastapi import APIRouter, Depends, Query
 
 from app.api.auth import require_session
+from app.api.deps import (
+    SiteContext,
+    get_clock,
+    get_document_parser,
+    get_site_context,
+    get_sync_cache,
+)
 from app.api.http_errors import ArticleNotFoundError, EmptyUpdateError, PayloadTooLargeError
 from app.api.schemas.articles import (
     ArticleDetail,
@@ -12,10 +19,8 @@ from app.api.schemas.articles import (
 )
 from app.api.tags import ARTICLES, PUBLISHING
 from app.core.domain.statuses import Status
-from app.core.ports.article_repository import ArticleRepository
 from app.core.ports.clock import Clock
 from app.core.ports.document_parser import DocumentParser
-from app.core.ports.publisher import Publisher
 from app.core.use_cases.edit_article import edit_article
 from app.core.use_cases.review import pull_back, send_for_review
 from app.core.use_cases.schedule import retry, schedule
@@ -26,36 +31,15 @@ router = APIRouter(dependencies=[Depends(require_session)])
 PATCH_BODY_MAX_BYTES = 2 * 1024 * 1024
 
 
-def get_repository(request: Request) -> ArticleRepository:
-    return request.app.state.container.article_repository
-
-
-def get_document_parser(request: Request) -> DocumentParser:
-    return request.app.state.container.document_parser
-
-
-def get_clock(request: Request) -> Clock:
-    return request.app.state.container.clock
-
-
-def get_publisher(request: Request) -> Publisher:
-    return request.app.state.container.publisher
-
-
-def get_sync_cache(request: Request) -> SyncCache:
-    return request.app.state.container.sync_cache
-
-
 @router.get("/articles", tags=[ARTICLES])
 async def list_articles(
     status: Status | None = Query(None),
-    repository: ArticleRepository = Depends(get_repository),
-    publisher: Publisher = Depends(get_publisher),
+    ctx: SiteContext = Depends(get_site_context),
     clock: Clock = Depends(get_clock),
     cache: SyncCache = Depends(get_sync_cache),
 ) -> ArticlesOut:
-    result = await sync_statuses(repository, publisher, clock, cache)
-    articles = repository.list_articles(status=status)
+    result = await sync_statuses(ctx.repository, ctx.publisher, clock, cache)
+    articles = ctx.repository.list_articles(status=status)
     return ArticlesOut(
         articles=[ArticleSummary(**a.model_dump()) for a in articles],
         wordpress_unreachable=result.unreachable,
@@ -65,12 +49,12 @@ async def list_articles(
 @router.get("/articles/{article_id}", tags=[ARTICLES])
 def get_article(
     article_id: str,
-    repository: ArticleRepository = Depends(get_repository),
+    ctx: SiteContext = Depends(get_site_context),
 ) -> ArticleDetail:
-    article = repository.get_article(article_id)
+    article = ctx.repository.get_article(article_id)
     if article is None:
         raise ArticleNotFoundError
-    events = repository.list_events(article_id)
+    events = ctx.repository.list_events(article_id)
     return ArticleDetail(
         **article.model_dump(), events=[EventOut(**e.model_dump()) for e in events]
     )
@@ -80,10 +64,9 @@ def get_article(
 async def update_article(
     article_id: str,
     body: ArticleUpdate,
-    repository: ArticleRepository = Depends(get_repository),
+    ctx: SiteContext = Depends(get_site_context),
     parser: DocumentParser = Depends(get_document_parser),
     clock: Clock = Depends(get_clock),
-    publisher: Publisher = Depends(get_publisher),
     uid: str = Depends(require_session),
 ) -> ArticleDetail:
     if body.title is None and body.slug is None and body.body_html is None:
@@ -91,7 +74,7 @@ async def update_article(
     if body.body_html is not None and len(body.body_html.encode()) > PATCH_BODY_MAX_BYTES:
         raise PayloadTooLargeError
 
-    article = repository.get_article(article_id)
+    article = ctx.repository.get_article(article_id)
     if article is None:
         raise ArticleNotFoundError
 
@@ -100,13 +83,13 @@ async def update_article(
         body.title,
         body.slug,
         body.body_html,
-        repository,
+        ctx.repository,
         parser,
         clock,
-        publisher,
+        ctx.publisher,
         actor=uid,
     )
-    events = repository.list_events(article_id)
+    events = ctx.repository.list_events(article_id)
     return ArticleDetail(
         **updated.model_dump(), events=[EventOut(**e.model_dump()) for e in events]
     )
@@ -115,16 +98,16 @@ async def update_article(
 @router.post("/articles/{article_id}/send-for-review", tags=[PUBLISHING])
 def send_for_review_route(
     article_id: str,
-    repository: ArticleRepository = Depends(get_repository),
+    ctx: SiteContext = Depends(get_site_context),
     clock: Clock = Depends(get_clock),
     uid: str = Depends(require_session),
 ) -> ArticleDetail:
-    article = repository.get_article(article_id)
+    article = ctx.repository.get_article(article_id)
     if article is None:
         raise ArticleNotFoundError
 
-    updated = send_for_review(article, repository, clock, actor=uid)
-    events = repository.list_events(article_id)
+    updated = send_for_review(article, ctx.repository, clock, actor=uid)
+    events = ctx.repository.list_events(article_id)
     return ArticleDetail(
         **updated.model_dump(), events=[EventOut(**e.model_dump()) for e in events]
     )
@@ -133,16 +116,16 @@ def send_for_review_route(
 @router.post("/articles/{article_id}/pull-back", tags=[PUBLISHING])
 def pull_back_route(
     article_id: str,
-    repository: ArticleRepository = Depends(get_repository),
+    ctx: SiteContext = Depends(get_site_context),
     clock: Clock = Depends(get_clock),
     uid: str = Depends(require_session),
 ) -> ArticleDetail:
-    article = repository.get_article(article_id)
+    article = ctx.repository.get_article(article_id)
     if article is None:
         raise ArticleNotFoundError
 
-    updated = pull_back(article, repository, clock, actor=uid)
-    events = repository.list_events(article_id)
+    updated = pull_back(article, ctx.repository, clock, actor=uid)
+    events = ctx.repository.list_events(article_id)
     return ArticleDetail(
         **updated.model_dump(), events=[EventOut(**e.model_dump()) for e in events]
     )
@@ -152,17 +135,18 @@ def pull_back_route(
 async def schedule_route(
     article_id: str,
     body: ScheduleRequest,
-    repository: ArticleRepository = Depends(get_repository),
-    publisher: Publisher = Depends(get_publisher),
+    ctx: SiteContext = Depends(get_site_context),
     clock: Clock = Depends(get_clock),
     uid: str = Depends(require_session),
 ) -> ArticleDetail:
-    article = repository.get_article(article_id)
+    article = ctx.repository.get_article(article_id)
     if article is None:
         raise ArticleNotFoundError
 
-    updated = await schedule(article, body.publish_at, repository, publisher, clock, actor=uid)
-    events = repository.list_events(article_id)
+    updated = await schedule(
+        article, body.publish_at, ctx.repository, ctx.publisher, clock, actor=uid
+    )
+    events = ctx.repository.list_events(article_id)
     return ArticleDetail(
         **updated.model_dump(), events=[EventOut(**e.model_dump()) for e in events]
     )
@@ -171,17 +155,16 @@ async def schedule_route(
 @router.post("/articles/{article_id}/retry", tags=[PUBLISHING])
 async def retry_route(
     article_id: str,
-    repository: ArticleRepository = Depends(get_repository),
-    publisher: Publisher = Depends(get_publisher),
+    ctx: SiteContext = Depends(get_site_context),
     clock: Clock = Depends(get_clock),
     uid: str = Depends(require_session),
 ) -> ArticleDetail:
-    article = repository.get_article(article_id)
+    article = ctx.repository.get_article(article_id)
     if article is None:
         raise ArticleNotFoundError
 
-    updated = await retry(article, repository, publisher, clock, actor=uid)
-    events = repository.list_events(article_id)
+    updated = await retry(article, ctx.repository, ctx.publisher, clock, actor=uid)
+    events = ctx.repository.list_events(article_id)
     return ArticleDetail(
         **updated.model_dump(), events=[EventOut(**e.model_dump()) for e in events]
     )

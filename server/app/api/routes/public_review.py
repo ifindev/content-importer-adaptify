@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, Request
 
+from app.api.deps import SiteContext, get_clock, get_public_site_context, get_sync_cache
 from app.api.rate_limit import check_rate_limit
 from app.api.schemas.public_review import (
     ApproveRequest,
@@ -11,9 +12,7 @@ from app.api.schemas.public_review import (
 )
 from app.api.tags import CLIENT_REVIEW
 from app.core.domain.statuses import Status
-from app.core.ports.article_repository import ArticleRepository
 from app.core.ports.clock import Clock
-from app.core.ports.publisher import Publisher
 from app.core.use_cases.review import (
     approve,
     get_review_article,
@@ -23,22 +22,6 @@ from app.core.use_cases.review import (
 from app.core.use_cases.sync_status import SyncCache, sync_statuses
 
 router = APIRouter(tags=[CLIENT_REVIEW])
-
-
-def get_repository(request: Request) -> ArticleRepository:
-    return request.app.state.container.article_repository
-
-
-def get_clock(request: Request) -> Clock:
-    return request.app.state.container.clock
-
-
-def get_publisher(request: Request) -> Publisher:
-    return request.app.state.container.publisher
-
-
-def get_sync_cache(request: Request) -> SyncCache:
-    return request.app.state.container.sync_cache
 
 
 def _client_ip(request: Request) -> str:
@@ -52,14 +35,13 @@ def _client_ip(request: Request) -> str:
 async def get_review(
     token: str,
     request: Request,
-    repository: ArticleRepository = Depends(get_repository),
-    publisher: Publisher = Depends(get_publisher),
+    ctx: SiteContext = Depends(get_public_site_context),
     clock: Clock = Depends(get_clock),
     cache: SyncCache = Depends(get_sync_cache),
 ) -> ReviewPageOut:
     check_rate_limit(_client_ip(request))
-    result = await sync_statuses(repository, publisher, clock, cache)
-    site, groups = get_review_page(repository, token)
+    result = await sync_statuses(ctx.repository, ctx.publisher, clock, cache)
+    site, groups = get_review_page(ctx.repository, token)
     return ReviewPageOut(
         site_name=site.name,
         waiting=[ArticleCard(**a.model_dump()) for a in groups[Status.AWAITING_APPROVAL]],
@@ -74,10 +56,10 @@ def get_review_article_route(
     token: str,
     article_id: str,
     request: Request,
-    repository: ArticleRepository = Depends(get_repository),
+    ctx: SiteContext = Depends(get_public_site_context),
 ) -> ReviewArticleOut:
     check_rate_limit(_client_ip(request))
-    article = get_review_article(repository, token, article_id)
+    article = get_review_article(ctx.repository, token, article_id)
     return ReviewArticleOut(**article.model_dump())
 
 
@@ -87,11 +69,11 @@ def approve_route(
     article_id: str,
     body: ApproveRequest,
     request: Request,
-    repository: ArticleRepository = Depends(get_repository),
+    ctx: SiteContext = Depends(get_public_site_context),
     clock: Clock = Depends(get_clock),
 ) -> ReviewActionOut:
     check_rate_limit(_client_ip(request))
-    article = approve(repository, clock, token, article_id, body.client_name, body.version)
+    article = approve(ctx.repository, clock, token, article_id, body.client_name, body.version)
     return ReviewActionOut(id=article.id, status=article.status)
 
 
@@ -101,11 +83,11 @@ def request_changes_route(
     article_id: str,
     body: RequestChangesRequest,
     request: Request,
-    repository: ArticleRepository = Depends(get_repository),
+    ctx: SiteContext = Depends(get_public_site_context),
     clock: Clock = Depends(get_clock),
 ) -> ReviewActionOut:
     check_rate_limit(_client_ip(request))
     article = request_changes(
-        repository, clock, token, article_id, body.client_name, body.comment, body.version
+        ctx.repository, clock, token, article_id, body.client_name, body.comment, body.version
     )
     return ReviewActionOut(id=article.id, status=article.status)

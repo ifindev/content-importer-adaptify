@@ -27,7 +27,7 @@ def edit_article(
     now = clock.now()
     reset_from = article.status.value if article.status in RESET_STATUSES else None
 
-    updates: dict = {"version": article.version + 1, "updated_at": now}
+    updates: dict = {"version": article.version + 1, "updated_at": now, "client_comment": None}
     if reset_from is not None:
         updates["status"] = Status.DRAFT
     if title is not None:

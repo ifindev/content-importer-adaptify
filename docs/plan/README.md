@@ -71,7 +71,12 @@ Phases and the master list of tickets. How tickets work: [workflow.md](../workfl
 
 ### Phase 4: Frontend
 
-Tickets are written when Phase 3 is nearly done.
+| ID | Ticket | Refs | Status |
+| --- | --- | --- | --- |
+| T-026 | [Access control and app shell](026-ui-access-shell.md) | R8.1, R8.2, architecture: Auth | analyzed |
+| T-027 | [API data layer](027-ui-data-layer.md) | E1–E6, architecture: Frontend | analyzed |
+| T-028 | [Agency screens](028-ui-agency-screens.md) | E1, E2, E4, R3.2, R3.5–R3.7, R5.1–R5.3, R6.1–R6.4 | analyzed |
+| T-029 | [Client review screens and full-flow test](029-ui-client-review-e2e.md) | R3.3–R3.5, R6.5, R8.2 | analyzed |
 
 ### Phase 5: Deploy
 

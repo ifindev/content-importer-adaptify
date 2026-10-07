@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Request
 
 from app.api.auth import require_session
-from app.api.schemas import ReviewLinkOut
+from app.api.schemas.review_link import ReviewLinkOut
 from app.api.tags import REVIEW_LINK
 from app.core.ports.article_repository import ArticleRepository
 from app.core.ports.clock import Clock

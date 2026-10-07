@@ -44,6 +44,7 @@ class Article(BaseModel):
     published_url: str | None = None
     last_error: str | None = None
     last_checked_at: datetime | None = None
+    client_comment: str | None = None
     created_at: datetime
     updated_at: datetime
 

@@ -66,6 +66,7 @@ Phases and the master list of tickets. How tickets work: [workflow.md](../workfl
 | T-022 | [Agency report](022-api-agency-report.md) | R6.1–R6.4 | analyzed |
 | T-023 | [Fail fast on Firestore startup failure in GCP](023-api-firestore-fallback-guard.md) | architecture: GCP services | done |
 | T-024 | [Consolidate API exception handling](024-api-error-handler-refactor.md) | architecture: Server folder layout | done |
+| T-025 | [Group Swagger by workflow](025-api-swagger-sections.md) | architecture: Server folder layout | done |
 
 ### Phase 4: Frontend
 

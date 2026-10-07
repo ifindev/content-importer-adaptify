@@ -1,6 +1,6 @@
 # T-016 Review link
 
-**Phase:** 3 · API · **Status:** analyzed · **Size:** S
+**Phase:** 3 · API · **Status:** done · **Size:** S
 **Refs:** R3.1, R3.2, R3.7, spec: Data model, Review link
 **Depends on:** T-013
 
@@ -45,21 +45,21 @@ No new fields — `review_token_hash`, `review_token_created_at` already on `Sit
 | Reset while articles are Awaiting approval under the old link | Old token's hash no longer matches anything — those articles stay in their status; the client simply can't reach them until shared the new link (matches spec: reset "turns off the old one") |
 
 ## Acceptance criteria
-- [ ] `GET /review-link` returns a usable URL on a fresh site, generating a token if none exists.
-- [ ] `POST /review-link/reset` returns a new URL; the old token's hash no longer validates (verified once T-018 exists, cross-referenced there).
-- [ ] The plaintext token is never written to Firestore, only its SHA-256 hash.
-- [ ] `spec.md`'s Data model / R3.1 note updated to describe where the plaintext lives.
-- [ ] Swagger and Postman updated.
+- [x] `GET /review-link` returns a usable URL on a fresh site, generating a token if none exists.
+- [x] `POST /review-link/reset` returns a new URL; the old token's hash no longer validates (verified once T-018 exists, cross-referenced there).
+- [x] The plaintext token is never written to Firestore, only its SHA-256 hash.
+- [x] `spec.md`'s Data model / R3.1 note updated to describe where the plaintext lives.
+- [x] Swagger and Postman updated.
 
 ## Tasks
-- [ ] `core/lib/tokens.py`.
-- [ ] `core/use_cases/review_link.py`.
-- [ ] `api/routes/review_link.py`: `GET /review-link`, `POST /review-link/reset`.
-- [ ] Add the token's plaintext storage location to `settings.py`/`.env.example` (local) and note the Secret Manager entry for deploy (T-0xx deploy ticket, Phase 5, picks this up).
-- [ ] Update `spec.md` (Data model, R3.1).
-- [ ] Unit tests: token generation/hashing, reset invalidates old hash.
-- [ ] Integration test: Firestore emulator for the hash side.
-- [ ] `pnpm gen:api`.
+- [x] `core/lib/tokens.py`.
+- [x] `core/use_cases/review_link.py`.
+- [x] `api/routes/review_link.py`: `GET /review-link`, `POST /review-link/reset`.
+- [x] Add the token's plaintext storage location to `settings.py`/`.env.example` (local) and note the Secret Manager entry for deploy (T-0xx deploy ticket, Phase 5, picks this up).
+- [x] Update `spec.md` (Data model, R3.1).
+- [x] Unit tests: token generation/hashing, reset invalidates old hash.
+- [x] Integration test: Firestore emulator for the hash side.
+- [x] `pnpm gen:api`.
 
 ## Out of scope
 - Per-site on/off switch or passcode (spec's noted possible next steps).

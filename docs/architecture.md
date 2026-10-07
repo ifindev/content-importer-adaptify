@@ -126,7 +126,7 @@ content-importer/
 ├── web/                                 # Next.js, see Frontend below
 ├── infra/
 │   ├── terraform/                       # GCP only
-│   └── wordpress/                       # docker-compose, Caddy, cron for the VPS
+│   └── wordpress/                       # docker-compose, Caddy, cron for the VPS; local-setup.sh for `make wp-setup`
 ├── .github/workflows/                   # ci.yml, deploy.yml
 ├── docker-compose.yml                   # local: api, web, firebase emulator, wordpress, mariadb
 ├── Makefile

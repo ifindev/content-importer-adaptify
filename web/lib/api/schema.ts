@@ -209,10 +209,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/review/{token}/articles/{article_id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Approve Route */
+        post: operations["approve_route_review__token__articles__article_id__approve_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/review/{token}/articles/{article_id}/request-changes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Request Changes Route */
+        post: operations["request_changes_route_review__token__articles__article_id__request_changes_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** ApproveRequest */
+        ApproveRequest: {
+            /**
+             * Client Name
+             * @description The client's name.
+             */
+            client_name: string;
+            /**
+             * Version
+             * @description The version the client is approving.
+             */
+            version: number;
+        };
         /** ArticleCard */
         ArticleCard: {
             /**
@@ -253,6 +300,11 @@ export interface components {
              * @description Article body, as HTML.
              */
             body_html: string;
+            /**
+             * Client Comment
+             * @description The client's latest change request, if any.
+             */
+            client_comment?: string | null;
             /**
              * Created At
              * Format: date-time
@@ -441,6 +493,34 @@ export interface components {
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
+        };
+        /** RequestChangesRequest */
+        RequestChangesRequest: {
+            /**
+             * Client Name
+             * @description The client's name.
+             */
+            client_name: string;
+            /**
+             * Comment
+             * @description What the client wants changed.
+             */
+            comment: string;
+            /**
+             * Version
+             * @description The version the client is reading.
+             */
+            version: number;
+        };
+        /** ReviewActionOut */
+        ReviewActionOut: {
+            /**
+             * Id
+             * @description Article id.
+             */
+            id: string;
+            /** @description Status after the action. */
+            status: components["schemas"]["Status"];
         };
         /** ReviewArticleOut */
         ReviewArticleOut: {
@@ -948,6 +1028,78 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ReviewArticleOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    approve_route_review__token__articles__article_id__approve_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+                article_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ApproveRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewActionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    request_changes_route_review__token__articles__article_id__request_changes_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+                article_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RequestChangesRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewActionOut"];
                 };
             };
             /** @description Validation Error */

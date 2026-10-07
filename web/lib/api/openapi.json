@@ -1,6 +1,28 @@
 {
   "components": {
     "schemas": {
+      "ApproveRequest": {
+        "properties": {
+          "client_name": {
+            "description": "The client's name.",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Client Name",
+            "type": "string"
+          },
+          "version": {
+            "description": "The version the client is approving.",
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "client_name",
+          "version"
+        ],
+        "title": "ApproveRequest",
+        "type": "object"
+      },
       "ArticleCard": {
         "properties": {
           "id": {
@@ -70,6 +92,18 @@
             "description": "Article body, as HTML.",
             "title": "Body Html",
             "type": "string"
+          },
+          "client_comment": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The client's latest change request, if any.",
+            "title": "Client Comment"
           },
           "created_at": {
             "description": "Creation time, UTC.",
@@ -441,6 +475,55 @@
           }
         },
         "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "RequestChangesRequest": {
+        "properties": {
+          "client_name": {
+            "description": "The client's name.",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Client Name",
+            "type": "string"
+          },
+          "comment": {
+            "description": "What the client wants changed.",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Comment",
+            "type": "string"
+          },
+          "version": {
+            "description": "The version the client is reading.",
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "client_name",
+          "comment",
+          "version"
+        ],
+        "title": "RequestChangesRequest",
+        "type": "object"
+      },
+      "ReviewActionOut": {
+        "properties": {
+          "id": {
+            "description": "Article id.",
+            "title": "Id",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/Status",
+            "description": "Status after the action."
+          }
+        },
+        "required": [
+          "id",
+          "status"
+        ],
+        "title": "ReviewActionOut",
         "type": "object"
       },
       "ReviewArticleOut": {
@@ -1161,6 +1244,122 @@
           }
         },
         "summary": "Get Review Article Route"
+      }
+    },
+    "/review/{token}/articles/{article_id}/approve": {
+      "post": {
+        "operationId": "approve_route_review__token__articles__article_id__approve_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "title": "Token",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "article_id",
+            "required": true,
+            "schema": {
+              "title": "Article Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApproveRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewActionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Approve Route"
+      }
+    },
+    "/review/{token}/articles/{article_id}/request-changes": {
+      "post": {
+        "operationId": "request_changes_route_review__token__articles__article_id__request_changes_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "title": "Token",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "article_id",
+            "required": true,
+            "schema": {
+              "title": "Article Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestChangesRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewActionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Request Changes Route"
       }
     }
   }

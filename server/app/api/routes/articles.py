@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Query, Request
 
 from app.api.auth import require_session
 from app.api.http_errors import ArticleNotFoundError, EmptyUpdateError, PayloadTooLargeError
-from app.api.schemas import (
+from app.api.schemas.articles import (
     ArticleDetail,
     ArticlesOut,
     ArticleSummary,

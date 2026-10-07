@@ -1,4 +1,4 @@
-import type { paths } from "@/lib/api/schema";
+import type { components, paths } from "@/lib/api/schema";
 
 export type ApiResponse<
   Path extends keyof paths,
@@ -8,3 +8,5 @@ export type ApiResponse<
 }
   ? T
   : never;
+
+export type Schemas = components["schemas"];

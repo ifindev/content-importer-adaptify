@@ -5,7 +5,7 @@
 **Depends on:** T-022 (report endpoint + regenerated types), T-026 (`createSession` / `logout` and the 401 redirect), T-031 (API: `siteId`-scoped routes), T-032 (site switcher — every agency route below lives under `/sites/{siteId}/...`)
 
 ## Goal
-Every API endpoint the screens need has one typed query or mutation, so the screen tickets only compose UI. All API integration lives in this ticket.
+Every API endpoint the screens need has one typed query or mutation. All API integration lives in this ticket. Function names and signatures match T-033's fixture functions, so wiring a screen (T-032, T-028, T-029) is pointing its `modules/<m>/data.ts` at these instead of the fixtures.
 
 ## Analysis
 

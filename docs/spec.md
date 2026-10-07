@@ -244,7 +244,7 @@ Requirements fall into eight epics. Priority: **P0** = MVP must have, **P1** = M
 
 | ID   | Requirement                                                                                                                             | Priority |
 | ---- | --------------------------------------------------------------------------------------------------------------------------------------- | -------- |
-| R3.1 | The site has one review link with a long random token. The app stores only a hash of the token.                                         | P0       |
+| R3.1 | The site has one review link with a long random token. Firestore stores only a hash of the token; the plaintext lives in the local secret store / Secret Manager, the same trust tier as the WordPress credentials. | P0       |
 | R3.2 | The agency can copy the review link from the articles screen.                                                                           | P0       |
 | R3.3 | The review page lists articles in three groups: waiting for your review, upcoming, published.                                           | P0       |
 | R3.4 | The client approves, or requests changes with a comment. Either action asks for the client's name once and remembers it in the browser. | P0       |
@@ -485,7 +485,7 @@ ai_usage/{yyyy-mm}
 
 **Decision:** The report is computed on request from `articles` and `events`, not stored. An MVP site has at most a few hundred articles, so this stays fast and never goes stale.
 
-**Decision:** Store the review token only as a SHA-256 hash. A leaked database export then can't open the review page.
+**Decision:** Firestore stores only a SHA-256 hash of the review token, used to verify incoming client requests — a leaked database export then can't open the review page. The plaintext token (needed so the agency can re-display/copy the link) is never written to Firestore; it lives in the same place as the WordPress credentials — locally, an entry in the app's local secret store (`server/.secrets.local.json`, gitignored); on GCP, Secret Manager (Phase 5 deploy ticket).
 
 ## API endpoints
 

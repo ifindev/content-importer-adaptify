@@ -1,4 +1,4 @@
-.PHONY: help lint test api web gen-api up down logs ps
+.PHONY: help lint test api web gen-api up down logs ps firebase-reset
 
 help: ## List available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
@@ -31,3 +31,7 @@ logs: ## Follow logs from all services
 
 ps: ## List running services
 	docker compose ps
+
+firebase-reset: ## Clear emulator data (Firestore + Auth)
+	docker compose stop firebase
+	docker compose run --rm --entrypoint sh firebase -c "rm -rf /data/*"

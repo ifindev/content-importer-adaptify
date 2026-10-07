@@ -3,15 +3,11 @@ from datetime import UTC, datetime
 import pytest
 
 from app.adapters.testing.in_memory_repository import InMemoryArticleRepository
+from app.core.domain.errors import ArticleNotVisibleError, InvalidTokenError
 from app.core.domain.models import Article
 from app.core.domain.statuses import Status
 from app.core.lib.tokens import hash_token
-from app.core.use_cases.review import (
-    ArticleNotVisibleError,
-    InvalidTokenError,
-    get_review_article,
-    get_review_page,
-)
+from app.core.use_cases.review import get_review_article, get_review_page
 
 NOW = datetime(2026, 10, 7, 12, 0, 0, tzinfo=UTC)
 TOKEN = "the-real-token"

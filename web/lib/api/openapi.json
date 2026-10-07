@@ -434,6 +434,32 @@
         "title": "Body_upload_articles_articles_upload_post",
         "type": "object"
       },
+      "ChangeRoundsEntry": {
+        "properties": {
+          "article_id": {
+            "description": "Article id.",
+            "title": "Article Id",
+            "type": "string"
+          },
+          "rounds": {
+            "description": "Number of change-request rounds.",
+            "title": "Rounds",
+            "type": "integer"
+          },
+          "title": {
+            "description": "Article title.",
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "article_id",
+          "title",
+          "rounds"
+        ],
+        "title": "ChangeRoundsEntry",
+        "type": "object"
+      },
       "EventOut": {
         "properties": {
           "actor": {
@@ -509,6 +535,163 @@
           }
         },
         "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "NeedsAttentionEntry": {
+        "properties": {
+          "article_id": {
+            "description": "Article id.",
+            "title": "Article Id",
+            "type": "string"
+          },
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Error detail, for a failed article.",
+            "title": "Detail"
+          },
+          "reason": {
+            "description": "Why this article needs attention.",
+            "enum": [
+              "failed",
+              "late",
+              "changed_in_wordpress",
+              "missing_in_wordpress"
+            ],
+            "title": "Reason",
+            "type": "string"
+          },
+          "title": {
+            "description": "Article title.",
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "article_id",
+          "title",
+          "reason"
+        ],
+        "title": "NeedsAttentionEntry",
+        "type": "object"
+      },
+      "PublishedEntry": {
+        "properties": {
+          "article_id": {
+            "description": "Article id.",
+            "title": "Article Id",
+            "type": "string"
+          },
+          "published_at": {
+            "description": "When the article went live, UTC.",
+            "format": "date-time",
+            "title": "Published At",
+            "type": "string"
+          },
+          "published_url": {
+            "description": "Live URL.",
+            "title": "Published Url",
+            "type": "string"
+          },
+          "title": {
+            "description": "Article title.",
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "article_id",
+          "title",
+          "published_url",
+          "published_at"
+        ],
+        "title": "PublishedEntry",
+        "type": "object"
+      },
+      "ReportOut": {
+        "properties": {
+          "avg_approval_seconds": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Average sent-for-review-to-approved seconds; null if none approved.",
+            "title": "Avg Approval Seconds"
+          },
+          "change_rounds": {
+            "description": "Articles that needed changes, with rounds per article.",
+            "items": {
+              "$ref": "#/components/schemas/ChangeRoundsEntry"
+            },
+            "title": "Change Rounds",
+            "type": "array"
+          },
+          "needs_attention": {
+            "description": "Failed articles and articles carrying a sync warning.",
+            "items": {
+              "$ref": "#/components/schemas/NeedsAttentionEntry"
+            },
+            "title": "Needs Attention",
+            "type": "array"
+          },
+          "published": {
+            "description": "Published articles, most recent first.",
+            "items": {
+              "$ref": "#/components/schemas/PublishedEntry"
+            },
+            "title": "Published",
+            "type": "array"
+          },
+          "published_this_month": {
+            "description": "Published this calendar month, UTC.",
+            "title": "Published This Month",
+            "type": "integer"
+          },
+          "status_counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "description": "Article count per status.",
+            "propertyNames": {
+              "$ref": "#/components/schemas/Status"
+            },
+            "title": "Status Counts",
+            "type": "object"
+          },
+          "upcoming": {
+            "description": "Scheduled articles, soonest first.",
+            "items": {
+              "$ref": "#/components/schemas/UpcomingEntry"
+            },
+            "title": "Upcoming",
+            "type": "array"
+          },
+          "wordpress_unreachable": {
+            "description": "True if the last WordPress status check failed.",
+            "title": "Wordpress Unreachable",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "status_counts",
+          "published_this_month",
+          "change_rounds",
+          "upcoming",
+          "published",
+          "needs_attention",
+          "wordpress_unreachable"
+        ],
+        "title": "ReportOut",
         "type": "object"
       },
       "RequestChangesRequest": {
@@ -724,6 +907,33 @@
         ],
         "title": "SyncWarning",
         "type": "string"
+      },
+      "UpcomingEntry": {
+        "properties": {
+          "article_id": {
+            "description": "Article id.",
+            "title": "Article Id",
+            "type": "string"
+          },
+          "publish_at_utc": {
+            "description": "Scheduled publish time, UTC.",
+            "format": "date-time",
+            "title": "Publish At Utc",
+            "type": "string"
+          },
+          "title": {
+            "description": "Article title.",
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "article_id",
+          "title",
+          "publish_at_utc"
+        ],
+        "title": "UpcomingEntry",
+        "type": "object"
       },
       "UploadFileResult": {
         "properties": {
@@ -1292,6 +1502,27 @@
         ]
       }
     },
+    "/report": {
+      "get": {
+        "operationId": "get_report_report_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Report",
+        "tags": [
+          "Report"
+        ]
+      }
+    },
     "/review-link": {
       "get": {
         "operationId": "get_review_link_review_link_get",
@@ -1574,6 +1805,10 @@
     {
       "description": "The agency's client review URL.",
       "name": "Review link"
+    },
+    {
+      "description": "Status counts, approval speed, and change rounds.",
+      "name": "Report"
     },
     {
       "description": "The client's review page. These routes use the review token, not the session cookie.",

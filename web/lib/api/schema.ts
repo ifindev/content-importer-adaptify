@@ -175,6 +175,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/report": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Report */
+        get: operations["get_report_report_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/review-link": {
         parameters: {
             query?: never;
@@ -505,6 +522,24 @@ export interface components {
              */
             files: string[];
         };
+        /** ChangeRoundsEntry */
+        ChangeRoundsEntry: {
+            /**
+             * Article Id
+             * @description Article id.
+             */
+            article_id: string;
+            /**
+             * Rounds
+             * @description Number of change-request rounds.
+             */
+            rounds: number;
+            /**
+             * Title
+             * @description Article title.
+             */
+            title: string;
+        };
         /** EventOut */
         EventOut: {
             /**
@@ -542,6 +577,99 @@ export interface components {
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
+        };
+        /** NeedsAttentionEntry */
+        NeedsAttentionEntry: {
+            /**
+             * Article Id
+             * @description Article id.
+             */
+            article_id: string;
+            /**
+             * Detail
+             * @description Error detail, for a failed article.
+             */
+            detail?: string | null;
+            /**
+             * Reason
+             * @description Why this article needs attention.
+             * @enum {string}
+             */
+            reason: "failed" | "late" | "changed_in_wordpress" | "missing_in_wordpress";
+            /**
+             * Title
+             * @description Article title.
+             */
+            title: string;
+        };
+        /** PublishedEntry */
+        PublishedEntry: {
+            /**
+             * Article Id
+             * @description Article id.
+             */
+            article_id: string;
+            /**
+             * Published At
+             * Format: date-time
+             * @description When the article went live, UTC.
+             */
+            published_at: string;
+            /**
+             * Published Url
+             * @description Live URL.
+             */
+            published_url: string;
+            /**
+             * Title
+             * @description Article title.
+             */
+            title: string;
+        };
+        /** ReportOut */
+        ReportOut: {
+            /**
+             * Avg Approval Seconds
+             * @description Average sent-for-review-to-approved seconds; null if none approved.
+             */
+            avg_approval_seconds?: number | null;
+            /**
+             * Change Rounds
+             * @description Articles that needed changes, with rounds per article.
+             */
+            change_rounds: components["schemas"]["ChangeRoundsEntry"][];
+            /**
+             * Needs Attention
+             * @description Failed articles and articles carrying a sync warning.
+             */
+            needs_attention: components["schemas"]["NeedsAttentionEntry"][];
+            /**
+             * Published
+             * @description Published articles, most recent first.
+             */
+            published: components["schemas"]["PublishedEntry"][];
+            /**
+             * Published This Month
+             * @description Published this calendar month, UTC.
+             */
+            published_this_month: number;
+            /**
+             * Status Counts
+             * @description Article count per status.
+             */
+            status_counts: {
+                [key: string]: number;
+            };
+            /**
+             * Upcoming
+             * @description Scheduled articles, soonest first.
+             */
+            upcoming: components["schemas"]["UpcomingEntry"][];
+            /**
+             * Wordpress Unreachable
+             * @description True if the last WordPress status check failed.
+             */
+            wordpress_unreachable: boolean;
         };
         /** RequestChangesRequest */
         RequestChangesRequest: {
@@ -671,6 +799,25 @@ export interface components {
          * @enum {string}
          */
         SyncWarning: "late" | "changed_in_wordpress" | "missing_in_wordpress";
+        /** UpcomingEntry */
+        UpcomingEntry: {
+            /**
+             * Article Id
+             * @description Article id.
+             */
+            article_id: string;
+            /**
+             * Publish At Utc
+             * Format: date-time
+             * @description Scheduled publish time, UTC.
+             */
+            publish_at_utc: string;
+            /**
+             * Title
+             * @description Article title.
+             */
+            title: string;
+        };
         /** UploadFileResult */
         UploadFileResult: {
             /** @description The created article, if import succeeded. */
@@ -1061,6 +1208,26 @@ export interface operations {
                     "application/json": {
                         [key: string]: string;
                     };
+                };
+            };
+        };
+    };
+    get_report_report_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportOut"];
                 };
             };
         };

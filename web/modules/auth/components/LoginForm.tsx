@@ -5,14 +5,9 @@ import { FirebaseError } from "firebase/app";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { ArrowUpRight, CircleAlert, Loader2 } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { auth } from "@/lib/firebase-client";
@@ -72,43 +67,61 @@ export function LoginForm({
   }
 
   return (
-    <Card className="w-full max-w-sm">
-      <CardHeader>
-        <CardTitle>Sign in</CardTitle>
-        {sessionExpired && (
-          <CardDescription>Please sign in again.</CardDescription>
-        )}
-      </CardHeader>
-      <CardContent>
-        <form action={handleSubmit} className="flex flex-col gap-4">
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              autoComplete="email"
-              required
-              disabled={submitting}
-            />
-          </div>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              name="password"
-              type="password"
-              autoComplete="current-password"
-              required
-              disabled={submitting}
-            />
-          </div>
-          {error && <p className="text-destructive text-sm">{error}</p>}
-          <Button type="submit" disabled={submitting}>
-            {submitting ? "Signing in…" : "Sign in"}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+    <div className="w-full max-w-[360px]">
+      <div className="mb-6 flex flex-col items-center text-center">
+        <span className="bg-foreground text-background mb-4 flex size-9 items-center justify-center rounded-[10px]">
+          <ArrowUpRight className="size-[18px]" strokeWidth={2.5} />
+        </span>
+        <h1 className="text-xl font-semibold tracking-tight">
+          Sign in to Content Importer
+        </h1>
+        <p className="text-muted-foreground mt-1 text-[13.5px]">
+          {sessionExpired ? "Please sign in again." : "Use your agency account"}
+        </p>
+      </div>
+      <form
+        action={handleSubmit}
+        className="bg-card flex flex-col gap-4 rounded-xl border p-6 shadow-[0_1px_3px_oklch(0_0_0/0.05)]"
+      >
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="email">Email</Label>
+          <Input
+            id="email"
+            name="email"
+            type="email"
+            autoComplete="email"
+            required
+            disabled={submitting}
+          />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="password">Password</Label>
+          <Input
+            id="password"
+            name="password"
+            type="password"
+            autoComplete="current-password"
+            required
+            disabled={submitting}
+            aria-invalid={error ? true : undefined}
+            aria-describedby={error ? "login-error" : undefined}
+          />
+          {error && (
+            <p
+              id="login-error"
+              role="alert"
+              className="text-destructive flex items-center gap-1.5 text-[12.5px]"
+            >
+              <CircleAlert className="size-3.5 shrink-0" />
+              {error}
+            </p>
+          )}
+        </div>
+        <Button type="submit" disabled={submitting} className="mt-1 w-full">
+          {submitting && <Loader2 className="animate-spin" />}
+          {submitting ? "Signing in…" : "Sign in"}
+        </Button>
+      </form>
+    </div>
   );
 }

@@ -94,6 +94,15 @@ export async function retryArticle(
   return mutate(siteId, id, api.post(`${base(siteId)}/${id}/retry`));
 }
 
+/** Scheduled → Approved: the WordPress post is trashed, approval stays. */
+export async function unscheduleArticle(
+  siteId: string,
+  id: string,
+): Promise<MutationResult<Article>> {
+  const api = await apiServer();
+  return mutate(siteId, id, api.post(`${base(siteId)}/${id}/unschedule`));
+}
+
 export async function resetReviewLink(
   siteId: string,
 ): Promise<MutationResult<Schemas["ReviewLinkOut"]>> {

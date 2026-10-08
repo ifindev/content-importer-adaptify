@@ -7,6 +7,7 @@ export {
   retryArticle,
   scheduleArticle,
   sendForReview,
+  unscheduleArticle,
   updateArticle,
   uploadArticles,
 } from "./repository/articles.mutations";

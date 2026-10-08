@@ -16,6 +16,7 @@ const MESSAGES: Record<string, string> = {
   not_awaiting_approval: "This article is no longer waiting for approval.",
   not_schedulable: "Only approved articles can be scheduled.",
   publish_at_in_past: "Pick a date and time in the future.",
+  not_scheduled: "This article isn't scheduled any more.",
   not_failed: "This article isn't in Failed any more.",
   wordpress_error: "WordPress returned an error. Try again in a moment.",
   wp_connection_failed:

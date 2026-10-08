@@ -5,13 +5,17 @@ import { redirect } from "next/navigation";
 
 import { ApiError, HttpClient } from "@/lib/http";
 
-const API_URL: string = (() => {
+/**
+ * Read on use, not at module load: `next build` loads this module while
+ * collecting page data, and the image is built without runtime env.
+ */
+export function apiUrl(): string {
   const url = process.env.API_URL;
   if (!url) {
     throw new Error("API_URL environment variable is required");
   }
   return url;
-})();
+}
 
 const CLIENT_METHODS = ["get", "post", "patch", "delete", "postForm"] as const;
 
@@ -45,7 +49,7 @@ export async function apiServer(): Promise<HttpClient> {
   const session = cookieStore.get("session")?.value;
   const ip = clientIp(headerList.get("x-forwarded-for"));
 
-  const client = new HttpClient(API_URL, () => ({
+  const client = new HttpClient(apiUrl(), () => ({
     ...(session ? { Cookie: `session=${session}` } : {}),
     ...(ip && INTERNAL_API_SECRET
       ? { "X-Client-IP": ip, "X-Internal-Secret": INTERNAL_API_SECRET }

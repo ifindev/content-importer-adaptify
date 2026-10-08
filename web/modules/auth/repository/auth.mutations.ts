@@ -3,15 +3,8 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
+import { apiUrl } from "@/lib/api-server";
 import type { MutationResult } from "@/lib/mutation-result";
-
-const API_URL: string = (() => {
-  const url = process.env.API_URL;
-  if (!url) {
-    throw new Error("API_URL environment variable is required");
-  }
-  return url;
-})();
 
 const SESSION_COOKIE_NAME = "session";
 const EMAIL_COOKIE_NAME = "agency_email";
@@ -26,7 +19,7 @@ export async function createSession(
   idToken: string,
   email: string | null,
 ): Promise<MutationResult<null>> {
-  const response = await fetch(`${API_URL}/auth/session`, {
+  const response = await fetch(`${apiUrl()}/auth/session`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ id_token: idToken }),

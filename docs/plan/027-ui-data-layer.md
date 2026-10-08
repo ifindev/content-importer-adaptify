@@ -79,7 +79,7 @@ Review mutations revalidate `/review/{token}`.
 - [x] Every agency and client endpoint in spec: API endpoints (except AI, P2) has exactly one function.
 - [x] No hand-written request/response types; `pnpm typecheck` passes.
 - [x] Each expected error code returns `{ ok: false, code }`; `messageFor` covers all of them.
-- [ ] ~~Unit test: `toIsoWithOffset` and `messageFor` fallback.~~ Out of scope (CLAUDE.md); `toIsoWithOffset` not needed.
+- ~~Unit test: `toIsoWithOffset` and `messageFor` fallback.~~ Out of scope (CLAUDE.md); `toIsoWithOffset` not needed.
 
 ## Tasks
 - T-033 already added `lib/error-messages.ts` (`messageFor`), `components/local-time.tsx`, and the `data.ts` / `actions.ts` seam per module; wiring swaps their re-exports instead of building these again.
@@ -87,7 +87,7 @@ Review mutations revalidate `/review/{token}`.
 - [x] Sites, articles, review, report repositories; seams swapped; fixtures deleted.
 - [x] `lib/error-messages.ts`, `components/local-time.tsx` (from T-033). ~~zod schemas~~: dropped.
 - [x] `next.config` body size limit.
-- [ ] ~~Add a minimal test runner and the unit test.~~ Out of scope: no new vitest tests for UI work (CLAUDE.md).
+- ~~Add a minimal test runner and the unit test.~~ Out of scope: no new vitest tests for UI work (CLAUDE.md).
 
 ## Out of scope
 - UI (T-028, T-029). AI draft endpoints (Phase 7).

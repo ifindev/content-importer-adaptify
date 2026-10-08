@@ -111,6 +111,7 @@ export function SiteDialog({ sites }: { sites: EditableSite[] }) {
 
   function runTest() {
     if (!formRef.current?.reportValidity()) return;
+    setError(null);
     setTest("pending");
     startTest(async () => {
       const { wp_base_url, wp_username, wp_app_password } = fields();
@@ -143,7 +144,11 @@ export function SiteDialog({ sites }: { sites: EditableSite[] }) {
           // New defaults when switching between sites.
           key={editing?.id ?? "add"}
           action={submit}
-          onChange={() => test !== "pending" && setTest("idle")}
+          onChange={() => {
+            // Editing a field makes the last result stale.
+            setError(null);
+            if (test !== "pending") setTest("idle");
+          }}
           className="flex flex-col gap-4 px-6 pt-5 pb-[22px]"
         >
           {error && (

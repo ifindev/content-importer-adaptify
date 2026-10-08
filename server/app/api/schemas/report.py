@@ -40,6 +40,9 @@ class ReportOut(BaseModel):
     avg_approval_seconds: float | None = Field(
         None, description="Average sent-for-review-to-approved seconds; null if none approved."
     )
+    avg_change_rounds: float | None = Field(
+        None, description="Change requests per article, over all articles; null if none."
+    )
     change_rounds: list[ChangeRoundsEntry] = Field(
         ..., description="Articles that needed changes, with rounds per article."
     )

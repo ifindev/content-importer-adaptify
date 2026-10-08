@@ -3,6 +3,7 @@ from datetime import UTC, datetime
 from app.core.domain.models import Article, Event
 from app.core.domain.report import (
     avg_approval_seconds,
+    avg_change_rounds,
     change_rounds,
     needs_attention,
     published,
@@ -127,3 +128,13 @@ def test_needs_attention_lists_failed_and_sync_warnings():
     assert by_id["a1"].detail == "WordPress 500"
     assert by_id["a2"].reason == "late"
     assert by_id["a2"].detail is None
+
+
+def test_avg_change_rounds_over_every_article():
+    articles = [_article("a1"), _article("a2")]
+    events = {"a1": [_event(EventType.CHANGES_REQUESTED, NOW)] * 3, "a2": []}
+    assert avg_change_rounds(articles, change_rounds(articles, events)) == 1.5
+
+
+def test_avg_change_rounds_none_without_articles():
+    assert avg_change_rounds([], []) is None

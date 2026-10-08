@@ -30,6 +30,7 @@ async def get_report(
         status_counts=report.status_counts,
         published_this_month=report.published_this_month,
         avg_approval_seconds=report.avg_approval_seconds,
+        avg_change_rounds=report.avg_change_rounds,
         change_rounds=[ChangeRoundsEntry(**asdict(c)) for c in report.change_rounds],
         upcoming=[UpcomingEntry(**asdict(c)) for c in report.upcoming],
         published=[PublishedEntry(**asdict(c)) for c in report.published],

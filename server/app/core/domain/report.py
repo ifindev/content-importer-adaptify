@@ -43,6 +43,7 @@ class Report:
     published_this_month: int
     avg_approval_seconds: float | None
     change_rounds: list[ChangeRoundsEntry]
+    avg_change_rounds: float | None
     upcoming: list[UpcomingEntry]
     published: list[PublishedEntry]
     needs_attention: list[NeedsAttentionEntry]
@@ -94,6 +95,13 @@ def change_rounds(
         if rounds > 0:
             entries.append(ChangeRoundsEntry(article.id, article.title, rounds))
     return entries
+
+
+def avg_change_rounds(articles: list[Article], rounds: list[ChangeRoundsEntry]) -> float | None:
+    """Change requests per article, over every article; None with no articles."""
+    if not articles:
+        return None
+    return sum(r.rounds for r in rounds) / len(articles)
 
 
 def upcoming(articles: list[Article]) -> list[UpcomingEntry]:

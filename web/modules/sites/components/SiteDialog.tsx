@@ -150,7 +150,12 @@ export function SiteDialog({
           id="site-form"
           // New defaults when switching between sites.
           key={editing?.id ?? "add"}
-          action={submit}
+          // onSubmit, not action: React resets a form after its action
+          // runs, which would empty the fields after wp_connection_failed.
+          onSubmit={(e) => {
+            e.preventDefault();
+            submit();
+          }}
           onChange={() => {
             // Editing a field makes the last result stale.
             setError(null);

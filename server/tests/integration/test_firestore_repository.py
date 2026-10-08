@@ -6,6 +6,7 @@ from fastapi.testclient import TestClient
 from google.cloud import firestore
 
 from app.adapters.firestore.repository import FirestoreArticleRepository
+from app.adapters.firestore.site_repository import FirestoreSiteRepository
 from app.adapters.testing.clock import FixedClock
 from app.adapters.testing.scripted_publisher import ScriptedPublisher
 from app.adapters.testing.secret_store import InMemorySecretStore
@@ -270,4 +271,16 @@ def test_delete_article_removes_it_and_its_events(repository):
     repository.delete_article("a1")
 
     assert repository.get_article("a1") is None
+    assert repository.list_events("a1") == []
+
+
+def test_delete_site_cascades_to_articles_and_events(repository, site_id):
+    site_repository = FirestoreSiteRepository(repository._client)
+    site_repository.create_site(_site(site_id))
+    _with_event(repository, "a1")
+
+    site_repository.delete_site(site_id)
+
+    assert site_repository.get_site(site_id) is None
+    assert repository.list_articles() == []
     assert repository.list_events("a1") == []

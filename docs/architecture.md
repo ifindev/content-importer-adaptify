@@ -342,7 +342,7 @@ The app runs on GCP. WordPress runs on your own VPS in Docker. Locally, everythi
 | Cloud Run                                           | Two services: API and web. Both scale to zero when idle. |
 | Firestore                                           | All app data                                             |
 | Firebase Auth                                       | One agency login                                         |
-| Secret Manager                                      | `CREDENTIAL_ENCRYPTION_KEY` (encrypts each site's WordPress app password in Firestore); `INTERNAL_API_SECRET` (web → API client IP); LangSmith key (P2) |
+| Secret Manager                                      | `CREDENTIAL_ENCRYPTION_KEY` (encrypts each site's WordPress app password and review token in Firestore); `INTERNAL_API_SECRET` (web → API client IP); LangSmith key (P2) |
 | Artifact Registry                                   | Docker images                                            |
 | Vertex AI                                           | Gemini, for P2 only                                      |
 | Cloud Billing budget + Pub/Sub + one small function | Spending alert and kill switch (see Cost and limits)     |
@@ -409,7 +409,7 @@ Terraform manages GCP only. The VPS gets set up once by hand from the files in `
 - **Service accounts:** one for the API, one for the web service. Each gets only the roles it needs.
 - **Compute:** Cloud Run services for API and web.
 - **Data:** Firestore database.
-- **Secrets:** Secret Manager entries for `CREDENTIAL_ENCRYPTION_KEY`, `INTERNAL_API_SECRET` (both services read it; the API refuses to start on GCP without it) and the LangSmith key. You add the values by hand once, so they never sit in Terraform state. Each site's own WordPress app password lives encrypted in Firestore, not in Secret Manager (see spec.md's Data model).
+- **Secrets:** Secret Manager entries for `CREDENTIAL_ENCRYPTION_KEY`, `INTERNAL_API_SECRET` (both services read it; the API refuses to start on GCP without it) and the LangSmith key. You add the values by hand once, so they never sit in Terraform state. Each site's own WordPress app password and review token live encrypted in Firestore, not in Secret Manager (see spec.md's Data model).
 - **Cost backstop:** billing budget, Pub/Sub topic, and the kill-switch function.
 
 The Terraform state bucket is the one GCP resource you create by hand, before the first `terraform init`.

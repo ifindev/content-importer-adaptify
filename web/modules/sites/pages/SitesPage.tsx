@@ -17,7 +17,7 @@ export async function SitesPage() {
   return (
     <>
       {sites.length === 0 ? <ZeroSites /> : <SitesList sites={sites} />}
-      <SiteDialog sites={sites} />
+      <SiteDialog sites={sites} allowHttp={process.env.APP_ENV === "local"} />
     </>
   );
 }

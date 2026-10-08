@@ -40,9 +40,16 @@ type EditableSite = {
 
 /**
  * Add (`?add=1`, so the switcher's "Add site" can link straight to it) or
- * edit (`?edit=<siteId>`) a client site.
+ * edit (`?edit=<siteId>`) a client site. `allowHttp` (APP_ENV=local only)
+ * accepts http:// URLs such as the local WordPress container.
  */
-export function SiteDialog({ sites }: { sites: EditableSite[] }) {
+export function SiteDialog({
+  sites,
+  allowHttp = false,
+}: {
+  sites: EditableSite[];
+  allowHttp?: boolean;
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
@@ -172,13 +179,17 @@ export function SiteDialog({ sites }: { sites: EditableSite[] }) {
           <Field
             label="WordPress URL"
             id="wp_base_url"
-            hint="The site's home address, starting with https://"
+            hint={
+              allowHttp
+                ? "The site's home address. http:// is allowed locally, e.g. http://wordpress."
+                : "The site's home address, starting with https://"
+            }
           >
             <Input
               id="wp_base_url"
               name="wp_base_url"
               type="url"
-              pattern="https://.*"
+              pattern={allowHttp ? "https?://.*" : "https://.*"}
               placeholder="https://"
               defaultValue={editing?.wp_base_url}
               required

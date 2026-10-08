@@ -20,6 +20,7 @@ const MESSAGES: Record<string, string> = {
   wp_connection_failed:
     "Couldn't connect to WordPress with these details. Check the URL and app password.",
   site_not_found: "This site no longer exists.",
+  insecure_url: "The WordPress URL must start with https://.",
   article_changed:
     "The agency changed this article while you were reading. Reload to see the latest version.",
   rate_limited: "Too many requests. Try again in a minute.",

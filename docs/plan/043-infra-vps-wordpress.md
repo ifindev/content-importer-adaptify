@@ -156,7 +156,7 @@ Your user is in the `docker` group, which is effectively root. That's acceptable
 - [x] Check the VPS region (ICP precondition).
 - [x] Write `docker-compose.yml`, `nginx/wp.aiwitharifin.com.conf`, `.env.example`, `backup.sh` and `crontab.txt` in `infra/wordpress/`. No separate README: the steps live in architecture "VPS setup, once".
 - [x] DNS record and firewall.
-- [ ] Confirm SSH key-only login and `unattended-upgrades`.
+- [x] Confirm SSH key-only login and `unattended-upgrades`.
 - [x] Install certbot; start the containers; set up the nginx site; get the certificate.
 - [x] Finish the WordPress install; set permalinks.
 - [x] Create the Author user and its application password.

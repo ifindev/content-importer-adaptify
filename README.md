@@ -326,17 +326,7 @@ The full guide is in [architecture.md › GCP target](docs/architecture.md#gcp-t
 
 </details>
 
-<details>
-<summary><b>Deploy to a VPS</b></summary>
-
-1. **Firebase:** create Firestore and turn on Email/Password sign-in, add the agency accounts, register a web app, and generate a service-account key.
-2. **VPS:** Docker, nginx and certbot. Copy `infra/app/.env.example` to `~/app/.env` and fill it in, copy the key to `~/app/firebase-service-account.json`, and install the nginx site with a certificate.
-3. **GitHub:** add the `VPS_SSH` and `FIREBASE_*` variables and the `VPS_SSH_KEY` and `VPS_KNOWN_HOSTS` secrets.
-4. Push to `main`.
-
-The full guide is in [architecture.md › Deployment and CI](docs/architecture.md#deployment-and-ci).
-
-</details>
+**Deploy to a VPS:** Firebase console steps, two DNS records (`app.` and `api.`), then one `make vps-setup`. After that, every green push to `main` deploys itself. The step-by-step guide is in [docs/deploy-vps.md](docs/deploy-vps.md).
 
 **CI/CD.** Every push and pull request runs three parallel jobs:
 - **Server:** lint, import rules and unit tests.

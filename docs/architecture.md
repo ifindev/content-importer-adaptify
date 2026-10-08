@@ -340,26 +340,26 @@ The app has two deploy targets. Both use the same `prod` images, `APP_ENV=prod`,
 
 | Target | API and web | Secrets | Set up with | Status |
 | --- | --- | --- | --- | --- |
-| **VPS** | Docker Compose behind nginx, next to WordPress | `.env` and a Firebase key file | Manual steps below; CI deploys | Live |
+| **VPS** | Docker Compose behind nginx, next to WordPress | `.env` and a Firebase key file | `make vps-setup`; CI deploys | Live |
 | **GCP** | Cloud Run, scale to zero | Secret Manager | `infra/terraform/` | Ready, not applied: needs a GCP billing account |
 
 WordPress runs on the VPS either way. Locally, everything runs in one `docker compose` setup, so you can build and test the full flow at zero cost.
 
-**Decision:** The VPS is the live target (T-048). The GCP billing account couldn't be set up (the card was refused), and Cloud Run, Secret Manager and Artifact Registry all need one. Firestore and Firebase Auth work on Firebase's free Spark plan, so the VPS target needs no billing account. The Terraform stays so the app can move to GCP once billing works.
+**Decision:** The VPS is the live target (T-048). A GCP billing account wasn't available, and Cloud Run, Secret Manager and Artifact Registry all need one. Firestore and Firebase Auth work on Firebase's free Spark plan, so the VPS target needs no billing account. The Terraform stays so the app can move to GCP once billing works.
 
 ### The app on the VPS
 
-- **Site:** `https://app.aiwitharifin.com`.
-- **Containers:** `api` and `web` from `infra/app/docker-compose.yml`, in `~/app`. The web listens on `127.0.0.1:3000`; the API publishes no port and is reached only by the web, at `http://api:8080` on the compose network. `restart: unless-stopped` brings both back after a reboot.
-- **Images:** `ghcr.io/ifindev/content-importer-adaptify-{api,web}`, tagged with the commit SHA. The compose file needs `IMAGE_TAG`.
-- **Config:** `~/app/.env` (`chmod 600`, from `infra/app/.env.example`): `WEB_BASE_URL`, `CREDENTIAL_ENCRYPTION_KEY`, `INTERNAL_API_SECRET`, `AGENCY_EMAILS`. The compose file sets `APP_ENV=prod` and `API_URL`.
-- **Firebase credentials:** a service-account key from the Firebase console (Project settings → Service accounts → Generate new private key), saved as `~/app/firebase-service-account.json` and mounted read-only. `GOOGLE_APPLICATION_CREDENTIALS` points at it; Firestore and `firebase_admin` read the project ID from it. It's the one long-lived secret on the VPS. Keep `~` at `700`; the file itself is `644` so the container's non-root user can read it.
-- **HTTPS:** nginx on the host (`infra/app/nginx/`), with a certbot certificate, the same as WordPress. nginx appends the visitor's IP to `X-Forwarded-For`, which is the entry the web reads for the API's per-client rate limit.
-- **Memory:** the two app containers sit next to WordPress and MariaDB. Watch `docker stats` after the first deploy; add swap if the VPS runs short.
+Set up and day-to-day use: [deploy-vps.md](deploy-vps.md). The parts that matter for the code:
+
+- **Containers:** `api` and `web` from `infra/app/docker-compose.yml`, both bound to `127.0.0.1` (Docker's port rules bypass `ufw`). The web reaches the API at `http://api:8080` on the compose network.
+- **Hostnames:** nginx on the host serves `app.<domain>` (web) and `api.<domain>` (API, for `/docs` and `/health`), with certbot certificates. nginx appends the visitor's IP to `X-Forwarded-For`, which is the entry the web reads for the API's per-client rate limit.
+- **Config:** `~/app/.env` (`WEB_BASE_URL`, `CREDENTIAL_ENCRYPTION_KEY`, `INTERNAL_API_SECRET`, `AGENCY_EMAILS`). The compose file sets `APP_ENV=prod` and `API_URL`.
+- **Firebase credentials:** a service-account key mounted read-only. `GOOGLE_APPLICATION_CREDENTIALS` points at it, and Firestore and `firebase_admin` read the project ID from it. The file is `644` so the container's non-root user can read it; `~/app` is `700`.
+- **Memory:** the app shares the server with WordPress and MariaDB. Watch `docker stats`; add swap if it runs short.
 
 ### WordPress on the VPS
 
-- **Site:** `https://wp.aiwitharifin.com` on a Tencent VPS (Ubuntu 24.04).
+- **Site:** `https://wp.<domain>` on the same VPS (Ubuntu 24.04).
 - **Containers:** WordPress and MariaDB only (`infra/wordpress/docker-compose.yml`). WordPress listens on `127.0.0.1:8080`, so only the VPS itself reaches it; MariaDB publishes no port. Docker's port rules bypass `ufw`, which is why the binding matters.
 - **HTTPS:** nginx on the host is the reverse proxy (`infra/wordpress/nginx/`), with a Let's Encrypt certificate from certbot, which also renews it. `WORDPRESS_CONFIG_EXTRA` sets `$_SERVER['HTTPS']` from `X-Forwarded-Proto`; without it WordPress thinks it's on HTTP and turns application passwords off.
 - **Scheduling on time:** `DISABLE_WP_CRON` turns off WordPress's visit-based scheduler. A host cron job runs `curl http://127.0.0.1:8080/wp-cron.php` every minute (`infra/wordpress/crontab.txt`), so scheduled posts go live on time even with zero visitors. Calling it through `docker compose exec` hung under cron and was dropped. Real client sites don't need this: their visitors trigger WordPress's own scheduler, and a late post shows the Late warning until it publishes.
@@ -396,7 +396,7 @@ Set `CREDENTIAL_ENCRYPTION_KEY` in `.env`. Without it the API makes a new key on
 
 ## Deployment and CI
 
-The VPS gets set up once by hand from `infra/wordpress/` and `infra/app/`. After that, GitHub Actions runs the checks on every push and deploys every green push to `main` to the VPS. The GCP target is set up with Terraform and deployed by hand (GCP target, below).
+The VPS gets set up once (Setup, below). After that, GitHub Actions runs the checks on every push and deploys every green push to `main` to the VPS. The GCP target is set up with Terraform and deployed by hand (GCP target, below).
 
 ### Environments
 
@@ -416,36 +416,11 @@ Each Dockerfile has a `dev` stage (used by local `docker compose`) and a `prod` 
 - **Web:** `deps` → `build` → `prod`. `output: "standalone"` makes `next build` emit a minimal `server.js`. The prod stage copies only that and `.next/static`, runs as `node`, and listens on `$PORT` (3000 if unset).
 - `NEXT_PUBLIC_FIREBASE_*` are build args, inlined into the browser bundle, so a web image belongs to one Firebase project. `NEXT_PUBLIC_FIREBASE_AUTH_EMULATOR_URL` is left unset in real builds. `API_URL`, `APP_ENV` and `INTERNAL_API_SECRET` are runtime env.
 
-### Firebase setup, once
+### Setup
 
-1. In the Firebase console, add Firebase to the `content-importer-adaptify` project (or create one). Stay on the Spark plan.
-2. Build → Firestore Database → Create database, in production mode, location `us-central1`. The app reaches it only through the Admin SDK, which ignores security rules, so the default deny-all rules are right.
-3. Build → Authentication → Sign-in method → Email/Password on. Add the agency accounts under Users. If Settings → User actions offers it, turn off "Enable create (sign-up)" as well; `AGENCY_EMAILS` is the guard either way.
-4. Add a web app (Project settings → Your apps). Its `apiKey`, `authDomain` and `projectId` become the GitHub variables below.
-5. Add `app.aiwitharifin.com` under Authentication → Settings → Authorized domains.
-6. Generate the service-account key (see The app on the VPS).
-
-**Firestore indexes:** none known. If the live flow logs a "query requires an index" error, it includes a link that creates the index.
-
-### VPS setup, once
-
-1. DNS `A` records for `wp.` and `app.`; open only 22, 80 and 443 in the cloud firewall and `ufw`.
-2. Install Docker (`get.docker.com`), nginx, and `certbot python3-certbot-nginx`.
-3. **WordPress:** copy `infra/wordpress/` to `~/wordpress`, fill in `.env` from `.env.example`, and run `docker compose up -d`. Copy its nginx site config into `sites-available`, enable it, reload nginx, then run `sudo certbot --nginx -d wp.aiwitharifin.com`. Finish the install in the browser, set permalinks to "Post name", create the `content-importer` Author and its application password, and install the two lines from `crontab.txt` with `crontab -e`.
-4. **App:** `mkdir -m 700 ~/app`, write `~/app/.env` from `infra/app/.env.example`, and copy the Firebase key to `~/app/firebase-service-account.json`. Install `infra/app/nginx/app.aiwitharifin.com.conf` and run `sudo certbot --nginx -d app.aiwitharifin.com`. The first deploy starts the containers.
-5. **Deploy access:** make a key pair just for deploys (`ssh-keygen -t ed25519 -f deploy -N ""`), add `deploy.pub` to `~/.ssh/authorized_keys` of a user in the `docker` group, and put the private key in the GitHub secret `VPS_SSH_KEY`. `ssh-keyscan app.aiwitharifin.com` gives `VPS_KNOWN_HOSTS`.
-6. Sign in to the app and add the site (`https://wp.aiwitharifin.com`, user `content-importer`, its app password).
-
-### GitHub settings
-
-Settings → Secrets and variables → Actions.
-
-| Name | Kind | Value |
-| --- | --- | --- |
-| `VPS_SSH` | Variable | `<user>@app.aiwitharifin.com` |
-| `VPS_SSH_KEY` | Secret | The deploy private key |
-| `VPS_KNOWN_HOSTS` | Secret | `ssh-keyscan` output, so the job refuses a different host |
-| `FIREBASE_API_KEY`, `FIREBASE_AUTH_DOMAIN`, `FIREBASE_PROJECT_ID` | Variables | The Firebase web app config (public by design) |
+- **App on a VPS:** [deploy-vps.md](deploy-vps.md). `make vps-setup` (`infra/app/setup.sh`) does the server and GitHub parts after the Firebase console steps and DNS.
+- **WordPress on the VPS:** copy `infra/wordpress/` to `~/wordpress`, fill in `.env`, `docker compose up -d`, install its nginx site and run certbot. Finish the install in the browser, set permalinks to "Post name", create an Author user with an application password, and install `crontab.txt`. Then add the site in the app.
+- **Firestore indexes:** none known. If the live flow logs a "query requires an index" error, it includes a link that creates the index.
 
 ### GCP target
 
@@ -512,7 +487,7 @@ gcloud run deploy web --image $REPO/web:$TAG --region us-central1
    - `api-types`: `make gen-api`, then `git diff --exit-code web/lib/api/`. It fails when the API changed and the types weren't regenerated.
 2. `deploy`, only on a push to `main` and only when all three pass:
    - Builds both `prod` images, tags them with the commit SHA and pushes them to GHCR with the job's own `GITHUB_TOKEN`.
-   - Copies `infra/app/docker-compose.yml` to the VPS over SSH, logs the VPS in to GHCR with the same token (sent over stdin), runs `docker compose pull` and `up -d` with `IMAGE_TAG=<sha>`, logs out, and prunes app images older than a week.
+   - Copies `infra/app/docker-compose.yml` to the VPS over SSH, logs the VPS in to GHCR with the same token (sent over stdin), runs `docker compose pull` and `up -d` with `IMAGE_TAG=<sha>`, records that tag in `~/app/.env` (so a manual `docker compose up -d` keeps the version), logs out, and prunes app images older than a week.
 
 On other refs, a newer push cancels the older run. On `main`, runs queue instead, so a deploy never stops halfway. Integration tests are not in CI: they need the emulators and WordPress. Run `make test-integration` by hand before a push that touches the adapters.
 

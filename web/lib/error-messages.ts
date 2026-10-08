@@ -2,6 +2,8 @@ const MESSAGES: Record<string, string> = {
   empty_content: "The article is empty. Add some text first.",
   payload_too_large: "That's too large to import. The limit is 2 MB.",
   no_files: "Choose at least one .docx file.",
+  upload_too_large:
+    "Files are too large. Upload fewer files at a time, up to 30 MB in total.",
   too_many_files: "Upload at most 10 files at a time.",
   unsupported_file_type: "Only .docx files can be imported.",
   unreadable_file: "This file couldn't be read. It may be damaged.",

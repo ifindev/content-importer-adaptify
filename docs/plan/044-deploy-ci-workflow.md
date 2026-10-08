@@ -1,6 +1,6 @@
 # T-044 CI workflow
 
-**Phase:** 5 · Deploy · **Status:** analyzed · **Size:** S
+**Phase:** 5 · Deploy · **Status:** in progress · **Size:** S
 **Refs:** architecture: Deployment and CI; workflow: Definition of Done
 **Depends on:** —
 
@@ -62,13 +62,18 @@ The commands mirror `make lint` and `make test`. Calling `make` directly would m
 - [ ] A pull request runs the same three jobs.
 - [ ] On a throwaway branch: a failing unit test turns `server` red; an edited `schema.ts` turns `api-types` red; a type error turns `web` red. Delete the branch after.
 - [ ] A second push while a run is in progress cancels the older run.
-- [ ] architecture.md updated.
+- [x] architecture.md updated.
 
 ## Tasks
-- [ ] Write `.github/workflows/ci.yml` with the three jobs.
+- [x] Write `.github/workflows/ci.yml` with the three jobs.
 - [ ] Push and fix anything that only shows up in CI (missing `.env`, cache keys, Python version).
 - [ ] Run the three red checks on a throwaway branch.
-- [ ] Update architecture "Deployment and CI".
+- [x] Update architecture "Deployment and CI".
+
+## Results
+- Checked locally without `.env`: unit tests pass and `make gen-api` leaves `web/lib/api/` unchanged.
+- `ruff format --check` failed on `main` for `app/adapters/documents/parser.py` and `app/api/routes/imports.py`. Both are reformatted in this change so CI starts green.
+- `actionlint` passes.
 
 ## Out of scope
 - Integration tests in CI.

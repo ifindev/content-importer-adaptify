@@ -18,6 +18,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import type { Schemas } from "@/lib/api/types";
 import { messageFor } from "@/lib/error-messages";
+import { cn } from "@/lib/utils";
 import { approve, requestChanges } from "@/modules/review/actions";
 
 const NAME_KEY = "review_client_name";
@@ -162,8 +163,10 @@ export function DecisionPanel({
     </div>
   );
 
-  const commentField = (id: string, rows: number) => (
-    <div className="flex flex-col gap-1.5">
+  // In the bottom sheet the textarea is the one part that shrinks: it scrolls
+  // inside itself so the name and buttons stay in view.
+  const commentField = (id: string, rows: number, sheet = false) => (
+    <div className={cn("flex flex-col gap-1.5", sheet && "min-h-0")}>
       <Label htmlFor={id}>What should change?</Label>
       <Textarea
         id={id}
@@ -172,7 +175,10 @@ export function DecisionPanel({
         onChange={(e) => setComment(e.target.value)}
         maxLength={2000}
         aria-invalid={error === "comment_required" || undefined}
-        className="resize-y max-lg:text-[15px]"
+        className={cn(
+          "max-lg:text-[15px]",
+          sheet ? "min-h-40 resize-none overflow-y-auto" : "resize-y",
+        )}
       />
       <span className="text-muted-foreground text-xs">
         Be specific: mention the section or sentence.
@@ -268,7 +274,10 @@ export function DecisionPanel({
       <section
         aria-label={mode === "changes" ? "Request changes" : "Your decision"}
         onKeyDown={(e) => e.key === "Escape" && setMode("decide")}
-        className="bg-background sticky bottom-0 z-20 flex max-h-[70svh] flex-col gap-3 overflow-y-auto border-t px-4 pt-3 pb-4 lg:hidden"
+        className={cn(
+          "bg-background sticky bottom-0 z-20 flex max-h-[80svh] flex-col gap-3 border-t px-4 pt-3 pb-4 lg:hidden",
+          mode === "changes" && "rounded-t-[14px] pt-4",
+        )}
       >
         {mode === "changes" ? (
           <>
@@ -280,7 +289,7 @@ export function DecisionPanel({
               </p>
             </div>
             {errorBox}
-            {commentField("comment-bar", 3)}
+            {commentField("comment-bar", 3, true)}
             {nameField("name-bar")}
             <div className="flex gap-2">
               <Button

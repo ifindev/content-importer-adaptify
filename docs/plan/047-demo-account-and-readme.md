@@ -2,7 +2,7 @@
 
 **Phase:** 6 · Demo · **Status:** analyzed · **Size:** S
 **Refs:** R8.1; spec: User journeys; plan: Phase 6
-**Depends on:** T-040, T-041, T-042, T-043, T-044, T-045, T-046
+**Depends on:** T-040, T-041, T-043, T-044, T-048
 
 ## Goal
 A reviewer opens the README, signs in with the demo login, and gets an article from import to a live post on `wp.aiwitharifin.com` with no help. This is what the job application links to.
@@ -10,14 +10,14 @@ A reviewer opens the README, signs in with the demo login, and gets an article f
 ## Analysis
 
 ### Accounts
-Create both in the Firebase console (Authentication → Users → Add user). Sign-up is off (T-042), so this is the only way to make an account.
+Create both in the Firebase console (Authentication → Users → Add user), and list both emails in `AGENCY_EMAILS` on the VPS (T-048). That list is what blocks everyone else.
 
 | Account | Who | Password |
 | --- | --- | --- |
 | Your own email | You | Strong, in your password manager, never shared |
-| `demo@aiwitharifin.com` | Reviewers | Strong, printed in the README. Treat it as public. |
+| `agency@example.com` | Reviewers | Simple (`demopass`), printed in the README. It's public, so its strength doesn't matter. |
 
-- The demo email doesn't need a real mailbox: email/password sign-in doesn't verify it.
+- The demo email doesn't need a real mailbox: email/password sign-in doesn't verify it. `example.com` is reserved and never receives mail, so a password reset can't reach a stranger. To change the demo password, delete the user and add it again.
 - Your own account means you can always get in, even if a reviewer changes the demo password through the Firebase REST API. If that happens, reset it in the console.
 
 ### The demo site
@@ -28,6 +28,13 @@ Signed in as yourself on the live app, add `https://wp.aiwitharifin.com` as a si
 - Published posts open on the public site through the live URL in the app. Scheduled posts stay hidden on WordPress until their date.
 - They can add their own WordPress site. The README warns them about it.
 - All reviewers share one agency account, so they see each other's sites and articles. That's how the product works (one agency), and the README says so.
+
+### Risks of a public login
+**Decision:** accept these for the demo, and keep anything valuable out of the demo account.
+- Anyone can create, edit, delete and publish articles, and delete sites, including the demo site.
+- Anyone can add a WordPress site with any `https://` URL. The API only requires `https://`, so the VPS sends requests to addresses a stranger chooses, and the connection test shows WordPress's error text. **Open question:** refuse loopback and private IP addresses in `_require_https` (`server/app/api/routes/sites.py`) before the README goes public? Small change; worth a ticket.
+- Anyone can publish posts to `wp.aiwitharifin.com`. Check it now and then.
+- Firestore's free daily quota can run out if someone scripts the API. The app then fails until the next day; nothing is billed.
 
 ### README: fill the demo slots
 The README already tells the full story, with screenshots and animated SVGs in `docs/images/`. This ticket adds what needs the live app, at the `<!-- T-047 -->` comment under the badges:
@@ -40,7 +47,7 @@ The README already tells the full story, with screenshots and animated SVGs in `
    5. Back in the agency app, set a publish date at least 6 minutes ahead.
    6. Wait. The article turns Published, and its live URL opens the post on WordPress.
    7. Optional: request changes instead of approving, and see the comment in the agency app. Open the Report.
-3. **Good to know:** the first page after a quiet period takes a few seconds while the servers wake up; the demo account is shared with other reviewers; publish times are at least 5 minutes ahead.
+3. **Good to know:** the demo account is shared with other reviewers; publish times are at least 5 minutes ahead.
 4. **Using your own WordPress?** Use a test site with HTTPS and an open REST API, create an application password under Users → Profile, and delete the site and revoke the password when you're done. Other reviewers share this account and can see sites you add.
 
 Optionally retake the screenshots against the live app, so they show `wp.aiwitharifin.com`.
@@ -58,10 +65,10 @@ By hand, through the UI, when the demo gets messy: delete stray sites and articl
 | A reviewer deletes the demo site | Re-add it by hand (the steps above). Published posts stay on WordPress. |
 | A reviewer changes the demo password | Reset it in the Firebase console. |
 | A reviewer's own WordPress fails the connection test | The Add site dialog shows WordPress's reason (`wp_connection_failed`). The README lists the requirements. |
-| Many reviewers at once | Max 2 instances per service (T-042) handle it at demo scale. |
+| Many reviewers at once | One container each for the API and web on the VPS handles demo scale. |
 
 ## Acceptance criteria
-- [ ] Both accounts exist; sign-up is still off.
+- [ ] Both accounts exist, and only their emails are in `AGENCY_EMAILS`.
 - [ ] The demo site is on the live app, and its connection test passes.
 - [ ] The README's demo slots are filled. It holds no secret except the demo login.
 - [ ] Someone who has never seen the app (a friend, or you in a fresh private window following only the README) gets a post live on `wp.aiwitharifin.com`.

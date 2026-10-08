@@ -14,6 +14,7 @@ from app.api.auth import require_session
 from app.api.deps import (
     SiteContext,
     get_clock,
+    get_internal_api_secret,
     get_public_site_context,
     get_secret_store,
     get_site_context,
@@ -179,6 +180,7 @@ def test_public_review_routes_work_against_the_firestore_emulator(repository, si
     repository.create_article(_article("hidden", Status.DRAFT))
 
     app.dependency_overrides[get_public_site_context] = lambda: _site_context(site_id, repository)
+    app.dependency_overrides[get_internal_api_secret] = lambda: ""
     app.dependency_overrides[get_clock] = lambda: FixedClock(datetime.now(UTC))
     app.dependency_overrides[get_sync_cache] = lambda: SyncCache()
     try:
@@ -222,6 +224,7 @@ def test_approve_and_request_changes_routes_work_against_the_firestore_emulator(
     repository.create_article(_article("request-changes-me", Status.AWAITING_APPROVAL))
 
     app.dependency_overrides[get_public_site_context] = lambda: _site_context(site_id, repository)
+    app.dependency_overrides[get_internal_api_secret] = lambda: ""
     app.dependency_overrides[get_clock] = lambda: FixedClock(datetime.now(UTC))
     try:
         client = TestClient(app)

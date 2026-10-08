@@ -6,7 +6,12 @@ HTTP_METHODS = {"get", "post", "put", "patch", "delete"}
 EXPECTED_OPERATIONS = {
     "Health": ["GET /health"],
     "Auth": ["POST /auth/session"],
-    "Sites": ["GET /sites", "POST /sites"],
+    "Sites": [
+        "GET /sites",
+        "POST /sites",
+        "POST /sites/test-connection",
+        "POST /sites/{site_id}/test-connection",
+    ],
     "Import": [
         "POST /sites/{site_id}/articles/upload",
         "POST /sites/{site_id}/articles/paste",

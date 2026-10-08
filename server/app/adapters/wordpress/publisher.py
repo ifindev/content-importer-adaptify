@@ -126,7 +126,9 @@ class WordPressPublisher:
         try:
             response = await self._client.request(method, path, **kwargs)
         except httpx.HTTPError as exc:
-            logger.error("WordPress %s %s failed: %s", method, path, exc)
+            logger.error(
+                "WordPress %s %s failed (%s): %s", method, path, self._client.base_url, exc
+            )
             raise WordPressError(0, "transport_error", str(exc)) from exc
         if response.is_error:
             try:

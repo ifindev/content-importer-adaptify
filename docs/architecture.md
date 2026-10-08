@@ -36,7 +36,7 @@ flowchart LR
 | AI (P2)                | LangChain, LangSmith, Gemini on Vertex AI | Adaptify stack for LangChain and LangSmith                                                      |
 | Infrastructure as code | Terraform                                 | Creates every GCP resource                                                                      |
 | CI and deploy          | GitHub Actions                            | Tests on every push, deploy on main                                                             |
-| WordPress host         | WordPress 6, MariaDB, Caddy, on Docker    | Runs on your VPS                                                                                |
+| WordPress host         | WordPress 6 and MariaDB on Docker, nginx  | Runs on your VPS                                                                                |
 
 
 
@@ -145,7 +145,7 @@ content-importer/
 ├── web/                                 # Next.js, see Frontend below
 ├── infra/
 │   ├── terraform/                       # GCP only
-│   └── wordpress/                       # docker-compose, Caddy, cron for the VPS; local-setup.sh for `make wp-setup`
+│   └── wordpress/                       # VPS: docker-compose, nginx site, backup.sh, crontab; local-setup.sh for `make wp-setup`
 ├── .github/workflows/                   # ci.yml, deploy.yml
 ├── docker-compose.yml                   # local: api, web, firebase emulator, wordpress, mariadb
 ├── Makefile
@@ -353,10 +353,13 @@ The app runs on GCP. WordPress runs on your own VPS in Docker. Locally, everythi
 
 ### WordPress on the VPS
 
-- **Containers:** WordPress, MariaDB, and Caddy. Caddy is a reverse proxy, a small server in front of WordPress that gets and renews a free HTTPS certificate automatically.
-- **Domain:** a subdomain such as `wp.yourdomain.com` pointing at the VPS. The certificate needs it.
-- **Scheduling on time:** `DISABLE_WP_CRON` turns off WordPress's visit-based scheduler. A system cron job calls `wp-cron.php` every minute, so scheduled posts go live on time even with zero visitors.
-- **Safety:** open only ports 22, 80, and 443. Use a strong admin password, keep WordPress updated, and back up the database and `wp-content` volume.
+- **Site:** `https://wp.aiwitharifin.com` on a Tencent VPS (Ubuntu 24.04).
+- **Containers:** WordPress and MariaDB only (`infra/wordpress/docker-compose.yml`). WordPress listens on `127.0.0.1:8080`, so only the VPS itself reaches it; MariaDB publishes no port. Docker's port rules bypass `ufw`, which is why the binding matters.
+- **HTTPS:** nginx on the host is the reverse proxy (`infra/wordpress/nginx/`), with a Let's Encrypt certificate from certbot, which also renews it. `WORDPRESS_CONFIG_EXTRA` sets `$_SERVER['HTTPS']` from `X-Forwarded-Proto`; without it WordPress thinks it's on HTTP and turns application passwords off.
+- **Scheduling on time:** `DISABLE_WP_CRON` turns off WordPress's visit-based scheduler. A host cron job runs `curl http://127.0.0.1:8080/wp-cron.php` every minute (`infra/wordpress/crontab.txt`), so scheduled posts go live on time even with zero visitors. Calling it through `docker compose exec` hung under cron and was dropped. Real client sites don't need this: their visitors trigger WordPress's own scheduler, and a late post shows the Late warning until it publishes.
+- **App user:** the app's application password belongs to `content-importer`, an **Author**. It can create, schedule and trash its own posts, and nothing else.
+- **Safety:** only ports 22, 80 and 443 open, in the Tencent security group and in `ufw`. Strong admin password. No security plugins (they can block the REST API).
+- **Backups:** `backup.sh` runs nightly at 03:00: a database dump and a tar of the WordPress files in `/var/backups/wordpress/<date>`, kept 7 days.
 
 
 
@@ -413,11 +416,14 @@ The Terraform state bucket is the one GCP resource you create by hand, before th
 
 ### VPS setup, once
 
-1. Install Docker on the VPS.
-2. Copy `infra/wordpress/`, fill in `.env` (database password, domain), and run `docker compose up -d`.
-3. Add the system cron job that calls `wp-cron.php` every minute.
-4. Finish the WordPress install in the browser, then create an application password under the admin user's profile.
-5. Add the site through `POST /sites` (or the agency UI's Add Site screen), which stores the URL and app password encrypted in Firestore.
+1. DNS `A` record for the subdomain; open only 22, 80 and 443 in the cloud firewall and `ufw`.
+2. Install Docker (`get.docker.com`), nginx, and `certbot python3-certbot-nginx`.
+3. Copy `infra/wordpress/` to the VPS, fill in `.env` from `.env.example`, and run `docker compose up -d`.
+4. Copy the nginx site config into `sites-available`, enable it, reload nginx, then run `sudo certbot --nginx -d <domain>`.
+5. Finish the WordPress install in the browser and set permalinks to "Post name".
+6. Create the `content-importer` user with the Author role, and an application password under that user.
+7. Install the two lines from `crontab.txt` with `crontab -e`.
+8. Add the site through the agency UI's Add Site screen (or `POST /sites`), which stores the URL and app password encrypted in Firestore.
 
 
 

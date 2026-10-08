@@ -11,15 +11,14 @@
 ![Terraform](https://img.shields.io/badge/Terraform-844FBA?logo=terraform&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
 
-**Live:**
-- **App:** [importer-app.aiwitharifin.com](https://importer-app.aiwitharifin.com). The agency signs in here, and clients open their review links here.
-- **API docs (Swagger):** [importer-api.aiwitharifin.com/docs](https://importer-api.aiwitharifin.com/docs). Every endpoint, with its request and response schemas.
-
-<!-- T-047: demo login goes here. -->
 
 <p align="center">
   <img src="docs/images/flow.svg" alt="An article moves from Import to Client review, Approved, Scheduled and Live on WordPress" width="880">
 </p>
+
+**Live:**
+- **App:** [importer-app.aiwitharifin.com](https://importer-app.aiwitharifin.com). The agency signs in here, and clients open their review links here.
+- **API docs (Swagger):** [importer-api.aiwitharifin.com/docs](https://importer-api.aiwitharifin.com/docs). Every endpoint, with its request and response schemas.
 
 ## Why I built this
 

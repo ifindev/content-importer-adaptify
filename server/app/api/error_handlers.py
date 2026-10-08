@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
 from app.api.auth import InvalidSessionError
@@ -55,6 +56,7 @@ _SIMPLE_HANDLERS: tuple[tuple[type[Exception], int, str], ...] = (
 def register_exception_handlers(app: FastAPI) -> None:
     for exc_class, status_code, code in _SIMPLE_HANDLERS:
         app.add_exception_handler(exc_class, _simple_handler(status_code, code))
+    app.add_exception_handler(RequestValidationError, _validation_error_handler)
     app.add_exception_handler(WordPressError, _wordpress_error_handler)
     app.add_exception_handler(
         WordPressConnectionTestFailedError, _wordpress_connection_test_failed_handler
@@ -66,6 +68,13 @@ def _simple_handler(status_code: int, code: str):
         return JSONResponse(status_code=status_code, content={"code": code})
 
     return handler
+
+
+def _validation_error_handler(request: Request, exc: RequestValidationError) -> JSONResponse:
+    # Same {"code": ...} shape as every other error, so the web app can show
+    # a message; `fields` names what failed, e.g. "body.slug".
+    fields = sorted({".".join(str(p) for p in e["loc"]) for e in exc.errors()})
+    return JSONResponse(status_code=422, content={"code": "validation_error", "fields": fields})
 
 
 def _wordpress_error_handler(request: Request, exc: WordPressError) -> JSONResponse:

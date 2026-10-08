@@ -243,6 +243,15 @@ def test_delete_unknown_article_returns_404(client):
     assert response.json() == {"code": "not_found"}
 
 
+def test_invalid_body_returns_validation_error_code(client, repository):
+    repository.create_article(_article("a1", Status.DRAFT))
+
+    response = client.patch(f"/sites/{SITE_ID}/articles/a1", json={"slug": "Not A Slug!"})
+
+    assert response.status_code == 422
+    assert response.json() == {"code": "validation_error", "fields": ["body.slug"]}
+
+
 def test_list_articles_includes_live_url_and_last_error(client, repository):
     repository.create_article(
         _article("a1", Status.PUBLISHED).model_copy(update={"published_url": "https://x.test/a"})

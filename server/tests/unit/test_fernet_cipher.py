@@ -18,3 +18,11 @@ def test_encrypting_the_same_plaintext_twice_gives_different_ciphertext():
     second = cipher.encrypt("same-password")
     assert first != second
     assert cipher.decrypt(first) == cipher.decrypt(second) == "same-password"
+
+
+def test_decrypt_with_another_key_or_empty_returns_empty():
+    other = FernetCredentialCipher(Fernet.generate_key().decode())
+    ciphertext = other.encrypt("secret")
+    cipher = FernetCredentialCipher(KEY)
+    assert cipher.decrypt(ciphertext) == ""
+    assert cipher.decrypt("") == ""

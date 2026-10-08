@@ -69,7 +69,15 @@ export function ScheduleDialog({
           {current ? "Change publish date" : "Set publish date"}
         </DialogTitle>
         <DialogDescription className="truncate">{title}</DialogDescription>
-        <form action={submit} className="flex flex-col gap-1.5">
+        <form
+          // onSubmit, not action: React resets a form after its action runs,
+          // which would drop the picked date when the API says it's past.
+          onSubmit={(e) => {
+            e.preventDefault();
+            submit(new FormData(e.currentTarget));
+          }}
+          className="flex flex-col gap-1.5"
+        >
           <Label htmlFor="publish_at">Publish at (your time)</Label>
           <Input
             id="publish_at"

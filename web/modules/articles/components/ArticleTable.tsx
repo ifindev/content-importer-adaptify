@@ -110,7 +110,7 @@ export function ArticleTable({
             </th>
             <th className="h-9 px-3 font-medium">Title</th>
             <th className="h-9 w-[170px] px-3 font-medium">Status</th>
-            <th className="h-9 w-[150px] px-3 font-medium">Publish date</th>
+            <th className="h-9 w-[190px] px-3 font-medium">Publish date</th>
             <th className="h-9 w-[200px] px-3 font-medium max-lg:hidden">
               Live URL
             </th>
@@ -164,7 +164,7 @@ export function ArticleTable({
               )}
               <td className="text-foreground/75 px-3 py-2 max-md:p-0 max-md:text-[12.5px] max-md:empty:hidden">
                 {a.publish_at_utc ? (
-                  <LocalTime iso={a.publish_at_utc} />
+                  <LocalTime iso={a.publish_at_utc} format="datetime" />
                 ) : (
                   <span className="text-faint max-md:hidden">—</span>
                 )}

@@ -18,12 +18,13 @@ const CLIENT_METHODS = ["get", "post", "patch", "delete", "postForm"] as const;
 /**
  * A 401 means the session cookie is missing, expired, revoked, or tampered.
  * This is the real auth check (proxy.ts only checks the cookie is present),
- * so any agency call that hits it redirects to /login, same as a logged-out
- * visit. `x-pathname` comes from proxy.ts, which runs on every agency route.
+ * so any agency call that hits it redirects to /login with `expired=1`, which
+ * tells proxy.ts to drop the dead cookie and the login page to say so.
+ * `x-pathname` comes from proxy.ts, which runs on every agency route.
  */
 async function redirectToLogin(): Promise<never> {
   const pathname = (await headers()).get("x-pathname") ?? "/";
-  redirect(`/login?next=${encodeURIComponent(pathname)}`);
+  redirect(`/login?next=${encodeURIComponent(pathname)}&expired=1`);
 }
 
 export async function apiServer(): Promise<HttpClient> {

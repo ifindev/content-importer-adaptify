@@ -14,6 +14,13 @@ export function proxy(request: NextRequest) {
   const hasSession = request.cookies.has("session");
 
   if (pathname === "/login") {
+    // The API rejected this cookie (apiServer's 401 redirect). Drop it, or
+    // the hasSession check below would bounce back to "/" and loop.
+    if (request.nextUrl.searchParams.get("expired") === "1") {
+      const response = NextResponse.next();
+      response.cookies.delete("session");
+      return response;
+    }
     if (hasSession) {
       return NextResponse.redirect(new URL("/", request.url));
     }

@@ -127,6 +127,14 @@ export function LoginForm({
           {submitting ? "Signing in…" : "Sign in"}
         </Button>
       </form>
+      <p className="text-muted-foreground mt-4 text-center text-[12.5px]">
+        Demo login:{" "}
+        <span className="text-foreground font-medium select-all">
+          agency@example.com
+        </span>{" "}
+        /{" "}
+        <span className="text-foreground font-medium select-all">pass@123</span>
+      </p>
     </div>
   );
 }

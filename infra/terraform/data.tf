@@ -7,6 +7,24 @@ resource "google_firestore_database" "default" {
   depends_on = [google_project_service.services]
 }
 
+# The article list filters by status and sorts by newest first
+# (FirestoreArticleRepository.list_articles). The emulator doesn't need it.
+resource "google_firestore_index" "articles_status_created_at" {
+  collection  = "articles"
+  query_scope = "COLLECTION"
+
+  fields {
+    field_path = "status"
+    order      = "ASCENDING"
+  }
+  fields {
+    field_path = "created_at"
+    order      = "DESCENDING"
+  }
+
+  depends_on = [google_firestore_database.default]
+}
+
 resource "google_firebase_project" "default" {
   provider = google-beta
 

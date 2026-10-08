@@ -1,6 +1,6 @@
 # T-033 UI revamp: every screen on fixtures
 
-**Phase:** 4 · Frontend · **Status:** in progress · **Size:** L
+**Phase:** 4 · Frontend · **Status:** done · **Size:** L
 **Refs:** spec: Screens, Agency journey, Client journey, Article lifecycle; design canvas: [claude.ai artifact](https://claude.ai/artifact/QCpMywgpasGi231uuWrAMn), offline copy `design/canvas.html` (re-export with `python3 design/export.py`)
 **Depends on:** T-026 (auth plumbing, proxy, shadcn components)
 
@@ -60,7 +60,7 @@ Playwright and new vitest tests are out of scope (see CLAUDE.md). Each screen an
 ### Open questions
 - R6.4 asks for change rounds **per article**; the Report frame shows only the average. **Default:** add a "Change rounds" list (title + rounds, linked) styled like Upcoming.
 - `/review/[token]` at `lg`+ with nothing selected has no frame. **Default:** list plus a reader placeholder ("Choose an article to read"); when exactly one article is waiting, open it.
-- The Test connection button and the Sites list's connection status and counts have no API yet (see T-031's design follow-ups). **Default:** build them on a small fixture-only extension of the generated site type in `modules/sites/fixtures/`, the only exception to "API types are generated". It goes away when a follow-up API ticket adds the fields, or the UI drops them.
+- The Test connection button and the Sites list's connection status and counts have no API yet (see T-031's design follow-ups). **Default:** build them on a small fixture-only extension of the generated site type in `modules/sites/fixtures/`, the only exception to "API types are generated". It goes away when a follow-up API ticket adds the fields, or the UI drops them. **Resolved:** T-031 added the fields and the endpoints; the extension is gone.
 
 ### Decisions
 Update these docs as part of this ticket:
@@ -79,22 +79,22 @@ Update these docs as part of this ticket:
 - [x] Every state in the table is built. (The `fixture_scenario` cookie went away with the fixtures in T-027; states are now reached with real data.)
 - [x] Every read goes through `modules/<m>/data.ts` and every mutation through `modules/<m>/actions.ts`.
 - [x] `pnpm typecheck` passes with types from `lib/api/schema.ts` only.
-- [ ] Checked by hand at 375, 768 and 1280px: content, no horizontal scroll, keyboard reach. Runs with the T-028/T-029/T-032 browser pass.
+- [x] Checked by hand at 375, 768 and 1280px: content, no horizontal scroll, keyboard reach. Runs with the T-028/T-029/T-032 browser pass.
 - [x] Old `/import`, `/articles`, `/report` routes removed; proxy guards `/sites/:path*`. (No proxy test exists to update.)
 - [x] Docs updated per Decisions.
 
 ## Tasks
-- [ ] Tokens in `globals.css`; restyle `StatusBadge`, `SyncWarningBadge`, `WordPressBanner`.
-- [ ] Route restructure to `app/sites/[siteId]/...`; update `proxy.ts` and its tests.
-- [ ] Shell restyle with site switcher and "All sites".
-- [ ] `modules/<m>/data.ts` and `fixtures/` for sites, articles, report, review, with scenarios.
-- [ ] `pnpm add @tiptap/react @tiptap/pm @tiptap/starter-kit @tiptap/extension-table` (Tiptap 3's StarterKit includes Link; `TableKit` covers row/cell/header); `ArticleEditor`.
-- [ ] Login restyle.
-- [ ] Sites: list, zero-sites state, Add site dialog, switcher menu.
-- [ ] Import, Articles, Detail, Report.
-- [ ] Review page, reader, decision panel, request-changes form (bottom bar and side panel), desktop 3-column layout.
-- [ ] Hand check of every screen and scenario at 375, 768 and 1280px.
-- [ ] Docs: workflow.md, plan README, architecture.md, spec.md.
+- [x] Tokens in `globals.css`; restyle `StatusBadge`, `SyncWarningBadge`, `WordPressBanner`.
+- [x] Route restructure to `app/sites/[siteId]/...`; update `proxy.ts` (it has no tests).
+- [x] Shell restyle with site switcher and "All sites".
+- [x] `modules/<m>/data.ts` and `fixtures/` for sites, articles, report, review, with scenarios. (Fixtures deleted in T-027 once wired.)
+- [x] `pnpm add @tiptap/react @tiptap/pm @tiptap/starter-kit @tiptap/extension-table` (Tiptap 3's StarterKit includes Link; `TableKit` covers row/cell/header); `ArticleEditor`.
+- [x] Login restyle.
+- [x] Sites: list, zero-sites state, Add site dialog, switcher menu.
+- [x] Import, Articles, Detail, Report.
+- [x] Review page, reader, decision panel, request-changes form (bottom bar and side panel), desktop 3-column layout.
+- [x] Hand check of every screen and scenario at 375, 768 and 1280px.
+- [x] Docs: workflow.md, plan README, architecture.md, spec.md.
 
 ### Added after review
 - **Delete drafts** (spec R2.5, API in T-034): checkboxes on deletable rows of the Articles list with a sticky "n selected · Delete" bar (one call per article, failures reported), Delete on Article detail, and Delete on each upload result. Every delete asks for confirmation. Fixture: `deleteArticle(siteId, id)`, `409 not_deletable` outside Draft and Changes requested.

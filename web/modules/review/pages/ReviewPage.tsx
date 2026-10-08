@@ -162,7 +162,7 @@ function CardGroup({
             <a
               href={card.published_url}
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer"
               className="text-foreground/65 hover:text-foreground inline-flex shrink-0 items-center gap-1 text-[13px]"
             >
               View <ExternalLink className="size-3" />

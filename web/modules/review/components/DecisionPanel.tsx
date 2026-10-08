@@ -350,7 +350,7 @@ function ReadOnlyPanel({
           <a
             href={card.published_url}
             target="_blank"
-            rel="noreferrer"
+            rel="noopener noreferrer"
             className="text-foreground/70 hover:text-foreground inline-flex items-center gap-1.5 hover:underline"
           >
             View the live page <ExternalLink className="size-3.5" />

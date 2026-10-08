@@ -3,6 +3,7 @@
 import {
   ArrowLeft,
   CalendarDays,
+  CalendarX2,
   ChevronDown,
   ExternalLink,
   Loader2,
@@ -39,6 +40,7 @@ import {
   pullBack,
   retryArticle,
   sendForReview,
+  unscheduleArticle,
   updateArticle,
 } from "@/modules/articles/actions";
 
@@ -49,7 +51,8 @@ import { ScheduleDialog } from "./ScheduleDialog";
 type Article = Schemas["ArticleDetail"];
 
 const EDITABLE = new Set<Article["status"]>(["draft", "changes_requested"]);
-const RESETS_APPROVAL = new Set<Article["status"]>(["approved", "scheduled"]);
+// Scheduled is read-only (like Awaiting approval): unschedule it first.
+const RESETS_APPROVAL = new Set<Article["status"]>(["approved"]);
 
 const EVENT_TEXT: Record<Schemas["EventType"], string> = {
   imported: "imported the article",
@@ -60,6 +63,7 @@ const EVENT_TEXT: Record<Schemas["EventType"], string> = {
   changes_requested: "requested changes",
   scheduled: "scheduled",
   date_changed: "changed the publish date",
+  unscheduled: "took it off the schedule",
   published: "published",
   failed: "publish failed",
   retried: "retried",
@@ -217,43 +221,84 @@ export function ArticleDetail({
           </Button>
         );
       case "approved":
-      case "scheduled":
         return unlocked ? null : (
           <ScheduleDialog
             siteId={siteId}
             articleId={article.id}
             title={article.title}
-            current={article.publish_at_utc}
             trigger={
               <Button>
-                <CalendarDays />
-                {article.status === "approved" ? "Set date" : "Change date"}
+                <CalendarDays /> Set date
               </Button>
             }
           />
         );
+      case "scheduled":
+        return (
+          <>
+            <Button
+              variant="outline"
+              onClick={() =>
+                run(
+                  "unschedule",
+                  () => unscheduleArticle(siteId, article.id),
+                  "Taken off the schedule.",
+                )
+              }
+              disabled={pending}
+            >
+              {spinner("unschedule") ?? <CalendarX2 />}
+              Unschedule
+            </Button>
+            <ScheduleDialog
+              siteId={siteId}
+              articleId={article.id}
+              title={article.title}
+              current={article.publish_at_utc}
+              trigger={
+                <Button>
+                  <CalendarDays /> Change date
+                </Button>
+              }
+            />
+          </>
+        );
       case "failed":
         return (
-          <Button
-            onClick={() =>
-              run(
-                "retry",
-                () => retryArticle(siteId, article.id),
-                "Sent to WordPress again.",
-              )
-            }
-            disabled={pending}
-          >
-            {spinner("retry") ?? <RotateCw />}
-            Retry
-          </Button>
+          <>
+            {/* A new date, for when the one Retry would reuse has passed. */}
+            <ScheduleDialog
+              siteId={siteId}
+              articleId={article.id}
+              title={article.title}
+              current={article.publish_at_utc}
+              trigger={
+                <Button variant="outline">
+                  <CalendarDays /> Set date
+                </Button>
+              }
+            />
+            <Button
+              onClick={() =>
+                run(
+                  "retry",
+                  () => retryArticle(siteId, article.id),
+                  "Sent to WordPress again.",
+                )
+              }
+              disabled={pending}
+            >
+              {spinner("retry") ?? <RotateCw />}
+              Retry
+            </Button>
+          </>
         );
       case "published":
         return article.published_url ? (
           <a
             href={article.published_url}
             target="_blank"
-            rel="noreferrer"
+            rel="noopener noreferrer"
             className={buttonVariants()}
           >
             <ExternalLink /> View live
@@ -415,10 +460,7 @@ export function ArticleDetail({
           <DialogTitle>Edit this article?</DialogTitle>
           <DialogDescription>
             Editing resets the client&apos;s approval. Saving moves the article
-            back to Draft
-            {article.status === "scheduled" &&
-              " and unschedules it in WordPress"}
-            , and the client has to approve it again.
+            back to Draft, and the client has to approve it again.
           </DialogDescription>
           <DialogFooter>
             <DialogClose render={<Button variant="ghost" />}>
@@ -458,9 +500,17 @@ function StatusNotice({
             tone: "info",
             text: "Waiting for the client. Pull it back to edit.",
           }
-        : unlocked
-          ? { tone: "warn", text: "Saving will reset the client's approval." }
-          : null;
+        : article.status === "scheduled"
+          ? {
+              tone: "info",
+              text: "Scheduled in WordPress. Unschedule it to edit.",
+            }
+          : unlocked
+            ? {
+                tone: "warn",
+                text: "Edit the article, then Save. Saving moves it back to Draft and resets the client's approval.",
+              }
+            : null;
   if (!notice) return null;
   return (
     <div

@@ -439,8 +439,13 @@ The Terraform state bucket is the one GCP resource you create by hand, before th
 
 ### CI pipeline
 
-1. `ci.yml`, on every push: `ruff` lint, `import-linter`, unit tests, then integration tests against the Firestore emulator and a WordPress container.
-2. `deploy.yml`, on main: build the API and web images, push them to Artifact Registry tagged with the commit hash, then run `terraform apply` with the new tags.
+1. `ci.yml`, on pushes to `main` and on pull requests. Three parallel jobs mirror `make lint` and `make test`:
+   - `server`: `ruff check`, `ruff format --check`, `lint-imports`, `pytest -m "not integration"`.
+   - `web`: `pnpm lint`, `format:check`, `typecheck`, `test`, then `pnpm build` with placeholder `NEXT_PUBLIC_FIREBASE_*` values.
+   - `api-types`: `make gen-api`, then `git diff --exit-code web/lib/api/`. It fails when the API changed and the types weren't regenerated.
+
+   A newer push cancels the older run on the same ref. Integration tests are not in CI: they need the emulators and WordPress. Run `make test-integration` by hand before a deploy that touches the adapters.
+2. `deploy.yml`, on main: build the API and web images, push them to Artifact Registry tagged with the commit hash, and deploy them to Cloud Run (T-045).
 
 **Decision:** GitHub logs in to GCP with Workload Identity Federation instead of a JSON key file. Each run gets a short-lived token, so no long-lived secret sits in the repo settings.
 

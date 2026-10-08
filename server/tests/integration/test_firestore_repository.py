@@ -42,7 +42,10 @@ def repository(monkeypatch, site_id):
     monkeypatch.setenv("FIRESTORE_EMULATOR_HOST", FIRESTORE_EMULATOR_HOST)
     monkeypatch.setenv("GOOGLE_CLOUD_PROJECT", PROJECT_ID)
     client = firestore.Client()
-    return FirestoreArticleRepository(client, site_id=site_id)
+    yield FirestoreArticleRepository(client, site_id=site_id)
+    # The emulator is shared with the dev stack; leftover test sites would
+    # show up in its sites list.
+    FirestoreSiteRepository(client).delete_site(site_id)
 
 
 def _site(

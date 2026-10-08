@@ -5,6 +5,7 @@ import pytest
 from google.cloud import firestore
 
 from app.adapters.firestore.repository import FirestoreArticleRepository
+from app.adapters.firestore.site_repository import FirestoreSiteRepository
 from app.adapters.testing.clock import FixedClock
 from app.adapters.testing.scripted_publisher import ScriptedPublisher
 from app.core.domain.models import Article, Event, Site
@@ -29,7 +30,9 @@ def repository(monkeypatch, site_id):
     monkeypatch.setenv("FIRESTORE_EMULATOR_HOST", FIRESTORE_EMULATOR_HOST)
     monkeypatch.setenv("GOOGLE_CLOUD_PROJECT", PROJECT_ID)
     client = firestore.Client()
-    return FirestoreArticleRepository(client, site_id=site_id)
+    yield FirestoreArticleRepository(client, site_id=site_id)
+    # The emulator is shared with the dev stack; don't leave test sites behind.
+    FirestoreSiteRepository(client).delete_site(site_id)
 
 
 def _article(id_: str, status: Status, **overrides) -> Article:

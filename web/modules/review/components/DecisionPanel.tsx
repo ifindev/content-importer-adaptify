@@ -178,7 +178,7 @@ export function DecisionPanel({
       {/* lg+: side panel */}
       <aside
         aria-label="Your decision"
-        className="hidden w-[320px] shrink-0 border-l p-6 lg:block"
+        className="hidden w-[320px] shrink-0 overflow-y-auto border-l p-6 lg:block"
       >
         <div className="sticky top-6 flex flex-col gap-4">
           {mode === "decide" ? (
@@ -333,7 +333,7 @@ function ReadOnlyPanel({
   return (
     <aside
       aria-label="Status"
-      className="border-t px-5 py-4 lg:w-[320px] lg:shrink-0 lg:border-t-0 lg:border-l lg:p-6"
+      className="border-t px-5 py-4 lg:w-[320px] lg:shrink-0 lg:overflow-y-auto lg:border-t-0 lg:border-l lg:p-6"
     >
       <div className="flex flex-col gap-2 text-[13.5px] lg:sticky lg:top-6">
         <h2 className="text-[15px] font-semibold">

@@ -20,7 +20,10 @@ export async function ReviewShell({
   if (!review) return <RateLimited href={`/review/${token}`} />;
 
   return (
-    <div className="bg-app flex min-h-svh flex-col">
+    // lg+: pinned to the viewport, so the list, the reader and the decision
+    // panel each scroll on their own. Below lg the document scrolls, which
+    // the sticky mobile decision bar relies on.
+    <div className="bg-app flex min-h-svh flex-col lg:h-svh lg:overflow-hidden">
       <header className="bg-background flex h-14 shrink-0 items-center gap-3 border-b px-4 lg:px-6">
         <span
           aria-hidden

@@ -31,7 +31,7 @@ export async function ReviewArticlePage({
           ...review.published,
         ].find((c) => c.id === article.id);
         return (
-          <main className="bg-background flex min-w-0 flex-1 flex-col lg:m-3 lg:ml-0 lg:flex-row lg:overflow-hidden lg:rounded-xl lg:border lg:shadow-[0_1px_3px_oklch(0_0_0/0.04)]">
+          <main className="bg-background flex min-w-0 flex-1 flex-col lg:m-3 lg:ml-0 lg:min-h-0 lg:flex-row lg:overflow-hidden lg:rounded-xl lg:border lg:shadow-[0_1px_3px_oklch(0_0_0/0.04)]">
             <article className="min-w-0 flex-1 overflow-y-auto px-5 pt-3 pb-8 lg:px-14 lg:pt-12 lg:pb-16">
               <Link
                 href={`/review/${token}`}

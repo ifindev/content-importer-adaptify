@@ -215,9 +215,7 @@ web/
 │   │   ├── components/                   # all components of this domain, no smart/dumb split
 │   │   ├── data.ts                       # reads: the only data import for pages
 │   │   ├── actions.ts                    # writes: importable from client components
-│   │   ├── fixtures/                     # T-033 only; deleted at wiring
-│   │   ├── repository/                   # T-027: articles.queries.ts, articles.mutations.ts ("use server")
-│   │   └── schemas/                      # zod: form and URL filter schemas
+│   │   └── repository/                   # articles.queries.ts, articles.mutations.ts ("use server")
 │   ├── sites/                            # sites list, Add site dialog, site switcher
 │   ├── review/                           # same shape
 │   ├── report/
@@ -234,7 +232,7 @@ web/
     ├── api/schema.ts                     # GENERATED from FastAPI openapi.json, never edited
     ├── api/types.ts                      # ApiResponse<>, Schemas alias
     ├── error-messages.ts                 # messageFor(code)
-    ├── fixtures/                         # T-033 only: shared seed store + scenario cookie
+    ├── mutation-result.ts                # MutationResult, toResult, orNotFound
     ├── types/page-props.ts
     └── query-string.ts
 ├── proxy.ts                              # optimistic session-cookie redirect (Next 16's middleware)
@@ -261,9 +259,7 @@ export default async function Page({ params }: PageProps<{ id: string }>) {
 
 **Module pages compose, components own their data.** A module page assembles the components a screen needs and passes down IDs. Each component fetches the data it actually needs, instead of one page fetching everything.
 
-**The data seam.** Pages and components get data only from `modules/<m>/data.ts` (reads) and `modules/<m>/actions.ts` (writes). Both are one-line re-exports, so swapping fixtures for the API repository is one change per module. Writes have their own file because a client component can't import a module that also pulls in `server-only` reads.
-
-**Fixtures (until wiring).** In Phase 4 the seam points at `modules/<m>/fixtures/`, typed from `lib/api/schema.ts` with T-027's function signatures. Fixture mutations are real Server Actions: a short delay, then a `MutationResult`, and they change an in-memory store (`lib/fixtures/store.ts`, reset when the dev server restarts). A `fixture_scenario` cookie picks a state: `empty`, `no-sites`, `one-site`, `wordpress-down`, `slow`, `rate-limited`, or `error:<code>` (every mutation fails with that code). The sites fixtures add `connection_ok`, `connection_checked_at` and article counts to `SiteOut`, the one exception to "types come from the API", until an API ticket adds them (T-031's design follow-ups). Fixtures, store and cookie are deleted during wiring.
+**The data seam.** Pages and components get data only from `modules/<m>/data.ts` (reads) and `modules/<m>/actions.ts` (writes). Both are one-line re-exports of the module's `repository/`. Writes have their own file because a client component can't import a module that also pulls in `server-only` reads.
 
 **Reads are Server Components, writes are Server Actions.**
 
@@ -281,7 +277,7 @@ Mark a function `"use server"` only if a Client Component calls it. After a writ
 
 **Types come from the API.** FastAPI publishes `openapi.json` from its Pydantic schemas. `openapi-typescript` turns it into `lib/api/schema.ts` (`pnpm gen:api`). Request and response types are taken from there, so the frontend and server can't drift apart. There is no shared contracts package, since the server is Python. When the API changes, regenerate the file and fix what the type checker reports.
 
-**Zod is for the UI only.** Form schemas and URL filter schemas live in each module's `schemas/`. The mutation maps form values to the API request shape. FastAPI does the real validation.
+**Validation.** Forms use native `required` and small inline checks; FastAPI does the real validation and its error codes are shown with `messageFor`. No zod schemas until a form needs more than that.
 
 **Expected errors are returned, not thrown.** In production, Next.js removes the message of an error thrown from a Server Action. So mutations return a result:
 
@@ -289,7 +285,7 @@ Mark a function `"use server"` only if a Client Component calls it. After a writ
 type MutationResult<T> = { ok: true; data: T } | { ok: false; code: string }
 ```
 
-`code` carries the API's error code, for example `article_changed` or `not_awaiting_approval`. Mutations throw only on real failures (network down, 500).
+`code` carries the API's error code, for example `article_changed` or `not_awaiting_approval`. Every mutation wraps its API call in `toResult` (`lib/mutation-result.ts`): a 4xx becomes `{ ok: false, code }`, anything else is thrown to the route's `error.tsx`. Reads wrap theirs in `orNotFound`, so an API 404 renders Next's not-found page. A 401 never reaches either: `apiServer()` redirects to `/login` first.
 
 **Filters live in the URL.** The articles status filter is a search param. Filter components call `useFilterParams().setParams({...})`, which merges changes into the current URL. The Server Component reads `searchParams` and refetches. Filtered views can be bookmarked, and the back button works.
 
@@ -365,6 +361,18 @@ The app runs on GCP. WordPress runs on your own VPS in Docker. Locally, everythi
 
 
 The Firestore adapter needs no code swap locally: setting `FIRESTORE_EMULATOR_HOST` points the same code at the emulator. The WordPress adapter only changes its base URL and password.
+
+**Adding the local WordPress as a site.** Run `make wp-setup` first; it writes the application password to `.env` (`WP_APP_PASSWORD`). Then, in Add site:
+
+| Field | Value | Why |
+| --- | --- | --- |
+| WordPress URL | `http://wordpress` | The API calls WordPress from its container, where `localhost:8080` is the API itself. `wordpress` is the compose service name. Post links still use `localhost:8080`, WordPress's own address. |
+| WordPress username | `admin` | The account `make wp-setup` creates |
+| Application password | `WP_APP_PASSWORD` from `.env` | Not the admin login password |
+
+**http:// is local only.** An `http://` URL sends the app password unencrypted. The API rejects one with `422 insecure_url` unless `APP_ENV` is `local` or `test` (`Container.allow_http_wordpress`), and the Add/Edit site dialog only accepts and mentions `http://` when the web app's `APP_ENV` is `local`.
+
+Set `CREDENTIAL_ENCRYPTION_KEY` in `.env`. Without it the API makes a new key on each start, and sites saved earlier no longer decrypt (they show as unreachable).
 
 ## Deployment and CI
 

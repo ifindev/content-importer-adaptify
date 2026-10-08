@@ -39,7 +39,7 @@ async def list_articles(
     clock: Clock = Depends(get_clock),
     cache: SyncCache = Depends(get_sync_cache),
 ) -> ArticlesOut:
-    result = await sync_statuses(ctx.repository, ctx.publisher, clock, cache)
+    result = await sync_statuses(ctx.repository, ctx.publisher, clock, cache, site_id=ctx.site_id)
     articles = ctx.repository.list_articles(status=status)
     return ArticlesOut(
         articles=[ArticleSummary(**a.model_dump()) for a in articles],

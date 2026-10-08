@@ -16,9 +16,14 @@ from app.core.use_cases.sync_status import SyncCache, sync_statuses
 
 
 async def build_report(
-    repository: ArticleRepository, publisher: Publisher, clock: Clock, cache: SyncCache
+    repository: ArticleRepository,
+    publisher: Publisher,
+    clock: Clock,
+    cache: SyncCache,
+    *,
+    site_id: str,
 ) -> tuple[Report, bool]:
-    sync_result = await sync_statuses(repository, publisher, clock, cache)
+    sync_result = await sync_statuses(repository, publisher, clock, cache, site_id=site_id)
     articles = repository.list_articles()
     events_by_article = {a.id: repository.list_events(a.id) for a in articles}
     now = clock.now()

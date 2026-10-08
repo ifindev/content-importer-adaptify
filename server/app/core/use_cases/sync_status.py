@@ -20,24 +20,25 @@ class SyncResult:
 
 
 class SyncCache:
-    """One-slot TTL cache, single process.
+    """TTL cache, one entry per site, single process.
 
     ponytail: swap for a shared cache (Redis etc.) if this ever runs multi-process.
     """
 
     def __init__(self) -> None:
-        self._entry: tuple[datetime, SyncResult] | None = None
+        self._entries: dict[str, tuple[datetime, SyncResult]] = {}
 
-    def get(self, now: datetime) -> SyncResult | None:
-        if self._entry is None:
+    def get(self, site_id: str, now: datetime) -> SyncResult | None:
+        entry = self._entries.get(site_id)
+        if entry is None:
             return None
-        cached_at, result = self._entry
+        cached_at, result = entry
         if (now - cached_at).total_seconds() >= CACHE_TTL_SECONDS:
             return None
         return result
 
-    def set(self, now: datetime, result: SyncResult) -> None:
-        self._entry = (now, result)
+    def set(self, site_id: str, now: datetime, result: SyncResult) -> None:
+        self._entries[site_id] = (now, result)
 
 
 def map_wp_status(
@@ -64,10 +65,15 @@ def _needs_recheck(article: Article, now: datetime) -> bool:
 
 
 async def sync_statuses(
-    repository: ArticleRepository, publisher: Publisher, clock: Clock, cache: SyncCache
+    repository: ArticleRepository,
+    publisher: Publisher,
+    clock: Clock,
+    cache: SyncCache,
+    *,
+    site_id: str,
 ) -> SyncResult:
     now = clock.now()
-    cached = cache.get(now)
+    cached = cache.get(site_id, now)
     if cached is not None:
         return cached
 
@@ -79,14 +85,14 @@ async def sync_statuses(
 
     if not checkable:
         result = SyncResult(unreachable=False)
-        cache.set(now, result)
+        cache.set(site_id, now, result)
         return result
 
     try:
         statuses = await publisher.get_statuses([a.wp_post_id for a in checkable if a.wp_post_id])
     except WordPressError:
         result = SyncResult(unreachable=True)
-        cache.set(now, result)
+        cache.set(site_id, now, result)
         return result
 
     by_id = {s.id: s for s in statuses}
@@ -111,5 +117,5 @@ async def sync_statuses(
             )
 
     result = SyncResult(unreachable=False)
-    cache.set(now, result)
+    cache.set(site_id, now, result)
     return result

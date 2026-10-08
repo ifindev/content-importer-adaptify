@@ -72,7 +72,9 @@ async def test_sync_detects_post_changed_to_draft(
         )
         repository.create_article(article)
 
-        result = await sync_statuses(repository, publisher, FixedClock(now), SyncCache())
+        result = await sync_statuses(
+            repository, publisher, FixedClock(now), SyncCache(), site_id="s1"
+        )
 
         assert result.unreachable is False
         updated = repository.get_article("a1")

@@ -40,7 +40,7 @@ async def get_review(
     cache: SyncCache = Depends(get_sync_cache),
 ) -> ReviewPageOut:
     check_rate_limit(_client_ip(request))
-    result = await sync_statuses(ctx.repository, ctx.publisher, clock, cache)
+    result = await sync_statuses(ctx.repository, ctx.publisher, clock, cache, site_id=ctx.site_id)
     site, groups = get_review_page(ctx.repository, token)
     return ReviewPageOut(
         site_name=site.name,

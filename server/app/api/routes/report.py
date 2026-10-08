@@ -25,7 +25,9 @@ async def get_report(
     clock: Clock = Depends(get_clock),
     cache: SyncCache = Depends(get_sync_cache),
 ) -> ReportOut:
-    report, unreachable = await build_report(ctx.repository, ctx.publisher, clock, cache)
+    report, unreachable = await build_report(
+        ctx.repository, ctx.publisher, clock, cache, site_id=ctx.site_id
+    )
     return ReportOut(
         status_counts=report.status_counts,
         published_this_month=report.published_this_month,

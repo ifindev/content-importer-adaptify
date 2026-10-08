@@ -66,7 +66,7 @@ async def test_publish_result_transitions_scheduled_to_published(
         PostStatus(id=1, status="publish", link="https://example.com/a1", date_gmt=PAST)
     ]
 
-    result = await sync_statuses(repository, publisher, clock, cache)
+    result = await sync_statuses(repository, publisher, clock, cache, site_id="s1")
 
     assert result.unreachable is False
     updated = repository.get_article("a1")
@@ -83,7 +83,7 @@ async def test_future_but_passed_shows_late_without_changing_status(
     repository.create_article(_article("a1", Status.SCHEDULED, wp_post_id=1))
     publisher.get_statuses_result = [PostStatus(id=1, status="future", link=None, date_gmt=PAST)]
 
-    await sync_statuses(repository, publisher, clock, cache)
+    await sync_statuses(repository, publisher, clock, cache, site_id="s1")
 
     updated = repository.get_article("a1")
     assert updated.status == Status.SCHEDULED
@@ -94,7 +94,7 @@ async def test_future_ahead_has_no_warning(repository, clock, publisher, cache):
     repository.create_article(_article("a1", Status.SCHEDULED, wp_post_id=1))
     publisher.get_statuses_result = [PostStatus(id=1, status="future", link=None, date_gmt=FUTURE)]
 
-    await sync_statuses(repository, publisher, clock, cache)
+    await sync_statuses(repository, publisher, clock, cache, site_id="s1")
 
     updated = repository.get_article("a1")
     assert updated.status == Status.SCHEDULED
@@ -108,7 +108,7 @@ async def test_draft_or_private_shows_changed_without_changing_status(
     repository.create_article(_article("a1", Status.SCHEDULED, wp_post_id=1))
     publisher.get_statuses_result = [PostStatus(id=1, status=wp_status, link=None, date_gmt=None)]
 
-    await sync_statuses(repository, publisher, clock, cache)
+    await sync_statuses(repository, publisher, clock, cache, site_id="s1")
 
     updated = repository.get_article("a1")
     assert updated.status == Status.SCHEDULED
@@ -121,7 +121,7 @@ async def test_missing_from_reply_shows_missing_without_changing_status(
     repository.create_article(_article("a1", Status.SCHEDULED, wp_post_id=1))
     publisher.get_statuses_result = []
 
-    await sync_statuses(repository, publisher, clock, cache)
+    await sync_statuses(repository, publisher, clock, cache, site_id="s1")
 
     updated = repository.get_article("a1")
     assert updated.status == Status.SCHEDULED
@@ -135,7 +135,7 @@ async def test_wordpress_failure_changes_nothing_and_flags_unreachable(
     repository.create_article(article)
     publisher.get_statuses_error = WordPressError(503, "unavailable")
 
-    result = await sync_statuses(repository, publisher, clock, cache)
+    result = await sync_statuses(repository, publisher, clock, cache, site_id="s1")
 
     assert result.unreachable is True
     assert repository.get_article("a1") == article
@@ -153,8 +153,8 @@ async def test_cache_hit_within_ttl_calls_publisher_once(repository, clock, publ
 
     publisher.get_statuses = _tracked
 
-    await sync_statuses(repository, publisher, clock, cache)
-    await sync_statuses(repository, publisher, clock, cache)
+    await sync_statuses(repository, publisher, clock, cache, site_id="s1")
+    await sync_statuses(repository, publisher, clock, cache, site_id="s1")
 
     assert len(calls) == 1
 
@@ -171,7 +171,7 @@ async def test_published_recheck_throttle(repository, clock, publisher, cache):
     repository.create_article(stale)
     publisher.get_statuses_result = [PostStatus(id=2, status="publish", link=None, date_gmt=PAST)]
 
-    await sync_statuses(repository, publisher, clock, cache)
+    await sync_statuses(repository, publisher, clock, cache, site_id="s1")
 
     assert repository.get_article("fresh").last_checked_at == NOW
     assert repository.get_article("stale").last_checked_at == NOW
@@ -183,6 +183,19 @@ async def test_no_checkable_articles_skips_wordpress_call(repository, clock, pub
 
     publisher.get_statuses = _fail
 
-    result = await sync_statuses(repository, publisher, clock, cache)
+    result = await sync_statuses(repository, publisher, clock, cache, site_id="s1")
 
     assert result.unreachable is False
+
+
+async def test_cache_is_per_site(repository, clock, publisher, cache):
+    repository.create_article(_article("a1", Status.SCHEDULED, wp_post_id=1))
+    publisher.get_statuses_error = WordPressError(0, "transport_error", "down")
+    site_a = await sync_statuses(repository, publisher, clock, cache, site_id="a")
+
+    publisher.get_statuses_error = None
+    publisher.get_statuses_result = [PostStatus(id=1, status="future", link=None, date_gmt=None)]
+    site_b = await sync_statuses(repository, publisher, clock, cache, site_id="b")
+
+    # Site A's cached "unreachable" doesn't leak into site B, and B still checks.
+    assert (site_a.unreachable, site_b.unreachable) == (True, False)

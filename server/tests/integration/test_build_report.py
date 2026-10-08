@@ -67,7 +67,7 @@ async def test_build_report_over_a_seeded_article_set(repository, site_id):
     )
 
     report, unreachable = await build_report(
-        repository, ScriptedPublisher(), FixedClock(NOW), SyncCache()
+        repository, ScriptedPublisher(), FixedClock(NOW), SyncCache(), site_id=site_id
     )
 
     assert unreachable is False

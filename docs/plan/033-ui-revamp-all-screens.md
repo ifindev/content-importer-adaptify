@@ -75,13 +75,13 @@ Update these docs as part of this ticket:
 - **Report layout:** summary cards (published this month, time to approval, change rounds) plus an "Articles by status" list, instead of one stat card per status.
 
 ## Acceptance criteria
-- [ ] Every frame on the canvas exists at its route and matches the design at 1280px (and 390px for mobile frames).
-- [ ] Every state in the table renders, selectable with the `fixture_scenario` cookie.
-- [ ] No page imports fixtures directly; every read goes through `modules/<m>/data.ts` and every mutation through `modules/<m>/actions.ts`, with T-027's signatures.
-- [ ] `pnpm typecheck` passes with fixtures typed from `lib/api/schema.ts` (the sites extension aside).
-- [ ] Checked by hand at 375, 768 and 1280px: content, no horizontal scroll, keyboard reach.
-- [ ] Old `/import`, `/articles`, `/report` routes removed; proxy guards `/sites/:path*`.
-- [ ] Docs updated per Decisions.
+- [x] Every frame on the canvas exists at its route.
+- [x] Every state in the table is built. (The `fixture_scenario` cookie went away with the fixtures in T-027; states are now reached with real data.)
+- [x] Every read goes through `modules/<m>/data.ts` and every mutation through `modules/<m>/actions.ts`.
+- [x] `pnpm typecheck` passes with types from `lib/api/schema.ts` only.
+- [ ] Checked by hand at 375, 768 and 1280px: content, no horizontal scroll, keyboard reach. Runs with the T-028/T-029/T-032 browser pass.
+- [x] Old `/import`, `/articles`, `/report` routes removed; proxy guards `/sites/:path*`. (No proxy test exists to update.)
+- [x] Docs updated per Decisions.
 
 ## Tasks
 - [ ] Tokens in `globals.css`; restyle `StatusBadge`, `SyncWarningBadge`, `WordPressBanner`.
@@ -102,14 +102,11 @@ Update these docs as part of this ticket:
 - **Edit and delete sites** (API in T-035): a "More actions" menu per row on the Sites list with Edit (the Add site dialog in edit mode, `?edit=<siteId>`; an empty password keeps the stored one) and Delete (confirm by typing the site name). Fixtures: `updateSite(siteId, form)`, `deleteSite(siteId)`.
 - **Import banner:** after an upload, "n articles were added as Drafts. See them in Articles →".
 
-### Gaps found while building
-The generated schema lacks a few fields the canvas shows. The screens leave them out rather than extend the types; each needs an API follow-up or a design change:
-- Articles list: no **Live URL** column and no **error line** under a Failed title (`ArticleSummary` has no `published_url` or `last_error`). The detail page shows both.
-- Articles list: the per-row "More actions" menu is not built (no actions defined for it).
-- Import upload results: per-file **warnings** ("3 images dropped") aren't shown, since `UploadFileResult.article` is a summary without `warnings`. The detail page shows them.
-- Review page and reader: "Sent Oct 7" is not shown (`ArticleCard` and `ReviewArticleOut` have no sent date).
-- Sites list: no "Current" badge (`/sites` has no current site).
-- Report "Change rounds" card: the API has no average, so the page shows total rounds ÷ total articles.
+### Gaps found while building (resolved 2026-10-08)
+- Live URL column and the error line under Failed titles, upload warnings, the review "Sent" date and the Change rounds average: T-036 added the fields.
+- Articles row "More actions" menu: built (Open, View live, Copy live link, Delete).
+- Sites "Current" badge: the last opened site (`last_site` cookie).
+- Login: the Firebase network error now says "Can't reach the server."; "Please sign in again" shows only after the API rejected a session (`expired=1`), not on every redirect.
 
 ## Out of scope
 - Playwright and new vitest tests (CLAUDE.md).

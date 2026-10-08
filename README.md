@@ -17,8 +17,8 @@
 </p>
 
 **Live:**
-- **App:** [importer-app.aiwitharifin.com](https://importer-app.aiwitharifin.com). The agency signs in here, and clients open their review links here.
-- **API docs (Swagger):** [importer-api.aiwitharifin.com/docs](https://importer-api.aiwitharifin.com/docs). Every endpoint, with its request and response schemas.
+- **App:** [importer-app.aiwitharifin.com](https://importer-app.aiwitharifin.com). 
+- **API docs (Swagger):** [importer-api.aiwitharifin.com/docs](https://importer-api.aiwitharifin.com/docs). 
 
 ## Why I built this
 

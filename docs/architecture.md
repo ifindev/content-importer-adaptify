@@ -273,7 +273,7 @@ Mark a function `"use server"` only if a Client Component calls it. After a writ
 
 **The API client.** `lib/http.ts` holds a generic `HttpClient` with `get`, `post`, `patch`, `delete`, and `postForm` (multipart, for `.docx` upload). `lib/api-server.ts` creates the one instance the app uses. It imports `server-only`, so the build fails if browser code ever imports it. On every request it adds:
 - the agency session cookie (see [Auth](#auth)), and
-- the client's IP in `X-Forwarded-For`, so FastAPI can rate-limit per client.
+- the client's IP in `X-Client-IP`, with the shared `INTERNAL_API_SECRET` in `X-Internal-Secret`, so FastAPI can rate-limit per client. The IP is the last `X-Forwarded-For` entry, the one the nearest proxy appended (Next sets it to the socket address when there's none). FastAPI trusts `X-Client-IP` only with the right secret and otherwise uses the connecting address, so a client can't pick its own bucket. The limit is a router dependency on the client routes, so it runs before the token lookup.
 
 **Types come from the API.** FastAPI publishes `openapi.json` from its Pydantic schemas. `openapi-typescript` turns it into `lib/api/schema.ts` (`pnpm gen:api`). Request and response types are taken from there, so the frontend and server can't drift apart. There is no shared contracts package, since the server is Python. When the API changes, regenerate the file and fix what the type checker reports.
 
@@ -340,7 +340,7 @@ The app runs on GCP. WordPress runs on your own VPS in Docker. Locally, everythi
 | Cloud Run                                           | Two services: API and web. Both scale to zero when idle. |
 | Firestore                                           | All app data                                             |
 | Firebase Auth                                       | One agency login                                         |
-| Secret Manager                                      | `CREDENTIAL_ENCRYPTION_KEY` (encrypts each site's WordPress app password in Firestore); LangSmith key (P2) |
+| Secret Manager                                      | `CREDENTIAL_ENCRYPTION_KEY` (encrypts each site's WordPress app password in Firestore); `INTERNAL_API_SECRET` (web → API client IP); LangSmith key (P2) |
 | Artifact Registry                                   | Docker images                                            |
 | Vertex AI                                           | Gemini, for P2 only                                      |
 | Cloud Billing budget + Pub/Sub + one small function | Spending alert and kill switch (see Cost and limits)     |
@@ -381,7 +381,7 @@ The Firestore adapter needs no code swap locally: setting `FIRESTORE_EMULATOR_HO
 
 **http:// is local only.** An `http://` URL sends the app password unencrypted. The API rejects one with `422 insecure_url` unless `APP_ENV` is `local` or `test` (`Container.allow_http_wordpress`), and the Add/Edit site dialog only accepts and mentions `http://` when the web app's `APP_ENV` is `local`.
 
-Set `CREDENTIAL_ENCRYPTION_KEY` in `.env`. Without it the API makes a new key on each start, and sites saved earlier no longer decrypt (they show as unreachable).
+Set `CREDENTIAL_ENCRYPTION_KEY` in `.env`. Without it the API makes a new key on each start, and sites saved earlier no longer decrypt (they show as unreachable). Set `INTERNAL_API_SECRET` too (any random string locally); without it every client shares the web container's rate-limit bucket.
 
 ## Deployment and CI
 
@@ -404,7 +404,7 @@ Terraform manages GCP only. The VPS gets set up once by hand from the files in `
 - **Service accounts:** one for the API, one for the web service. Each gets only the roles it needs.
 - **Compute:** Cloud Run services for API and web.
 - **Data:** Firestore database.
-- **Secrets:** Secret Manager entries for `CREDENTIAL_ENCRYPTION_KEY` and the LangSmith key. You add the values by hand once, so they never sit in Terraform state. Each site's own WordPress app password lives encrypted in Firestore, not in Secret Manager (see spec.md's Data model).
+- **Secrets:** Secret Manager entries for `CREDENTIAL_ENCRYPTION_KEY`, `INTERNAL_API_SECRET` (both services read it; the API refuses to start on GCP without it) and the LangSmith key. You add the values by hand once, so they never sit in Terraform state. Each site's own WordPress app password lives encrypted in Firestore, not in Secret Manager (see spec.md's Data model).
 - **Cost backstop:** billing budget, Pub/Sub topic, and the kill-switch function.
 
 The Terraform state bucket is the one GCP resource you create by hand, before the first `terraform init`.

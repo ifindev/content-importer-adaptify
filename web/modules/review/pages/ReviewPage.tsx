@@ -43,6 +43,9 @@ export function ReviewPage({ token }: { token: string }) {
                         <div className="text-[15px] font-medium">
                           {card.title}
                         </div>
+                        <div className="text-muted-foreground mt-0.5 text-[12.5px]">
+                          <CardMeta card={card} waiting />
+                        </div>
                         <Link
                           href={`/review/${token}/articles/${card.id}`}
                           className={buttonVariants({

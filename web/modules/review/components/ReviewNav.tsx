@@ -71,7 +71,14 @@ export function CardMeta({
   card: Schemas["ArticleCard"];
   waiting?: boolean;
 }) {
-  if (waiting) return <>Needs your decision</>;
+  if (waiting)
+    return card.sent_for_review_at ? (
+      <>
+        Sent <LocalTime iso={card.sent_for_review_at} format="short" />
+      </>
+    ) : (
+      <>Needs your decision</>
+    );
   if (!card.publish_at_utc) return null;
   if (card.published_url)
     return <LocalTime iso={card.publish_at_utc} format="short" />;

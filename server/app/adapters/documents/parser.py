@@ -72,7 +72,5 @@ class RealDocumentParser:
         title, body = _clean(result.value)
         warnings = []
         if image_count:
-            warnings.append(
-                f"This document had {image_count} images. Images are not imported."
-            )
+            warnings.append(f"This document had {image_count} images. Images are not imported.")
         return ParsedDocument(title=title, body_html=body, warnings=warnings)

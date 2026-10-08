@@ -64,6 +64,12 @@ Code is done; the boxes above are ticked during the browser pass.
 - The `not_editable` message says to reload; schema validation errors show a message (`validation_error`).
 - Live URL column and the error line under Failed titles (T-036).
 
+## Fixed during the browser pass (2026-10-08)
+- Fresh data: Articles and Article detail refetch on tab focus and from a Refresh button (`RefreshOnFocus`), so a client's decision shows without a reload. Off while the detail has unsaved changes.
+- Activity: each "requested changes" entry opens to show its comment. The "Client feedback" box keeps the client's line breaks.
+- Unschedule trashes the WordPress post (it stayed as a Draft), and the schedule dialog has its own date and time picker where past days and earlier times are faint, disabled text, so nothing under 5 minutes away can be picked (T-039).
+- "Edit anyway" now makes the body editable: `useEditor` reads `editable` once, so `ArticleEditor` calls `setEditable` on change (without an update event, which marked every article as "Unsaved changes" and hid Refresh). Focus lands in the title.
+
 ## Out of scope
 - UI, layout and states (T-033).
 - "Draft this change" (Phase 7). Bulk actions. Image import.

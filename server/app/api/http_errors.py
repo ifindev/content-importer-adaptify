@@ -6,6 +6,10 @@ class SiteNotFoundError(Exception):
     pass
 
 
+class InsecureUrlError(Exception):
+    pass
+
+
 class EmptyUpdateError(Exception):
     pass
 

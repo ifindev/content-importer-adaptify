@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Response
 
 from app.api.auth import require_session
 from app.api.deps import get_clock, get_container
-from app.api.http_errors import EmptyUpdateError, SiteNotFoundError
+from app.api.http_errors import EmptyUpdateError, InsecureUrlError, SiteNotFoundError
 from app.api.schemas.sites import (
     SiteConnectionTest,
     SiteCreate,
@@ -37,12 +37,18 @@ def _get_site(site_id: str, container: Container) -> Site:
     return site
 
 
+def _require_https(url: str | None, container: Container) -> None:
+    if url and not url.startswith("https://") and not container.allow_http_wordpress:
+        raise InsecureUrlError
+
+
 @router.post("/sites", status_code=201)
 async def create_site_route(
     body: SiteCreate,
     container: Container = Depends(get_container),
     clock: Clock = Depends(get_clock),
 ) -> SiteOut:
+    _require_https(body.wp_base_url, container)
     site = await create_site(
         body.name,
         body.wp_base_url,
@@ -62,6 +68,7 @@ async def test_connection_route(
     body: SiteConnectionTest,
     container: Container = Depends(get_container),
 ) -> Response:
+    _require_https(body.wp_base_url, container)
     await check_site_connection(
         body.wp_base_url,
         body.wp_username,
@@ -83,6 +90,7 @@ async def test_site_connection_route(
     Testing exactly what is stored records the result on the site."""
     site = _get_site(site_id, container)
     overrides = body or SiteUpdate()
+    _require_https(overrides.wp_base_url, container)
     try:
         await check_site_connection(
             overrides.wp_base_url or site.wp_base_url,
@@ -137,6 +145,7 @@ async def update_site_route(
     site = _get_site(site_id, container)
     if not any(body.model_dump().values()):
         raise EmptyUpdateError
+    _require_https(body.wp_base_url, container)
     updated = await edit_site(
         site,
         body.name,

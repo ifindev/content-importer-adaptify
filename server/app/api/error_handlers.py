@@ -5,6 +5,7 @@ from app.api.auth import InvalidSessionError
 from app.api.http_errors import (
     ArticleNotFoundError,
     EmptyUpdateError,
+    InsecureUrlError,
     NoFilesError,
     PayloadTooLargeError,
     SiteNotFoundError,
@@ -47,6 +48,7 @@ _SIMPLE_HANDLERS: tuple[tuple[type[Exception], int, str], ...] = (
     (NotDeletableError, 409, "not_deletable"),
     (PublishAtInPastError, 422, "publish_at_in_past"),
     (SiteNotFoundError, 404, "site_not_found"),
+    (InsecureUrlError, 422, "insecure_url"),
 )
 
 

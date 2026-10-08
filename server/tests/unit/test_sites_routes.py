@@ -40,6 +40,7 @@ class FakeContainer:
     site_repository: InMemorySiteRepository
     credential_cipher: FakeCipher
     secret_store: InMemorySecretStore
+    allow_http_wordpress: bool = True
     repos: dict[str, InMemoryArticleRepository] = field(default_factory=dict)
     publisher_calls: list[tuple[str, str, str]] = field(default_factory=list)
 
@@ -253,3 +254,35 @@ def test_site_connection_with_overrides_is_not_recorded(client, container, publi
     assert response.status_code == 422
     assert container.publisher_calls[-1][0] == "https://new.example.com"
     assert container.site_repository.get_site(site_id).connection_ok is True
+
+
+@pytest.mark.parametrize(
+    ("method", "path", "payload"),
+    [
+        ("post", "/sites", {**SITE_PAYLOAD, "wp_base_url": "http://wordpress"}),
+        ("post", "/sites/test-connection", {**SITE_PAYLOAD, "wp_base_url": "http://wordpress"}),
+    ],
+)
+def test_http_url_is_rejected_outside_local(client, container, method, path, payload):
+    container.allow_http_wordpress = False
+
+    response = getattr(client, method)(path, json=payload)
+
+    assert response.status_code == 422
+    assert response.json() == {"code": "insecure_url"}
+    assert container.publisher_calls == []
+
+
+def test_http_url_is_rejected_on_site_edit_and_stored_test(client, container):
+    site_id = client.post("/sites", json=SITE_PAYLOAD).json()["id"]
+    container.allow_http_wordpress = False
+    body = {"wp_base_url": "http://wordpress"}
+
+    assert client.patch(f"/sites/{site_id}", json=body).json() == {"code": "insecure_url"}
+    response = client.post(f"/sites/{site_id}/test-connection", json=body)
+    assert response.json() == {"code": "insecure_url"}
+
+
+def test_http_url_is_allowed_locally(client):
+    payload = {**SITE_PAYLOAD, "wp_base_url": "http://wordpress"}
+    assert client.post("/sites", json=payload).status_code == 201

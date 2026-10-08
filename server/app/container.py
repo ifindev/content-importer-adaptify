@@ -41,6 +41,8 @@ class Container:
     site_repository: SiteRepository
     credential_cipher: CredentialCipher
     firestore_client: Client | None
+    # http:// WordPress URLs send the app password unencrypted; local only.
+    allow_http_wordpress: bool = False
     _in_memory_repos: dict[str, ArticleRepository] = field(default_factory=dict, repr=False)
 
     def repository_for(self, site_id: str) -> ArticleRepository:
@@ -106,4 +108,5 @@ def build_container(settings: Settings) -> Container:
         site_repository=site_repository,
         credential_cipher=FernetCredentialCipher(encryption_key),
         firestore_client=firestore_client,
+        allow_http_wordpress=settings.app_env != "gcp",
     )

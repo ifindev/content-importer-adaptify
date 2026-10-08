@@ -29,5 +29,6 @@ class EventType(StrEnum):
     PUBLISHED = "published"
     FAILED = "failed"
     RETRIED = "retried"
+    UNSCHEDULED = "unscheduled"
     AI_DRAFT_CREATED = "ai_draft_created"
     AI_DRAFT_ACCEPTED = "ai_draft_accepted"

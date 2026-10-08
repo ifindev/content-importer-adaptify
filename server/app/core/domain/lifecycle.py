@@ -10,7 +10,9 @@ ALLOWED_TRANSITIONS: dict[Status, set[Status]] = {
     Status.AWAITING_APPROVAL: {Status.DRAFT, Status.CHANGES_REQUESTED, Status.APPROVED},
     Status.CHANGES_REQUESTED: {Status.AWAITING_APPROVAL},
     Status.APPROVED: {Status.SCHEDULED, Status.FAILED, Status.DRAFT},
-    Status.SCHEDULED: {Status.PUBLISHED, Status.DRAFT},
+    # Read-only: the agency unschedules (back to Approved) before editing.
+    # Failed covers a date change WordPress refused.
+    Status.SCHEDULED: {Status.PUBLISHED, Status.APPROVED, Status.FAILED},
     Status.FAILED: {Status.SCHEDULED},
     Status.PUBLISHED: set(),
 }

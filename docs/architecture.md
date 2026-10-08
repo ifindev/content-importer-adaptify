@@ -420,7 +420,7 @@ Each Dockerfile has a `dev` stage (used by local `docker compose`) and a `prod` 
 
 - **App on a VPS:** [deploy-vps.md](deploy-vps.md). `make vps-setup` (`infra/app/setup.sh`) does the server and GitHub parts after the Firebase console steps and DNS.
 - **WordPress on the VPS:** copy `infra/wordpress/` to `~/wordpress`, fill in `.env`, `docker compose up -d`, install its nginx site and run certbot. Finish the install in the browser, set permalinks to "Post name", create an Author user with an application password, and install `crontab.txt`. Then add the site in the app.
-- **Firestore indexes:** none known. If the live flow logs a "query requires an index" error, it includes a link that creates the index.
+- **Firestore indexes:** one composite index, on `articles`: `status` ascending, `created_at` descending, scope Collection. The article list filters by status and sorts by newest first, and real Firestore refuses that query without it. The emulator doesn't enforce indexes, so local runs and tests can't catch a missing one. Terraform creates it on GCP (`infra/terraform/data.tf`); on the VPS target it's created by hand ([deploy-vps.md](deploy-vps.md), step 1). If the live API logs "The query requires an index", the message includes a link that creates it.
 
 ### GCP target
 

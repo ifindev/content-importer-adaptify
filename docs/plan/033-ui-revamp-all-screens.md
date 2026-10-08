@@ -69,7 +69,7 @@ Update these docs as part of this ticket:
 - **spec.md Screens:**
   - Add the Sites screen and site switcher (with T-031's scope change).
   - Client review at desktop width is one 3-column page.
-  - Request changes is an inline form: bottom sheet on mobile, side panel on desktop.
+  - Request changes is an inline form: the sticky bottom bar grows into it on mobile (light blur; the article stays readable and scrollable), side panel on desktop.
   - The client's name is an inline field, remembered on the device.
 - **Status filter** is a select at every width ("All", with per-status counts in the options), not tabs at `md`+ (changes T-028's earlier analysis).
 - **Report layout:** summary cards (published this month, time to approval, change rounds) plus an "Articles by status" list, instead of one stat card per status.
@@ -92,7 +92,7 @@ Update these docs as part of this ticket:
 - [ ] Login restyle.
 - [ ] Sites: list, zero-sites state, Add site dialog, switcher menu.
 - [ ] Import, Articles, Detail, Report.
-- [ ] Review page, reader, decision panel, request-changes form (sheet and side panel), desktop 3-column layout.
+- [ ] Review page, reader, decision panel, request-changes form (bottom bar and side panel), desktop 3-column layout.
 - [ ] Hand check of every screen and scenario at 375, 768 and 1280px.
 - [ ] Docs: workflow.md, plan README, architecture.md, spec.md.
 

@@ -345,7 +345,7 @@ The agency app has five screens, all scoped to one client site except Sites. The
 **Decision:** The review page is a separate, simple route with no agency navigation. It works on a phone, since clients often open links from email on mobile.
 
 - **Desktop review** is one 3-column page: article list, reader, decision panel. Below `lg` the list and the reader are separate screens.
-- **Request changes** is an inline form: a bottom sheet on mobile, the decision panel on desktop.
+- **Request changes** is an inline form: on mobile the sticky bottom bar grows into it over a light blur that keeps the article readable and scrollable; on desktop it replaces the decision panel.
 - **Client name** is an inline field in the decision panel, remembered on the device.
 
 ## Reporting

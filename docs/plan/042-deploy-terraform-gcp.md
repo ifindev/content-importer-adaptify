@@ -1,6 +1,6 @@
 # T-042 Terraform for GCP
 
-**Phase:** 5 · Deploy · **Status:** analyzed · **Size:** M
+**Phase:** 5 · Deploy · **Status:** in progress · **Size:** M
 **Refs:** R8.1; architecture: Infrastructure, GCP services, Deployment and CI, Auth
 **Depends on:** —
 
@@ -39,8 +39,8 @@ Flat files, no modules. `terraform.tfvars` is committed: it holds only `project_
 **`run.tf`**
 - Artifact Registry repo `app` (Docker, `us-central1`) with a cleanup policy: keep the 5 most recent versions of each image, delete the rest. This keeps storage under the 0.5 GB free tier.
 - Service accounts:
-  - `api`: `roles/datastore.user` (Firestore), `roles/firebaseauth.admin` (creates session cookies, and reads the user for `check_revoked=True`). `roles/secretmanager.secretAccessor` on `CREDENTIAL_ENCRYPTION_KEY` and `INTERNAL_API_SECRET`, bound **on each secret**, not on the project.
-  - `web`: `roles/secretmanager.secretAccessor` on `INTERNAL_API_SECRET` only.
+  - `api` (account ID `api-run`; IDs need 6+ characters): `roles/datastore.user` (Firestore), `roles/firebaseauth.admin` (creates session cookies, and reads the user for `check_revoked=True`). `roles/secretmanager.secretAccessor` on `CREDENTIAL_ENCRYPTION_KEY` and `INTERNAL_API_SECRET`, bound **on each secret**, not on the project.
+  - `web` (account ID `web-run`): `roles/secretmanager.secretAccessor` on `INTERNAL_API_SECRET` only.
 - `locals` with both URLs built from the project number: `https://api-${project_number}.us-central1.run.app` and `https://web-…`. The API needs the web URL (`WEB_BASE_URL`, for review links) and the web needs the API URL (`API_URL`); computing both avoids a dependency cycle between the two services.
 - `google_cloud_run_v2_service` `api` and `web`:
   - First image: `us-docker.pkg.dev/cloudrun/container/hello` (placeholder; T-045 deploys the real images).
@@ -107,16 +107,16 @@ Flat files, no modules. `terraform.tfvars` is committed: it holds only `project_
 - [ ] An account created in the console signs in through `accounts:signInWithPassword` with the same key.
 - [ ] `terraform state pull | grep -i -E "fernet|INTERNAL_API_SECRET.*value"` finds no secret value.
 - [ ] The `api` service account can't read any secret other than its two (try `gcloud secrets versions access` impersonating it on a third test secret, then delete the test secret).
-- [ ] spec.md and architecture.md updated as listed in Decisions.
+- [x] spec.md and architecture.md updated as listed in Decisions.
 
 ## Tasks
 - [ ] Create the state bucket (manual).
-- [ ] Write `main.tf`, `run.tf`, `data.tf`, `secrets.tf`, `github.tf`, `outputs.tf`, `variables.tf`, `terraform.tfvars`, `.gitignore`.
+- [x] Write `main.tf`, `run.tf`, `data.tf`, `secrets.tf`, `github.tf`, `outputs.tf`, `variables.tf`, `terraform.tfvars`, `.gitignore`.
 - [ ] Import an existing Firestore database or Firebase project if the first plan wants to create them.
 - [ ] Apply, add secret values, apply again.
 - [ ] Run the sign-up and sign-in checks.
-- [ ] Add a short "Terraform" section to architecture (init, plan, apply, the manual steps).
-- [ ] Update spec R8.1 and architecture Auth.
+- [x] Add a short "Terraform" section to architecture (init, plan, apply, the manual steps).
+- [x] Update spec R8.1 and architecture Auth.
 
 ## Out of scope
 - Budget, Pub/Sub and the kill switch (T-046).

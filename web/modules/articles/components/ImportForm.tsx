@@ -143,6 +143,8 @@ function PastePanel({ siteId }: { siteId: string }) {
   );
 }
 
+const MAX_UPLOAD_BYTES = 30 * 1024 * 1024;
+
 function UploadPanel({ siteId }: { siteId: string }) {
   const [error, setError] = useState<string | null>(null);
   const [results, setResults] = useState<Schemas["UploadFileResult"][]>([]);
@@ -172,6 +174,13 @@ function UploadPanel({ siteId }: { siteId: string }) {
 
   function upload(files: FileList | null) {
     if (!files) return;
+    // Over next.config's bodySizeLimit the action throws instead of returning a code.
+    let total = 0;
+    for (const file of files) total += file.size;
+    if (total > MAX_UPLOAD_BYTES) {
+      setError("upload_too_large");
+      return;
+    }
     const formData = new FormData();
     for (const file of files) formData.append("files", file);
     setError(null);

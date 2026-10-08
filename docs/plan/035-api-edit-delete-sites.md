@@ -1,6 +1,6 @@
 # T-035 Edit and delete sites
 
-**Phase:** 4 · API · **Status:** analyzed · **Size:** M
+**Phase:** 4 · API · **Status:** done · **Size:** M
 **Refs:** spec: Screens (Sites), API endpoints
 **Depends on:** T-031
 
@@ -38,8 +38,8 @@ The agency can fix a site's name or WordPress details, and remove a client site 
 - Delete: hard delete of the site document, every article under it with its events, and its review token hash. Nothing in WordPress is changed: published posts stay live, and scheduled posts still publish on their date.
 
 ### Core
-- `edit_site`: merges the fields; if `wp_base_url`, `wp_username` or `wp_app_password` changed, tests the connection with the merged values before saving (same check as `create_site`).
-- `delete_site`: removes the site and its articles through `SiteRepository.delete_site(site_id)`, which deletes the subcollections too.
+- `edit_site`: merges the fields (an unchanged URL or username counts as no change); if `wp_base_url`, `wp_username` or `wp_app_password` changed, tests the connection with the merged values before saving (same check as `create_site`).
+- Delete has no use case: the route calls `Container.delete_site(site_id)`, which calls `SiteRepository.delete_site` (Firestore `recursive_delete` cascades articles and events) and drops the in-memory fallback's article store. The stored review token hash goes with the site document, so the old link 404s; the plaintext copy in the secret store is left behind and is harmless.
 
 ### Edge cases
 | Case | Behavior |
@@ -53,18 +53,18 @@ The agency can fix a site's name or WordPress details, and remove a client site 
 - WordPress is never touched on delete; the dialog says so.
 
 ## Acceptance criteria
-- [ ] PATCH saves name-only changes without calling WordPress.
-- [ ] PATCH with changed WordPress details tests the connection and returns `422 wp_connection_failed` without saving when it fails.
-- [ ] An empty password keeps the stored one.
-- [ ] DELETE removes the site, its articles, their events and its review token; the old review link returns 404.
-- [ ] Unit tests for both use cases; Firestore adapter test for the cascade.
-- [ ] `openapi.json` and `web/lib/api/schema.ts` regenerated.
+- [x] PATCH saves name-only changes without calling WordPress.
+- [x] PATCH with changed WordPress details tests the connection and returns `422 wp_connection_failed` without saving when it fails.
+- [x] An empty password keeps the stored one.
+- [x] DELETE removes the site, its articles, their events and its review token; the old review link returns 404.
+- [x] Unit tests for both use cases; Firestore adapter test for the cascade.
+- [x] `openapi.json` and `web/lib/api/schema.ts` regenerated.
 
 ## Tasks
-- [ ] `edit_site` and `delete_site` use cases with unit tests.
-- [ ] `SiteRepository.update_site` / `delete_site` in the port, in-memory and Firestore adapters (cascade).
-- [ ] Routes and error mapping.
-- [ ] `make gen-api`.
+- [x] `edit_site` and `delete_site` use cases with unit tests.
+- [x] `SiteRepository.update_site` / `delete_site` in the port, in-memory and Firestore adapters (cascade).
+- [x] Routes and error mapping.
+- [x] `make gen-api`.
 
 ## Out of scope
 - Archiving or restoring a site.

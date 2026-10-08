@@ -7,7 +7,7 @@ import { WordPressBanner } from "@/components/wordpress-banner";
 import type { Schemas } from "@/lib/api/types";
 import { ArticleFilters } from "@/modules/articles/components/ArticleFilters";
 import { ArticleTable } from "@/modules/articles/components/ArticleTable";
-import { CopyReviewLinkButton } from "@/modules/articles/components/CopyReviewLinkButton";
+import { ReviewLinkActions } from "@/modules/articles/components/ReviewLinkActions";
 import { getReviewLink, listArticles } from "@/modules/articles/data";
 
 type Summary = Schemas["ArticleSummary"];
@@ -50,7 +50,7 @@ export async function ArticlesPage({
         title="Articles"
         subtitle={`${articles.length} ${articles.length === 1 ? "article" : "articles"} on this site`}
       >
-        <CopyReviewLinkButton url={reviewLink.url} />
+        <ReviewLinkActions siteId={siteId} url={reviewLink.url} />
       </PageHeader>
       {wordpress_unreachable && (
         <div className="px-4 pt-3 md:px-7">

@@ -82,7 +82,7 @@ resource "google_cloud_run_v2_service" "api" {
 
       env {
         name  = "APP_ENV"
-        value = "gcp"
+        value = "prod"
       }
       env {
         name  = "GOOGLE_CLOUD_PROJECT"
@@ -91,6 +91,10 @@ resource "google_cloud_run_v2_service" "api" {
       env {
         name  = "WEB_BASE_URL"
         value = local.web_url
+      }
+      env {
+        name  = "AGENCY_EMAILS"
+        value = var.agency_emails
       }
       dynamic "env" {
         for_each = ["CREDENTIAL_ENCRYPTION_KEY", "INTERNAL_API_SECRET"]
@@ -142,7 +146,7 @@ resource "google_cloud_run_v2_service" "web" {
 
       env {
         name  = "APP_ENV"
-        value = "gcp"
+        value = "prod"
       }
       env {
         name  = "API_URL"

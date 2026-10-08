@@ -1,6 +1,6 @@
 # T-040 Review token encrypted in Firestore
 
-**Phase:** 5 · API · **Status:** analyzed · **Size:** S
+**Phase:** 5 · API · **Status:** done · **Size:** S
 **Refs:** R3.1, R3.2, R3.7; spec: Data model, API endpoints (review-token Decision); architecture: GCP services
 **Depends on:** —
 **Improves:** T-016, T-031
@@ -43,6 +43,7 @@ Store the token encrypted on the site document, with the same cipher and key as 
 - `.gitignore:19` (`server/.secrets.local.json`), and the local file itself if present.
 - `.env.example:41-44` comment about the local secret store and Secret Manager.
 - Any import-linter contract or test fixture that names the port.
+- In `api/`: `get_secret_store` in `deps.py` becomes `get_credential_cipher`; `routes/review_link.py` and `routes/sites.py` pass the cipher instead of the store. The review-link use cases drop their unused `site_id` argument.
 
 ### Small fix
 `FernetCredentialCipher.decrypt` logs "Stored app password doesn't decrypt with the current key". It now decrypts tokens too, so make it "Stored secret doesn't decrypt with the current key", and update its docstring.
@@ -66,28 +67,28 @@ Store the token encrypted on the site document, with the same cipher and key as 
   - architecture Local setup: remove any mention of `.secrets.local.json`.
 
 ## Acceptance criteria
-- [ ] Unit tests, with the in-memory site repository and a real `FernetCredentialCipher`:
-  - [ ] Create site stores `review_token_encrypted`, which decrypts to the token in the URL `GET review-link` returns.
-  - [ ] `GET review-link` twice returns the same URL.
-  - [ ] Reset returns a new URL, and the old token no longer resolves to the site.
-  - [ ] A token encrypted under another key causes one rotation, then stays stable.
-  - [ ] A site without `review_token_encrypted` (older data) gets one on the first `GET review-link`.
-- [ ] Integration test (Firestore emulator): after create and after reset, the stored site document contains no plaintext token, only the hash and the ciphertext.
-- [ ] `grep -rn "secret_store\|SecretStore\|secrets.local" server/ .env.example .gitignore` returns nothing.
-- [ ] `make lint test` and `make test-integration` green.
-- [ ] `openapi.json` unchanged (the API shape doesn't change). If it does change, run `make gen-api`.
-- [ ] Local by hand: create a site, copy the link, restart the API container, copy again: same link, and it opens.
-- [ ] spec.md and architecture.md updated as listed in Decisions.
+- [x] Unit tests, with the in-memory site repository and a real `FernetCredentialCipher`:
+  - [x] Create site stores `review_token_encrypted`, which decrypts to the token in the URL `GET review-link` returns.
+  - [x] `GET review-link` twice returns the same URL.
+  - [x] Reset returns a new URL, and the old token no longer resolves to the site.
+  - [x] A token encrypted under another key causes one rotation, then stays stable.
+  - [x] A site without `review_token_encrypted` (older data) gets one on the first `GET review-link`.
+- [x] Integration test (Firestore emulator): after create and after reset, the stored site document contains no plaintext token, only the hash and the ciphertext.
+- [x] `grep -rn "secret_store\|SecretStore\|secrets.local" server/ .env.example .gitignore` returns nothing.
+- [x] `make lint test` and `make test-integration` green.
+- [x] `openapi.json` unchanged (the API shape doesn't change). If it does change, run `make gen-api`.
+- [x] Local by hand: create a site, copy the link, restart the API container, copy again: same link, and it opens.
+- [x] spec.md and architecture.md updated as listed in Decisions.
 
 ## Tasks
-- [ ] Write the unit tests above first (they fail).
-- [ ] Add `review_token_encrypted` to the `Site` model and the Firestore mapping.
-- [ ] Pass the cipher to `create_site` and the review-link use cases; encrypt on create and rotate; decrypt on get.
-- [ ] Remove the `SecretStore` port, both adapters, the container wiring and `delete_review_token` from `delete_site`.
-- [ ] Generalize the cipher's warning text.
-- [ ] Clean `.gitignore` and `.env.example`.
-- [ ] Integration test for "no plaintext in Firestore".
-- [ ] Update spec.md and architecture.md.
+- [x] Write the unit tests above first (they fail).
+- [x] Add `review_token_encrypted` to the `Site` model and the Firestore mapping.
+- [x] Pass the cipher to `create_site` and the review-link use cases; encrypt on create and rotate; decrypt on get.
+- [x] Remove the `SecretStore` port, both adapters, the container wiring and `delete_review_token` from `delete_site`.
+- [x] Generalize the cipher's warning text.
+- [x] Clean `.gitignore` and `.env.example`.
+- [x] Integration test for "no plaintext in Firestore".
+- [x] Update spec.md and architecture.md.
 
 ## Out of scope
 - Secret Manager for review tokens.

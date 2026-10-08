@@ -65,6 +65,15 @@ Uses T-033's Playwright config; the spec lives in `web/e2e/flow/full-flow.spec.t
 - [ ] Full-flow spec, test helper for `make wp-cron`, `make e2e`.
 - [x] Docs: architecture.md reader HTML decision (already recorded). ~~Full-flow test~~: out of scope.
 
+## Fixed after the wiring audit (2026-10-08)
+Code is done; the boxes above are ticked during the browser pass.
+- After Approve or Request changes the client goes back to the review page. Before, the reader reloaded an article the client can no longer see and showed "This link isn't valid".
+- The WordPress banner no longer shows on client pages.
+- Rate limiting shows its own screen in production too: a 429 is returned as data, not thrown (Next hides thrown messages).
+- Live links use `rel="noopener noreferrer"`.
+- Waiting articles show the date they were sent (T-036).
+- Removed copy for an "approved, no date yet" state the client never sees.
+
 ## Out of scope
 - UI, layout and states (T-033).
 - Client accounts, inline comments, passcodes (spec: Out of scope).

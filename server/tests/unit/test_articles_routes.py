@@ -125,15 +125,16 @@ def test_patch_article_from_editable_status(client, repository, status):
     assert body["version"] == 2
 
 
-@pytest.mark.parametrize("status", [Status.APPROVED, Status.SCHEDULED])
-def test_patch_article_from_approved_or_scheduled_resets_to_draft(client, repository, status):
-    repository.create_article(_article("a1", status))
+def test_patch_article_from_approved_resets_to_draft(client, repository):
+    repository.create_article(_article("a1", Status.APPROVED))
     response = client.patch(f"/sites/{SITE_ID}/articles/a1", json={"title": "New Title"})
     assert response.status_code == 200
     assert response.json()["status"] == "draft"
 
 
-@pytest.mark.parametrize("status", [Status.AWAITING_APPROVAL, Status.PUBLISHED, Status.FAILED])
+@pytest.mark.parametrize(
+    "status", [Status.AWAITING_APPROVAL, Status.SCHEDULED, Status.PUBLISHED, Status.FAILED]
+)
 def test_patch_article_from_non_editable_status_returns_409(client, repository, status):
     repository.create_article(_article("a1", status))
     response = client.patch(f"/sites/{SITE_ID}/articles/a1", json={"title": "New Title"})

@@ -67,7 +67,7 @@ The app's article list needs one extra database index. Without it, the Articles 
 2. Open **Composite** and click **Create index**.
 3. Collection ID: `articles`.
 4. First field: `status`, **Ascending**.
-5. Click **Add field**. Second field: `created_at`, **Descending**.
+5. Click **Add field**. Second field: `created_at`, **Descending**. Check this one: it's the field people get wrong. In the index list, its arrow points down. An index with both arrows pointing up doesn't work.
 6. Query scope: **Collection**.
 7. Click **Create**.
 
@@ -124,7 +124,13 @@ This key is not a secret. It only tells the app which Firebase project to use.
 1. In **Project settings**, open the **Service accounts** tab.
 2. Ignore the code example and its Node.js / Java / Python / Go choice. It only changes the example, not the key.
 3. Click **Generate new private key**, then **Generate key**.
-4. A `.json` file downloads to your machine. **Note where it is.** In step 4, you give its path to the setup script as `FIREBASE_KEY`.
+4. A `.json` file downloads to your machine, usually to the Downloads folder. Its name ends in `firebase-adminsdk-....json`. In step 4, you give its path to the setup script as `FIREBASE_KEY`.
+
+To find it, run this **on your machine**. It prints the file's full path:
+
+```bash
+ls ~/Downloads/*firebase-adminsdk*.json
+```
 
 **This file is a secret.** Anyone who has it can read and change all of the app's data. Don't email it, and don't commit it to git.
 
@@ -219,7 +225,7 @@ The script asks for seven values. You already have all of them:
 | `API_DOMAIN` | The API address, for example `api.example.com` | Step 3 |
 | `VPS` | Your VPS user and address, for example `ubuntu@203.0.113.10` | How you log in with `ssh`. In `ssh -p 2222 ubuntu@203.0.113.10`, it's `ubuntu@203.0.113.10`. |
 | `VPS_PORT` | The SSH port. Press `Enter` for the usual port 22. | The number after `-p` in your `ssh` command, for example `2222`. No `-p` means 22. |
-| `FIREBASE_KEY` | The path to the downloaded `.json` file | Step 1, "Download the server key" |
+| `FIREBASE_KEY` | The path to the downloaded `.json` file. You can also drag the file into the Terminal window when the script asks. | Step 1, "Download the server key". Find it with `ls ~/Downloads/*firebase-adminsdk*.json`. |
 | `FIREBASE_API_KEY` | The `apiKey` value, which starts with `AIza` | Step 1, "Get the web key" |
 | `AGENCY_EMAILS` | The email of your login | Step 1, "Create your login" |
 

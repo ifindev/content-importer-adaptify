@@ -22,7 +22,7 @@ const MESSAGES: Record<string, string> = {
   not_failed: "This article isn't in Failed any more.",
   wordpress_error: "WordPress returned an error. Try again in a moment.",
   wp_connection_failed:
-    "Couldn't connect to WordPress with these details. Check the URL and app password.",
+    "Couldn't connect to WordPress with these details. Check the URL, and that the application password belongs to this username.",
   site_not_found: "This site no longer exists.",
   insecure_url: "The WordPress URL must start with https://.",
   article_changed:

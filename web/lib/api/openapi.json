@@ -555,6 +555,7 @@
           "published",
           "failed",
           "retried",
+          "unscheduled",
           "ai_draft_created",
           "ai_draft_accepted"
         ],
@@ -2334,6 +2335,57 @@
           }
         },
         "summary": "Send For Review Route",
+        "tags": [
+          "Publishing"
+        ]
+      }
+    },
+    "/sites/{site_id}/articles/{article_id}/unschedule": {
+      "post": {
+        "operationId": "unschedule_route_sites__site_id__articles__article_id__unschedule_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "article_id",
+            "required": true,
+            "schema": {
+              "title": "Article Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "site_id",
+            "required": true,
+            "schema": {
+              "title": "Site Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArticleDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Unschedule Route",
         "tags": [
           "Publishing"
         ]

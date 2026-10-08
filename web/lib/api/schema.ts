@@ -297,6 +297,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/sites/{site_id}/articles/{article_id}/unschedule": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Unschedule Route */
+        post: operations["unschedule_route_sites__site_id__articles__article_id__unschedule_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/sites/{site_id}/report": {
         parameters: {
             query?: never;
@@ -663,7 +680,7 @@ export interface components {
          * EventType
          * @enum {string}
          */
-        EventType: "imported" | "edited" | "sent_for_review" | "pulled_back" | "approved" | "changes_requested" | "scheduled" | "date_changed" | "published" | "failed" | "retried" | "ai_draft_created" | "ai_draft_accepted";
+        EventType: "imported" | "edited" | "sent_for_review" | "pulled_back" | "approved" | "changes_requested" | "scheduled" | "date_changed" | "published" | "failed" | "retried" | "unscheduled" | "ai_draft_created" | "ai_draft_accepted";
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -1761,6 +1778,38 @@ export interface operations {
         };
     };
     send_for_review_route_sites__site_id__articles__article_id__send_for_review_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                article_id: string;
+                site_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ArticleDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    unschedule_route_sites__site_id__articles__article_id__unschedule_post: {
         parameters: {
             query?: never;
             header?: never;

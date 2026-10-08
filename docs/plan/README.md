@@ -2,7 +2,7 @@
 
 Phases and the master list of tickets. How tickets work: [workflow.md](../workflow.md). Ticket template: [_template.md](_template.md).
 
-**Current phase:** 4. Frontend
+**Current phase:** 5. Deploy
 
 ## Phases
 
@@ -75,16 +75,19 @@ Phases and the master list of tickets. How tickets work: [workflow.md](../workfl
 | ID | Ticket | Refs | Status |
 | --- | --- | --- | --- |
 | T-026 | [Access control and app shell](026-ui-access-shell.md) | R8.1, R8.2, architecture: Auth | done |
-| T-033 | [UI revamp: every screen on fixtures](033-ui-revamp-all-screens.md) | spec: Screens, design canvas | in progress |
+| T-033 | [UI revamp: every screen on fixtures](033-ui-revamp-all-screens.md) | spec: Screens, design canvas | done |
 | T-034 | [Delete draft articles](034-api-delete-draft-articles.md) | R2.5 | done |
 | T-035 | [Edit and delete sites](035-api-edit-delete-sites.md) | spec: Screens (Sites) | done |
-| T-032 | [Sites: wiring for the switcher, sites list and Add Site](032-ui-site-switcher-add-site.md) | spec: Screens, E8 Access | analyzed |
+| T-032 | [Sites: wiring for the switcher, sites list and Add Site](032-ui-site-switcher-add-site.md) | spec: Screens, E8 Access | done |
 | T-027 | [API data layer and wiring](027-ui-data-layer.md) | E1–E6, architecture: Frontend | done |
 | T-036 | [API: fields the UI shows](036-api-fields-the-ui-shows.md) | spec: Screens, API endpoints | done |
-| T-028 | [Agency screens: wiring](028-ui-agency-screens.md) | E1, E2, E4, R3.2, R3.5–R3.7, R5.1–R5.3, R6.1–R6.4 | analyzed |
-| T-029 | [Client review: wiring and full-flow test](029-ui-client-review-e2e.md) | R3.3–R3.5, R6.5, R8.2 | analyzed |
+| T-037 | [Backend correctness fixes, and Unschedule](037-api-correctness-fixes.md) | R2.2, R2.3, R4.3, R4.4, R5.1, R5.4, R8.2 | done |
+| T-038 | [Spec and ticket cleanup](038-docs-spec-and-ticket-cleanup.md) | spec, workflow: Definition of Done | done |
+| T-039 | [Unschedule trashes the post, 5-minute minimum publish time](039-unschedule-trash-and-schedule-lead-time.md) | R4.1, R4.3 | done |
+| T-028 | [Agency screens: wiring](028-ui-agency-screens.md) | E1, E2, E4, R3.2, R3.5–R3.7, R5.1–R5.3, R6.1–R6.4 | done |
+| T-029 | [Client review: wiring and full-flow test](029-ui-client-review-e2e.md) | R3.3–R3.5, R6.5, R8.2 | done |
 
-Build order for this phase: T-026 (done) → T-033 (all UI on fixtures, no API needed) → T-034 → T-035 → T-027 → T-036 → T-032 → T-028 → T-029. What's left to close the phase: the browser pass of T-032, T-028 and T-029 (with T-033's hand check at 375/768/1280px); their code is done. T-027 also did the wiring, so T-032, T-028 and T-029 are now manual browser passes. T-031 (multi-site API, including the test-connection and site-stats follow-ups) is already built, so the generated schema covers every endpoint, sites included. UI first: T-033 builds every screen on fixtures typed from that schema; the wiring tickets then swap each module's fixtures for T-027's functions. Design canvas: [claude.ai artifact](https://claude.ai/artifact/QCpMywgpasGi231uuWrAMn), offline copy `design/canvas.html`.
+Build order for this phase: T-026 (done) → T-033 (all UI on fixtures, no API needed) → T-034 → T-035 → T-027 → T-036 → T-037 → T-038 → T-032 → T-028 → T-029. The phase is done: the browser pass of T-032, T-028 and T-029 (with T-033's hand check at 375/768/1280px) passed on 2026-10-08. T-027 did the wiring, so those three were manual passes. T-031 (multi-site API, including the test-connection and site-stats follow-ups) is already built, so the generated schema covers every endpoint, sites included. UI first: T-033 builds every screen on fixtures typed from that schema; the wiring tickets then swap each module's fixtures for T-027's functions. Design canvas: [claude.ai artifact](https://claude.ai/artifact/QCpMywgpasGi231uuWrAMn), offline copy `design/canvas.html`.
 
 ### Phase 5: Deploy
 

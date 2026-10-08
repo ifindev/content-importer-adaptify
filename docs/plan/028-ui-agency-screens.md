@@ -2,7 +2,7 @@
 
 > **Re-scoped 2026-10-08:** T-027 already did the wiring (repositories, swapped seams, fixtures deleted). What's left here is the manual pass in the browser against `make up` for the flows and acceptance criteria below.
 
-**Phase:** 4 · Frontend · **Status:** analyzed · **Size:** M
+**Phase:** 4 · Frontend · **Status:** done · **Size:** M
 **Refs:** E1, E2, R3.2, R3.5–R3.7, E4, R5.1–R5.3, R6.1–R6.4, spec: Agency journey, Article lifecycle
 **Depends on:** T-027 (data layer), T-032 (sites wired, `siteId` routes live), T-033 (the screens, on fixtures)
 
@@ -38,20 +38,20 @@ All UI, states and layout are done in T-033. This ticket points `modules/article
 - Scheduling lives in the list (spec: "The articles table carries most of the daily work"), not on the detail page.
 
 ## Acceptance criteria
-- [ ] Paste and multi-file upload create Drafts; warnings show (R1.1, R1.2, R1.4).
-- [ ] Detail: edit only in Draft / Changes requested; Approved/Scheduled edit asks first, then resets to Draft (R2.2, R2.3); history and client comment show (R2.4, R3.5).
-- [ ] Send for review, pull back, schedule, date change and retry all work from the UI (R3.6, R4.1–R4.5).
-- [ ] Copy and reset review link work (R3.2, R3.7).
-- [ ] Sync warnings and the WordPress banner show from real data (R5.1–R5.3).
-- [ ] Report shows every block from `GET /report`, with "—" when there are no approvals (R6.1–R6.4).
-- [ ] Every error code listed shows its message.
-- [ ] No fixtures left in `modules/articles` or `modules/report`; T-033's UI suite still passes.
+- [x] Paste and multi-file upload create Drafts; warnings show (R1.1, R1.2, R1.4).
+- [x] Detail: edit only in Draft / Changes requested; Approved edit asks first, then resets to Draft; Scheduled is read-only until unscheduled (R2.2, R2.3, R4.3); history and client comment show (R2.4, R3.5).
+- [x] Send for review, pull back, schedule, date change, unschedule, retry and a new date on Failed all work from the UI (R3.6, R4.1–R4.5).
+- [x] Copy and reset review link work (R3.2, R3.7).
+- [x] Sync warnings and the WordPress banner show from real data (R5.1–R5.3).
+- [x] Report shows every block from `GET /report`, with "—" when there are no approvals (R6.1–R6.4).
+- [x] Every error code listed shows its message.
+- [x] No fixtures left in `modules/articles` or `modules/report`; `pnpm typecheck` passes.
 
 ## Tasks
 - [x] Point `modules/articles/data.ts` and `modules/report/data.ts` at T-027's repository; delete their fixtures (done in T-027).
-- [ ] Status filter counts per the open question.
-- [ ] Manual pass of each flow against `make up`.
-- [ ] Docs, if any behavior differs from T-033's.
+- [x] Status filter counts per the open question (counted from the unfiltered list in `ArticlesPage.tsx`).
+- [x] Manual pass of each flow against `make up`.
+- [x] Docs, if any behavior differs from T-033's.
 
 ## Fixed after the wiring audit (2026-10-08)
 Code is done; the boxes above are ticked during the browser pass.

@@ -65,6 +65,18 @@ const EVENT_TEXT: Record<Schemas["EventType"], string> = {
   ai_draft_accepted: "accepted the drafted change",
 };
 
+/**
+ * Who an event is shown as. Agency events store the session's Firebase uid,
+ * which means nothing to a reader; the one shared agency login (R8.1) makes
+ * "Agency" exact. Client decisions carry the name the client typed.
+ */
+function actorLabel(event: Schemas["EventOut"]) {
+  if (event.type === "approved" || event.type === "changes_requested")
+    return event.actor;
+  if (event.type === "published" || event.type === "failed") return "WordPress";
+  return "Agency";
+}
+
 export function ArticleDetail({
   siteId,
   siteHost,
@@ -549,7 +561,7 @@ function SidePanel({ article }: { article: Article }) {
               />
               <div>
                 <div className="text-[13px]">
-                  <span className="font-medium">{event.actor}</span>{" "}
+                  <span className="font-medium">{actorLabel(event)}</span>{" "}
                   {EVENT_TEXT[event.type]}
                 </div>
                 <div className="text-muted-foreground text-xs">

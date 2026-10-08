@@ -17,6 +17,7 @@ import { createSession } from "@/modules/auth/repository/auth.mutations";
 const FIREBASE_ERROR_MESSAGE: Record<string, string> = {
   "auth/invalid-credential": "Wrong email or password.",
   "auth/too-many-requests": "Too many attempts. Try again later.",
+  "auth/network-request-failed": "Can't reach the server.",
 };
 
 export function LoginForm({
@@ -80,7 +81,12 @@ export function LoginForm({
         </p>
       </div>
       <form
-        action={handleSubmit}
+        // onSubmit, not action: React resets a form after its action runs,
+        // which would clear the email after a wrong password.
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleSubmit(new FormData(e.currentTarget));
+        }}
         className="bg-card flex flex-col gap-4 rounded-xl border p-6 shadow-[0_1px_3px_oklch(0_0_0/0.05)]"
       >
         <div className="flex flex-col gap-1.5">

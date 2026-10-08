@@ -78,3 +78,18 @@ async def test_get_statuses_parses_response():
     assert statuses[0].status == "publish"
     assert statuses[0].link == "http://x/p"
     assert statuses[1].link is None
+
+
+async def test_get_statuses_asks_in_chunks_of_100():
+    asked: list[list[int]] = []
+
+    def handler(request):
+        ids = [int(i) for i in request.url.params["include"].split(",")]
+        asked.append(ids)
+        posts = [{"id": i, "status": "future", "link": None, "date_gmt": None} for i in ids]
+        return httpx.Response(200, json=posts)
+
+    statuses = await _publisher(handler).get_statuses(list(range(1, 151)))
+
+    assert [len(chunk) for chunk in asked] == [100, 50]
+    assert len(statuses) == 150

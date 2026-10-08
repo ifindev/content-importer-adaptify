@@ -10,6 +10,7 @@ from app.core.domain.models import PostStatus
 logger = logging.getLogger(__name__)
 
 _TIMEOUT = httpx.Timeout(10.0, read=30.0)  # ponytail: guessed values, tune if WP is slow/flaky
+STATUS_PAGE_SIZE = 100
 
 
 class WordPressPublisher:
@@ -96,14 +97,19 @@ class WordPressPublisher:
         return post_id
 
     async def get_statuses(self, post_ids: list[int]) -> list[PostStatus]:
-        params = {
-            "include": ",".join(str(i) for i in post_ids),
-            "status": "publish,future,draft,private",
-            "_fields": "id,status,link,date_gmt",
-            "context": "edit",
-            "per_page": 100,
-        }
-        data = await self._request("GET", "/posts", params=params)
+        # WordPress returns at most 100 posts per page, so ask in chunks; a
+        # post past the first 100 would otherwise look "missing".
+        data: list = []
+        for start in range(0, len(post_ids), STATUS_PAGE_SIZE):
+            chunk = post_ids[start : start + STATUS_PAGE_SIZE]
+            params = {
+                "include": ",".join(str(i) for i in chunk),
+                "status": "publish,future,draft,private",
+                "_fields": "id,status,link,date_gmt",
+                "context": "edit",
+                "per_page": STATUS_PAGE_SIZE,
+            }
+            data += await self._request("GET", "/posts", params=params)
         statuses = [
             PostStatus(
                 id=p["id"],

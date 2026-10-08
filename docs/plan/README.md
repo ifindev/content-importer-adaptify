@@ -94,7 +94,7 @@ Build order for this phase: T-026 (done) → T-033 (all UI on fixtures, no API n
 | ID | Ticket | Refs | Status |
 | --- | --- | --- | --- |
 | T-040 | [Review token encrypted in Firestore](040-api-review-token-in-firestore.md) | R3.1, R3.2, R3.7 | done |
-| T-041 | [Production Dockerfiles](041-deploy-production-dockerfiles.md) | architecture: Infrastructure | analyzed |
+| T-041 | [Production Dockerfiles](041-deploy-production-dockerfiles.md) | architecture: Infrastructure | done |
 | T-042 | [Terraform for GCP](042-deploy-terraform-gcp.md) | R8.1, architecture: Infrastructure, Auth | analyzed |
 | T-043 | [WordPress on the VPS](043-infra-vps-wordpress.md) | spec: WordPress integration | done |
 | T-044 | [CI workflow](044-deploy-ci-workflow.md) | architecture: Deployment and CI | analyzed |

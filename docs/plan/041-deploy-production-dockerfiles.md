@@ -1,6 +1,6 @@
 # T-041 Production Dockerfiles
 
-**Phase:** 5 · Deploy · **Status:** analyzed · **Size:** S
+**Phase:** 5 · Deploy · **Status:** done · **Size:** S
 **Refs:** architecture: Infrastructure, Deployment and CI
 **Depends on:** —
 
@@ -39,7 +39,7 @@ Both apps have small production images that start fast and run on Cloud Run. The
 
 ### Request size limit
 `next.config.ts` sets `serverActions.bodySizeLimit: "100mb"` for `.docx` uploads. Cloud Run rejects HTTP/1 request bodies over 32 MiB before they reach Next, with a bare 413.
-- Lower it to `"30mb"`. An upload over the limit then fails inside Next, so the app shows its own error.
+- ~~Lower it to `"30mb"`.~~ Done differently: over the limit, the action throws on the client and the error boundary replaces the page. Instead, `bodySizeLimit` is `"31mb"` (1 MB for multipart overhead, still under 32 MiB) and the upload screen refuses a total over 30 MB before sending, with `upload_too_large`.
 - Check the upload screen's error for a too-large request. If it shows a generic error, map it to a clear message ("Files are too large. Upload fewer files at a time, up to 30 MB in total.").
 - Update spec.md or architecture.md if either mentions the 100 MB limit.
 
@@ -51,23 +51,30 @@ Both apps have small production images that start fast and run on Cloud Run. The
 | Image built without `NEXT_PUBLIC_FIREBASE_*` | Login fails in the browser. CI passes placeholders; deploy (T-045) passes the real values. |
 
 ## Acceptance criteria
-- [ ] `docker build --target prod server/` and `docker build --target prod web/` (with the Firebase build args) both succeed.
-- [ ] Image sizes noted in the ticket. Rough targets: server under 250 MB, web under 300 MB. Not a hard gate.
-- [ ] Both prod images run against the local compose stack (`docker run --network <compose network> -e PORT=8080 …`, pointing at the emulators):
-  - [ ] `GET /health` on the server returns `{"status":"ok"}`.
-  - [ ] The web login page renders, and login works against the Auth emulator. For this check only, build a local image with the emulator URL arg set.
-  - [ ] A paste import works end to end.
-- [ ] A `.docx` upload just over 30 MB shows the app's own error message.
-- [ ] `make up` still uses the dev stages and works as before.
-- [ ] `pnpm typecheck` and `make lint` green.
+- [x] `docker build --target prod server/` and `docker build --target prod web/` (with the Firebase build args) both succeed.
+- [x] Image sizes noted in the ticket. Rough targets: server under 250 MB, web under 300 MB. Not a hard gate.
+- [x] Both prod images run against the local compose stack (`docker run --network <compose network> -e PORT=8080 …`, pointing at the emulators):
+  - [x] `GET /health` on the server returns `{"status":"ok"}`.
+  - [x] The web login page renders, and login works against the Auth emulator. For this check only, build a local image with the emulator URL arg set.
+  - [x] A paste import works end to end.
+- [x] A `.docx` upload just over 30 MB shows the app's own error message.
+- [x] `make up` still uses the dev stages and works as before.
+- [x] `pnpm typecheck` and `make lint` green.
 
 ## Tasks
-- [ ] Server `prod` stage and `.dockerignore` check.
-- [ ] `output: "standalone"` and the web `deps`/`build`/`prod` stages.
-- [ ] Try `next build` without `API_URL`; make the check run on first use if it fails.
-- [ ] Lower `bodySizeLimit` to `30mb` and check the too-large error message.
-- [ ] Run both images locally as above; note the image sizes here.
-- [ ] Update docs that mention the upload limit.
+- [x] Server `prod` stage and `.dockerignore` check.
+- [x] `output: "standalone"` and the web `deps`/`build`/`prod` stages.
+- [x] Try `next build` without `API_URL`; make the check run on first use if it fails.
+- [x] Lower `bodySizeLimit` to `30mb` and check the too-large error message.
+- [x] Run both images locally as above; note the image sizes here.
+- [x] Update docs that mention the upload limit.
+
+## Results
+- Image sizes (native arm64 build, amd64 is about the same): server 75 MB compressed, about 225 MB unpacked; web 94 MB compressed, about 265 MB unpacked.
+- `next build` failed without `API_URL`. `lib/api-server.ts` now exports `apiUrl()`, read on use. `auth.mutations.ts` uses it too instead of its own copy of the check.
+- Server: uv is bind-mounted for the `uv sync` steps only, so it isn't shipped. `CMD ["sh", "-c", "exec fastapi …"]` makes uvicorn PID 1 so it gets Cloud Run's SIGTERM; the plain shell form left `sh` as PID 1.
+- `server/.dockerignore` also excludes `scripts/`.
+- Local builds: BuildKit timed out loading registry metadata until the base images were pulled with `docker pull` first.
 
 ## Out of scope
 - Distroless or Alpine base images.

@@ -18,7 +18,7 @@
 
 ## Why I built this
 
-Hi! I'm Arifin, a software engineer who loves taking an idea from a single sentence to something real people can use. I wanted to join [Adaptify SEO as a Software Engineer](https://adaptify.ai/jobs/software-engineer). A lot of great people will apply, so instead of only sending a CV, I picked a feature from Adaptify's own public roadmap and built it.
+Hi! I'm Arifin, a software engineer who loves taking an idea to something real people can use. I wanted to join [Adaptify SEO as a Software Engineer](https://adaptify.ai/jobs/software-engineer). A lot of great people will apply, so instead of only sending a CV, I picked a feature from Adaptify's own public roadmap and built it.
 
 📫 [arifin.muhammad2610@gmail.com](mailto:arifin.muhammad2610@gmail.com) · [linkedin.com/in/arifin2610](https://www.linkedin.com/in/arifin2610/)
 

@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 
 import { ArticleEditor } from "@/components/article-editor";
@@ -92,6 +92,10 @@ export function ArticleDetail({
   const [body, setBody] = useState(article.body_html);
   const [unlocked, setUnlocked] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  // "Edit anyway" unmounts the Edit button the dialog would return focus to;
+  // land in the title instead, ready to type.
+  const titleRef = useRef<HTMLTextAreaElement>(null);
+  const focusTitleOnClose = useRef(false);
   const [pending, startTransition] = useTransition();
   const [pendingAction, setPendingAction] = useState<string | null>(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -341,6 +345,7 @@ export function ArticleDetail({
             header={
               <>
                 <textarea
+                  ref={titleRef}
                   aria-label="Title"
                   rows={1}
                   value={title}
@@ -401,7 +406,11 @@ export function ArticleDetail({
         onConfirm={remove}
       />
       <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-        <DialogContent>
+        <DialogContent
+          finalFocus={() =>
+            focusTitleOnClose.current ? titleRef.current : true
+          }
+        >
           <DialogTitle>Edit this article?</DialogTitle>
           <DialogDescription>
             Editing resets the client&apos;s approval. Saving moves the article
@@ -416,6 +425,7 @@ export function ArticleDetail({
             </DialogClose>
             <Button
               onClick={() => {
+                focusTitleOnClose.current = true;
                 setUnlocked(true);
                 setConfirmOpen(false);
               }}

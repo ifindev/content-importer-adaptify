@@ -2,7 +2,6 @@ import { ExternalLink, Inbox } from "lucide-react";
 import Link from "next/link";
 
 import { buttonVariants } from "@/components/ui/button";
-import { WordPressBanner } from "@/components/wordpress-banner";
 import type { Schemas } from "@/lib/api/types";
 import { OpenOnlyWaiting } from "@/modules/review/components/OpenOnlyWaiting";
 import { CardMeta } from "@/modules/review/components/ReviewNav";
@@ -27,7 +26,6 @@ export function ReviewPage({ token }: { token: string }) {
             )}
             {/* Below lg: the list is the page. */}
             <div className="mx-auto flex w-full max-w-xl flex-col gap-6 px-4 py-5 lg:hidden">
-              {review.wordpress_unreachable && <WordPressBanner />}
               {total === 0 ? (
                 <AllEmpty />
               ) : (

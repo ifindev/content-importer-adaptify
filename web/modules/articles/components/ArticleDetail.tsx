@@ -498,7 +498,7 @@ function Feedback({ article }: { article: Article }) {
             </span>
           </div>
         )}
-        <p className="text-foreground/85 text-[13.5px] leading-normal">
+        <p className="text-foreground/85 text-[13.5px] leading-normal whitespace-pre-line">
           {article.client_comment}
         </p>
       </div>

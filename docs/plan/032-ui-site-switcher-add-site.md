@@ -42,6 +42,13 @@ The agency sees every client site it manages, switches between them, and adds a 
 - [x] ~~Hide Test connection, connection status and counts~~: the API has them now (T-031).
 - [ ] Hand check: zero-sites state, switcher navigation, Add Site success and `wp_connection_failed`, Test connection, edit, delete.
 
+## Fixed after the wiring audit (2026-10-08)
+Code is done; the boxes above are ticked during the browser pass.
+- Add Site keeps its fields after `wp_connection_failed` (`onSubmit` instead of a form `action`, which React resets).
+- An unknown `siteId` 404s on every site route, Import included (`app/(agency)/sites/[siteId]/layout.tsx`).
+- `/` opens the last used site (a `last_site` cookie set by `proxy.ts`), and the Sites list marks it "Current".
+- An expired session lands on login with "Please sign in again" and the dead cookie is dropped; before, it could loop between `/` and `/login`.
+
 ## Out of scope
 - UI, layout and route structure (T-033).
 - Site archive/restore. Cross-site report view. (Edit and delete: T-035, UI in T-033.)

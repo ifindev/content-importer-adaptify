@@ -1,5 +1,6 @@
 # Mirror the Makefile's lint and test targets. Integration tests stay local
 # (`make test-integration`): they need the emulators and WordPress.
+# A push to main that passes deploys to the VPS (T-048).
 name: CI
 
 on:
@@ -9,7 +10,8 @@ on:
 
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  # main queues instead, so a new push never stops a deploy halfway.
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 permissions:
   contents: read
@@ -82,3 +84,50 @@ jobs:
       - run: make gen-api
       # Fails when the server's API changed and the types weren't regenerated.
       - run: git diff --exit-code web/lib/api/
+
+  deploy:
+    needs: [server, web, api-types]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    env:
+      API_IMAGE: ghcr.io/ifindev/content-importer-adaptify-api:${{ github.sha }}
+      WEB_IMAGE: ghcr.io/ifindev/content-importer-adaptify-web:${{ github.sha }}
+      VPS: ${{ vars.VPS_SSH }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - run: |
+          docker build --target prod -t "$API_IMAGE" server
+          docker push "$API_IMAGE"
+      # NEXT_PUBLIC_* are inlined into the browser bundle at build time.
+      - run: |
+          docker build --target prod -t "$WEB_IMAGE" \
+            --build-arg NEXT_PUBLIC_FIREBASE_API_KEY=${{ vars.FIREBASE_API_KEY }} \
+            --build-arg NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=${{ vars.FIREBASE_AUTH_DOMAIN }} \
+            --build-arg NEXT_PUBLIC_FIREBASE_PROJECT_ID=${{ vars.FIREBASE_PROJECT_ID }} \
+            web
+          docker push "$WEB_IMAGE"
+      - name: SSH setup
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          printf '%s\n' "${{ secrets.VPS_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+      - name: Deploy
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          scp infra/app/docker-compose.yml "$VPS:app/docker-compose.yml"
+          # The token goes over stdin so it never shows in the VPS process list.
+          # It expires when this job ends; the logout below drops it anyway.
+          printf '%s' "$GHCR_TOKEN" | ssh "$VPS" "docker login ghcr.io -u ${{ github.actor }} --password-stdin"
+          ssh "$VPS" "cd app && export IMAGE_TAG=${{ github.sha }} \
+            && docker compose pull && docker compose up -d --remove-orphans; \
+            status=\$?; docker logout ghcr.io; docker image prune -af --filter until=168h; exit \$status"

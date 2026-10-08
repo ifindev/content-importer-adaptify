@@ -128,6 +128,16 @@ export function LoginForm({
           {submitting ? "Signing in…" : "Sign in"}
         </Button>
       </form>
+      {/* The public demo account exists only on the live app. */}
+      {process.env.NODE_ENV === "production" && (
+        <p className="text-muted-foreground mt-4 text-center text-[12.5px]">
+          Demo login:{" "}
+          <span className="text-foreground font-medium">
+            agency@example.com
+          </span>{" "}
+          / <span className="text-foreground font-medium">pass@123</span>
+        </p>
+      )}
     </div>
   );
 }

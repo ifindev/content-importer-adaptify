@@ -15,7 +15,7 @@ Create both in the Firebase console (Authentication → Users → Add user), and
 | Account | Who | Password |
 | --- | --- | --- |
 | Your own email | You | Strong, in your password manager, never shared |
-| `agency@example.com` | Reviewers | Simple (`demopass`), printed in the README. It's public, so its strength doesn't matter. |
+| `agency@example.com` | Reviewers | Simple (`pass@123`), printed in the README and under the login form. It's public, so its strength doesn't matter. |
 
 - The demo email doesn't need a real mailbox: email/password sign-in doesn't verify it. `example.com` is reserved and never receives mail, so a password reset can't reach a stranger. To change the demo password, delete the user and add it again.
 - Your own account means you can always get in, even if a reviewer changes the demo password through the Firebase REST API. If that happens, reset it in the console.

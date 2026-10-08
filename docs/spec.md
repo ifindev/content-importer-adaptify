@@ -321,7 +321,7 @@ Requirements fall into eight epics. Priority: **P0** = MVP must have, **P1** = M
 
 | ID   | Requirement                                                               | Priority |
 | ---- | ------------------------------------------------------------------------- | -------- |
-| R8.1 | The agency app needs a login once deployed. Accounts are created by the admin in the Firebase console, and only emails listed in `AGENCY_EMAILS` can sign in. | P0       |
+| R8.1 | The agency app needs a login once deployed. Accounts are created by the admin in the Firebase console, and only emails listed in `AGENCY_EMAILS` can sign in. The live app's login screen shows the public demo login (`agency@example.com` / `pass@123`). | P0       |
 | R8.2 | The review page works without a login, through its token only.            | P0       |
 
 

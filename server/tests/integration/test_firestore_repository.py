@@ -256,3 +256,18 @@ def test_approve_and_request_changes_routes_work_against_the_firestore_emulator(
 
     assert missing_response.status_code == 404
     assert missing_response.json()["code"] == "not_found"
+
+
+def _with_event(repository, article_id: str) -> None:
+    article = repository.create_article(_article(article_id))
+    event = Event(id="e1", type=EventType.EDITED, actor="agency", at=article.updated_at)
+    repository.save_article(article, event)
+
+
+def test_delete_article_removes_it_and_its_events(repository):
+    _with_event(repository, "a1")
+
+    repository.delete_article("a1")
+
+    assert repository.get_article("a1") is None
+    assert repository.list_events("a1") == []

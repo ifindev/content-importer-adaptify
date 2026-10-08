@@ -9,6 +9,7 @@
 ![Firebase](https://img.shields.io/badge/Firebase-Firestore%20%2B%20Auth-FFCA28?logo=firebase&logoColor=black)
 ![Google Cloud](https://img.shields.io/badge/GCP-Cloud%20Run-4285F4?logo=googlecloud&logoColor=white)
 ![Terraform](https://img.shields.io/badge/Terraform-844FBA?logo=terraform&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
 
 <!-- T-047: live demo link and demo login go here. -->
 
@@ -32,7 +33,7 @@ I started with just that sentence and took it all the way to a running product, 
  Idea  ──▶  Spec  ──▶  Design  ──▶  API  ──▶  UI  ──▶  Cloud
  one       journeys,   every       FastAPI,   Next.js,   Docker, Terraform,
  sentence  lifecycle,  screen,     Firestore, Server     GitHub Actions,
-           API         desktop +   WordPress  Actions    Cloud Run
+           API         desktop +   WordPress  Actions    Cloud Run or a VPS
                        mobile
 ```
 
@@ -106,7 +107,7 @@ If someone edits a post directly in WordPress, the app notices and flags it: **L
 | **Design** | Designed every screen, desktop and mobile, with Claude on a design canvas that stayed the source of truth for the UI. | [`design/`](design/) |
 | **Planning** | Split the work into 7 phases and 47 written tickets, each with its analysis and acceptance criteria. | [`docs/plan/`](docs/plan/README.md) |
 | **Engineering** | A FastAPI backend with 320 tests (295 unit tests run in about 10 seconds), and a Next.js frontend with generated API types. | [`server/`](server/), [`web/`](web/) |
-| **DevOps** | Production Docker images, Terraform for GCP, GitHub Actions CI and keyless deploys to Cloud Run. | [`infra/`](infra/), [`.github/`](.github/workflows/ci.yml) |
+| **DevOps** | Production Docker images that deploy to two targets: Cloud Run with Terraform, or a VPS with auto-deploy on every green push to `main`. | [`infra/`](infra/), [`.github/`](.github/workflows/ci.yml) |
 
 ![The design canvas: every screen of the agency app and the client review page](docs/images/design-canvas.png)
 
@@ -154,13 +155,15 @@ stateDiagram-v2
 flowchart LR
     Agency([Agency]) --> Web
     Client([Client on any device]) --> Web
-    subgraph GCP [Google Cloud]
-        Web["Next.js web<br/>Cloud Run"] -->|session cookie +<br/>internal secret| API["FastAPI<br/>Cloud Run"]
-        API --> FS[(Firestore)]
-        API --> Auth[Firebase Auth]
-        SM[Secret Manager] -.-> API
-        SM -.-> Web
+    subgraph Host [VPS or Cloud Run]
+        Web["Next.js web"] -->|session cookie +<br/>internal secret| API["FastAPI"]
     end
+    subgraph Firebase [Firebase, free plan]
+        FS[(Firestore)]
+        Auth[Firebase Auth]
+    end
+    API --> FS
+    API --> Auth
     API -->|REST + application password| WP["Client's WordPress"]
 ```
 
@@ -229,8 +232,8 @@ The same stack Adaptify uses: **Python, FastAPI, Firebase and GCP**, with React 
 | Import | mammoth (`.docx`), nh3 (HTML cleaning) | Faithful conversion, strict allowed-tags list |
 | Publishing | WordPress REST API, application passwords | The client's own site, revocable access |
 | Web | Next.js 16, React 19, Tailwind, shadcn/ui, Tiptap | Server Components and Actions, a polished editor |
-| Infra | Cloud Run, Artifact Registry, Secret Manager, Terraform | Scales to zero, infrastructure as code |
-| CI/CD | GitHub Actions, Workload Identity Federation | Every push checked, keyless deploys |
+| Infra | Cloud Run + Terraform, or Docker Compose on a VPS behind nginx | Same images on both: serverless with infrastructure as code, or one flat-cost server |
+| CI/CD | GitHub Actions, GitHub Container Registry | Every push checked, every green push to `main` deployed |
 | Tooling | uv, pnpm, Docker Compose, ruff, import-linter, pytest, vitest | Fast, reproducible, enforced boundaries |
 
 ## Run it locally
@@ -250,8 +253,8 @@ Then open **http://localhost:3000**, sign in with `AGENCY_EMAIL` and `AGENCY_PAS
 
 | Service | URL | Stands in for |
 | --- | --- | --- |
-| Web | http://localhost:3000 | Cloud Run web |
-| API | http://localhost:8000/docs | Cloud Run API |
+| Web | http://localhost:3000 | The deployed web (VPS or Cloud Run) |
+| API | http://localhost:8000/docs | The deployed API (VPS or Cloud Run) |
 | Firebase emulators | http://localhost:4000 | Firestore and Firebase Auth |
 | WordPress | http://localhost:8080 | The client's site |
 
@@ -274,7 +277,7 @@ Then open **http://localhost:3000**, sign in with `AGENCY_EMAIL` and `AGENCY_PAS
 
 | Variable | Used for |
 | --- | --- |
-| `APP_ENV` | `local`, `test` or `gcp` |
+| `APP_ENV` | `local`, `test` or `prod` |
 | `API_URL`, `WEB_BASE_URL` | How the two apps find each other |
 | `FIRESTORE_EMULATOR_HOST`, `FIREBASE_AUTH_EMULATOR_HOST` | Point the API at the local emulators |
 | `NEXT_PUBLIC_FIREBASE_*` | Firebase config for the browser |
@@ -282,38 +285,56 @@ Then open **http://localhost:3000**, sign in with `AGENCY_EMAIL` and `AGENCY_PAS
 | `WP_*`, `MARIADB_*` | The local WordPress and its database |
 | `CREDENTIAL_ENCRYPTION_KEY` | Encrypts app passwords and review tokens |
 | `INTERNAL_API_SECRET` | Lets the web server pass the client's IP to the API |
+| `AGENCY_EMAILS` | Who may sign in; required in prod |
 
 </details>
 
-## Deploy to Google Cloud
+## Deploy
 
-**Serverless and cost-smart.** Both apps run on Cloud Run and scale to zero when idle, so the whole demo fits in GCP's free tier. A billing budget with a kill switch guards against surprises.
+The app deploys to **two targets** from the same production Docker images. WordPress always runs on the VPS, and data and logins always live in Firestore and Firebase Auth.
 
-| Piece | Where it runs |
-| --- | --- |
-| Web and API | Cloud Run, `us-central1` |
-| Data and logins | Firestore and Firebase Auth (Identity Platform) |
-| Secrets | Secret Manager |
-| Images | Artifact Registry, keeping the 5 newest versions of each image |
-| WordPress | A VPS behind nginx with HTTPS, nightly backups and a real cron ([`infra/wordpress/`](infra/wordpress/)) |
+| | Google Cloud | VPS |
+| --- | --- | --- |
+| Web and API | Cloud Run, scale to zero | Docker Compose behind nginx with HTTPS |
+| Set up with | One `terraform apply` ([`infra/terraform/`](infra/terraform/)) | A few manual steps ([`infra/app/`](infra/app/)) |
+| Secrets | Secret Manager | `.env` and a key file on the server |
+| Images | Artifact Registry | GitHub Container Registry |
+| Deploys | By hand (`gcloud run deploy`) | Automatic on every green push to `main` |
+| Firebase plan | Blaze (pay as you go) | Spark (free, no billing account) |
+| Status | Ready, not live | **Live** |
 
-**Infrastructure as code.** One `terraform apply` in [`infra/terraform/`](infra/terraform/) creates everything: services, the database, auth, secrets, the image registry, least-privilege service accounts and the GitHub deploy identity.
+> **Why the live demo runs on a VPS.** I built the app for Google Cloud first: Cloud Run, Terraform, Secret Manager and keyless deploys from GitHub. When it was time to go live, Google Cloud wouldn't accept my card for the billing account, and I couldn't deploy. Rather than wait, I added a second target: the same images on the VPS that already hosts WordPress, with Firestore and Firebase Auth on Firebase's free plan, which needs no billing account. The GCP setup is still in the repo. Once billing works, it's one `terraform apply` away.
+
+**Who can sign in.** Only emails listed in `AGENCY_EMAILS` can sign in, on both targets. On the free Firebase plan, the "sign-up off" setting may not be available, so the API enforces the list itself.
 
 <details>
-<summary><b>First-time setup</b></summary>
+<summary><b>Deploy to Google Cloud</b></summary>
 
 1. Install the [Google Cloud CLI](https://cloud.google.com/sdk/docs/install). On macOS: `brew install --cask google-cloud-sdk`. Open a new terminal so `gcloud` is on your PATH.
-2. `gcloud auth login` and `gcloud auth application-default login`.
+2. `gcloud auth login` and `gcloud auth application-default login`. The project needs a billing account.
 3. Create the state bucket: `gcloud storage buckets create gs://content-importer-adaptify-tfstate --location=us-central1 --uniform-bucket-level-access`.
-4. In `infra/terraform/`: `terraform init`, then `terraform apply`.
+4. In `infra/terraform/`: `terraform init`, then `terraform apply -var 'agency_emails=you@example.com'`.
 5. Add the two secret values, which never touch Terraform state:
    ```bash
    printf '%s' "<value>" | gcloud secrets versions add CREDENTIAL_ENCRYPTION_KEY --data-file=-
    printf '%s' "<value>" | gcloud secrets versions add INTERNAL_API_SECRET --data-file=-
    ```
 6. `terraform apply` again, then create the agency accounts in the Firebase console.
+7. Build, push and deploy the images ([the commands](docs/architecture.md#deploy-images-by-hand)).
 
-The full guide is in [architecture.md › Terraform](docs/architecture.md#terraform).
+The full guide is in [architecture.md › GCP target](docs/architecture.md#gcp-target).
+
+</details>
+
+<details>
+<summary><b>Deploy to a VPS</b></summary>
+
+1. **Firebase:** create Firestore and turn on Email/Password sign-in, add the agency accounts, register a web app, and generate a service-account key.
+2. **VPS:** Docker, nginx and certbot. Copy `infra/app/.env.example` to `~/app/.env` and fill it in, copy the key to `~/app/firebase-service-account.json`, and install the nginx site with a certificate.
+3. **GitHub:** add the `VPS_SSH` and `FIREBASE_*` variables and the `VPS_SSH_KEY` and `VPS_KNOWN_HOSTS` secrets.
+4. Push to `main`.
+
+The full guide is in [architecture.md › Deployment and CI](docs/architecture.md#deployment-and-ci).
 
 </details>
 
@@ -322,13 +343,13 @@ The full guide is in [architecture.md › Terraform](docs/architecture.md#terraf
 - **Web:** lint, types, tests and a production build.
 - **API types:** a check that the frontend's API types still match the server.
 
-Pushes to `main` build the images and deploy them to Cloud Run. GitHub signs in to GCP through **Workload Identity Federation**, so there are no keys stored anywhere.
+When all three pass on `main`, a fourth job builds both images, pushes them to GHCR, and connects to the VPS over SSH to pull the images and restart the containers. The registry login uses the job's own short-lived token, so no registry password is stored on the server.
 
 ## What's next: AI change drafting
 
 Change requests are the slowest part of any approval loop. When a client writes *"shorten the intro and mention our free trial"*, the agency will get a ready-made draft of that edit:
 
-- **LangChain** with structured output, on **Gemini via Vertex AI**, traced in **LangSmith**.
+- **LangChain** with structured output, on **Gemini**, traced in **LangSmith**.
 - A side-by-side diff. The agency accepts, edits or discards the draft, and the client still approves the final text.
 - A monthly spend cap, and output cleaned to the same safe HTML as imported content.
 

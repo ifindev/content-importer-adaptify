@@ -17,6 +17,7 @@ from app.core.domain.errors import (
     EmptyContentError,
     InvalidTokenError,
     NotAwaitingApprovalError,
+    NotDeletableError,
     NotEditableError,
     NotFailedError,
     NotSchedulableError,
@@ -43,6 +44,7 @@ _SIMPLE_HANDLERS: tuple[tuple[type[Exception], int, str], ...] = (
     (ArticleChangedError, 409, "article_changed"),
     (NotSchedulableError, 409, "not_schedulable"),
     (NotFailedError, 409, "not_failed"),
+    (NotDeletableError, 409, "not_deletable"),
     (PublishAtInPastError, 422, "publish_at_in_past"),
     (SiteNotFoundError, 404, "site_not_found"),
 )

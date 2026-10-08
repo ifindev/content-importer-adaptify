@@ -80,3 +80,9 @@ class InvalidTokenError(Exception):
 
 class ArticleNotVisibleError(Exception):
     pass
+
+
+class NotDeletableError(Exception):
+    def __init__(self, status: str) -> None:
+        self.status = status
+        super().__init__(f"Article in status {status} cannot be deleted")

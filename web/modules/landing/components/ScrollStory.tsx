@@ -88,10 +88,7 @@ export function ScrollStory() {
               })}
             </ol>
           </div>
-          <div
-            aria-hidden
-            className="relative overflow-hidden rounded-[20px]"
-          >
+          <div aria-hidden className="relative overflow-hidden rounded-[20px]">
             {STEPS.map((step, i) => (
               <div
                 key={step.title}

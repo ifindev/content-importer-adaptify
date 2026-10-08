@@ -128,8 +128,7 @@
     landing-pop 0.45s cubic-bezier(0.3, 1.4, 0.5, 1) both,
     landing-shine 2.4s ease-in-out infinite;
   animation-delay:
-    calc(300ms + var(--i, 0) * 55ms),
-    calc(1.4s + var(--i, 0) * 90ms);
+    calc(300ms + var(--i, 0) * 55ms), calc(1.4s + var(--i, 0) * 90ms);
 }
 .dm-twinkle {
   animation: landing-twinkle 5s ease-in-out infinite;

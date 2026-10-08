@@ -55,10 +55,7 @@ export function DotMatrix({ className }: { className?: string }) {
     }
   }
   return (
-    <div
-      aria-hidden
-      className={`aspect-square grid-cols-9 ${className ?? ""}`}
-    >
+    <div aria-hidden className={`aspect-square grid-cols-9 ${className ?? ""}`}>
       {dots}
     </div>
   );

@@ -97,7 +97,9 @@ export function DecisionPanel({
       toast.success(
         kind === "approve" ? "Approved. Thank you!" : "Sent to the agency.",
       );
-      setMode("decide");
+      // The article leaves the client's view once decided (spec: Client
+      // view), so reloading this reader would 404. Back to the list.
+      router.push(`/review/${token}`);
     });
   }
 
@@ -324,12 +326,8 @@ function ReadOnlyPanel({
   article: Schemas["ReviewArticleOut"];
   card: Schemas["ArticleCard"] | undefined;
 }) {
-  const text =
-    article.status === "published"
-      ? "This article is live."
-      : card?.publish_at_utc
-        ? null
-        : "You approved this article. The agency will set a publish date.";
+  // The client only sees Scheduled and Published once they've decided.
+  const published = article.status === "published";
 
   return (
     <aside
@@ -338,10 +336,12 @@ function ReadOnlyPanel({
     >
       <div className="flex flex-col gap-2 text-[13.5px] lg:sticky lg:top-6">
         <h2 className="text-[15px] font-semibold">
-          {article.status === "published" ? "Published" : "Approved"}
+          {published ? "Published" : "Scheduled"}
         </h2>
-        {text && <p className="text-muted-foreground">{text}</p>}
-        {!text && card?.publish_at_utc && (
+        {published && (
+          <p className="text-muted-foreground">This article is live.</p>
+        )}
+        {!published && card?.publish_at_utc && (
           <p className="text-muted-foreground">
             Publishes <LocalTime iso={card.publish_at_utc} format="datetime" />.
           </p>

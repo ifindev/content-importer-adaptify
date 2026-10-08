@@ -72,11 +72,12 @@ export function CardMeta({
   waiting?: boolean;
 }) {
   if (waiting) return <>Needs your decision</>;
-  if (card.published_url && card.publish_at_utc)
+  if (!card.publish_at_utc) return null;
+  if (card.published_url)
     return <LocalTime iso={card.publish_at_utc} format="short" />;
-  if (card.publish_at_utc)
-    return (
-      <>Publishes {<LocalTime iso={card.publish_at_utc} format="short" />}</>
-    );
-  return <>Approved, date not set yet</>;
+  return (
+    <>
+      Publishes <LocalTime iso={card.publish_at_utc} format="short" />
+    </>
+  );
 }

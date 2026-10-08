@@ -324,8 +324,8 @@ export function ArticleDetail({
 
   return (
     <div className="flex min-h-svh flex-col md:h-[calc(100svh-1rem)] md:min-h-0">
-      {/* Top bar */}
-      <div className="flex h-[52px] shrink-0 items-center gap-3 border-b px-1 md:px-3.5 md:pl-5">
+      {/* Top bar. On mobile the window scrolls, so it sticks there. */}
+      <div className="bg-background flex h-[52px] shrink-0 items-center gap-3 border-b px-1 max-md:sticky max-md:top-0 max-md:z-20 md:px-3.5 md:pl-5">
         <Link
           href={`/sites/${siteId}/articles`}
           aria-label="Back to articles"
@@ -381,13 +381,15 @@ export function ArticleDetail({
       </div>
 
       <div className="flex min-h-0 flex-1 max-md:flex-col">
-        {/* Editor column */}
-        <div className="min-w-0 flex-1 overflow-y-auto">
+        {/* Editor column. It scrolls on its own only from md: on mobile an
+            overflow here would trap the toolbar's sticky inside it. */}
+        <div className="min-w-0 flex-1 md:overflow-y-auto">
           <StatusNotice article={article} unlocked={unlocked} />
           <ArticleEditor
             content={article.body_html}
             editable={editable}
             onChange={setBody}
+            toolbarClassName="max-md:top-[52px]"
             header={
               <>
                 <textarea

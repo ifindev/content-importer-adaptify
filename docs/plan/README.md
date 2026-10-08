@@ -103,6 +103,7 @@ Build order for this phase: T-026 (done) → T-033 (all UI on fixtures, no API n
 | T-048 | [Deploy the app to the VPS, with auto-deploy](048-deploy-vps-app.md) | R8.1, R8.2, architecture: Infrastructure, Deployment and CI | in progress |
 | T-049 | [Add site: how to get a WordPress user and application password](049-ui-add-site-wordpress-help.md) | spec: Screens (Sites) | done |
 | T-050 | [Firestore index for the article list](050-deploy-firestore-index.md) | architecture: Setup | in progress |
+| T-051 | [Mobile article editor: keep the top bar and toolbar in view](051-ui-mobile-sticky-editor-header.md) | spec: Screens (Article detail) | in progress |
 
 Build order: T-040, T-041, T-043 and T-044 → T-048. GCP billing couldn't be set up (the card was refused), so T-042, T-045 and T-046 are on hold until it is, and the app runs on the Tencent VPS at `importer-app.aiwitharifin.com` (API at `importer-api.aiwitharifin.com`), next to WordPress at `wp.aiwitharifin.com`, with Firestore and Firebase Auth on the free Spark plan. Access: only emails in `AGENCY_EMAILS` can sign in.
 

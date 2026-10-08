@@ -67,6 +67,7 @@ export function ArticleEditor({
   label = "Article body",
   header,
   className,
+  toolbarClassName,
 }: {
   content: string;
   /** Rendered between the toolbar and the body, e.g. title and slug fields. */
@@ -75,6 +76,8 @@ export function ArticleEditor({
   onChange?: (html: string) => void;
   label?: string;
   className?: string;
+  /** For example the sticky offset under a page's own sticky header. */
+  toolbarClassName?: string;
 }) {
   const editor = useEditor({
     extensions,
@@ -117,7 +120,7 @@ export function ArticleEditor({
 
   return (
     <div className={cn("flex flex-col", className)}>
-      {editable && <Toolbar editor={editor} />}
+      {editable && <Toolbar editor={editor} className={toolbarClassName} />}
       {editable && <SelectionMenu editor={editor} />}
       <div className={BODY}>
         {header}
@@ -184,7 +187,13 @@ const Sep = () => (
   <span aria-hidden className="bg-border mx-1.5 h-5 w-px shrink-0" />
 );
 
-function Toolbar({ editor }: { editor: Editor }) {
+function Toolbar({
+  editor,
+  className,
+}: {
+  editor: Editor;
+  className?: string;
+}) {
   const s = useMarks(editor);
   const chain = () => editor.chain().focus();
 
@@ -192,7 +201,10 @@ function Toolbar({ editor }: { editor: Editor }) {
     <div
       role="toolbar"
       aria-label="Formatting"
-      className="bg-background sticky top-0 z-10 flex items-center gap-0.5 overflow-x-auto border-b px-3 py-2 md:px-5"
+      className={cn(
+        "bg-background sticky top-0 z-10 flex items-center gap-0.5 overflow-x-auto border-b px-3 py-2 md:px-5",
+        className,
+      )}
     >
       <Tool
         label="Undo"

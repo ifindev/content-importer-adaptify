@@ -1,0 +1,5 @@
+# crontab -e on the VPS, as the user that owns ~/wordpress. Cron sets $HOME.
+# wp-cron is called on the host loopback port, not through `docker compose exec`:
+# exec hangs when cron runs it without a terminal, and posts then miss their time.
+* * * * * curl -s -m 50 -o /dev/null http://127.0.0.1:8080/wp-cron.php
+0 3 * * * $HOME/wordpress/backup.sh >> $HOME/backup.log 2>&1

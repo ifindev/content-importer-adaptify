@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 250" width="880" height="250" role="img" aria-label="An article moves from Import to Client review, Approved, Scheduled and Live on WordPress">
+<style>
+:root{--bg:#fff;--fg:oklch(0.145 0 0);--muted:oklch(0.556 0 0);--faint:oklch(0.8 0 0);--border:oklch(0.93 0.006 264);--line:oklch(0.955 0.003 264);--card:#fff;--primary:oklch(0.488 0.243 264.376);--primary-fg:#fff;
+--draft:oklch(0.955 0 0);--draft-fg:oklch(0.45 0 0);--awaiting:#eff6ff;--awaiting-fg:#1d4ed8;--approved:#ecfdf5;--approved-fg:#047857;--scheduled:oklch(0.94 0.035 300);--scheduled-fg:oklch(0.42 0.18 300);--published:oklch(0.93 0.05 180);--published-fg:oklch(0.4 0.09 180)}
+@media (prefers-color-scheme: dark){:root{--bg:oklch(0.16 0 0);--fg:oklch(0.985 0 0);--muted:oklch(0.708 0 0);--faint:oklch(0.4 0 0);--border:oklch(0.3 0 0);--line:oklch(0.26 0 0);--card:oklch(0.205 0 0);--primary:oklch(0.62 0.2 264);
+--draft:oklch(0.269 0 0);--draft-fg:oklch(0.85 0 0);--awaiting:oklch(0.3 0.08 264);--awaiting-fg:oklch(0.85 0.08 264);--approved:oklch(0.3 0.06 160);--approved-fg:oklch(0.85 0.1 160);--scheduled:oklch(0.3 0.08 300);--scheduled-fg:oklch(0.85 0.1 300);--published:oklch(0.3 0.05 180);--published-fg:oklch(0.85 0.08 180)}}
+text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+.bg{fill:var(--bg);stroke:var(--border)}
+.track{stroke:var(--border);stroke-width:2}
+.fill{stroke:var(--primary);stroke-width:2;transform-box:fill-box;transform-origin:left center;animation:grow 12s linear infinite}
+.dot{fill:var(--bg);stroke:var(--border);stroke-width:2}
+.label{fill:var(--muted);font-size:13px;font-weight:500}
+.card{fill:var(--card);stroke:var(--border)}
+.title{fill:var(--fg);font-size:13px;font-weight:600}
+.ln{fill:var(--line)}
+.cap{fill:var(--muted);font-size:11.5px}
+.mover{animation:move 12s cubic-bezier(.6,0,.3,1) infinite}
+@keyframes grow{0%{transform:scaleX(0.000)}18%{transform:scaleX(0.000)}20%{transform:scaleX(0.250)}38%{transform:scaleX(0.250)}40%{transform:scaleX(0.500)}58%{transform:scaleX(0.500)}60%{transform:scaleX(0.750)}78%{transform:scaleX(0.750)}80%{transform:scaleX(1.000)}98%{transform:scaleX(1.000)}100%{transform:scaleX(1)}}
+@keyframes move{0%{transform:translateX(0px);opacity:1}18%{transform:translateX(0px);opacity:1}22%{transform:translateX(153px);opacity:1}38%{transform:translateX(153px);opacity:1}42%{transform:translateX(306px);opacity:1}58%{transform:translateX(306px);opacity:1}62%{transform:translateX(459px);opacity:1}78%{transform:translateX(459px);opacity:1}82%{transform:translateX(612px);opacity:1}98%{transform:translateX(612px);opacity:1}99%{transform:translateX(612px);opacity:0}100%{transform:translateX(0px);opacity:0}}
+@keyframes s0{0%,18%{opacity:1}20%,100%{opacity:0}}
+.s0{animation:s0 12s linear infinite}
+@keyframes c0{0%,98%{fill:var(--primary);stroke:var(--primary)}100%{fill:var(--primary);stroke:var(--primary)}}
+.c0{animation:c0 12s linear infinite}
+@keyframes s1{0%,21%{opacity:0}23%,38%{opacity:1}40%,100%{opacity:0}}
+.s1{animation:s1 12s linear infinite}
+@keyframes c1{0%,21%{fill:var(--bg);stroke:var(--border)}23%,98%{fill:var(--primary);stroke:var(--primary)}100%{fill:var(--bg);stroke:var(--border)}}
+.c1{animation:c1 12s linear infinite}
+@keyframes s2{0%,41%{opacity:0}43%,58%{opacity:1}60%,100%{opacity:0}}
+.s2{animation:s2 12s linear infinite}
+@keyframes c2{0%,41%{fill:var(--bg);stroke:var(--border)}43%,98%{fill:var(--primary);stroke:var(--primary)}100%{fill:var(--bg);stroke:var(--border)}}
+.c2{animation:c2 12s linear infinite}
+@keyframes s3{0%,61%{opacity:0}63%,78%{opacity:1}80%,100%{opacity:0}}
+.s3{animation:s3 12s linear infinite}
+@keyframes c3{0%,61%{fill:var(--bg);stroke:var(--border)}63%,98%{fill:var(--primary);stroke:var(--primary)}100%{fill:var(--bg);stroke:var(--border)}}
+.c3{animation:c3 12s linear infinite}
+@keyframes s4{0%,81%{opacity:0}83%,100%{opacity:1}}
+.s4{animation:s4 12s linear infinite}
+@keyframes c4{0%,81%{fill:var(--bg);stroke:var(--border)}83%,98%{fill:var(--primary);stroke:var(--primary)}100%{fill:var(--bg);stroke:var(--border)}}
+.c4{animation:c4 12s linear infinite}
+</style>
+<rect class="bg" x="0.5" y="0.5" width="879" height="249" rx="16"/>
+<line class="track" x1="134" y1="44" x2="746" y2="44"/>
+<line class="fill" x1="134" y1="44" x2="746" y2="44"/>
+<circle class="dot c0" cx="134" cy="44" r="7"/>
+<text class="label" x="134" y="76" text-anchor="middle">Import</text>
+<circle class="dot c1" cx="287" cy="44" r="7"/>
+<text class="label" x="287" y="76" text-anchor="middle">Client review</text>
+<circle class="dot c2" cx="440" cy="44" r="7"/>
+<text class="label" x="440" y="76" text-anchor="middle">Approved</text>
+<circle class="dot c3" cx="593" cy="44" r="7"/>
+<text class="label" x="593" y="76" text-anchor="middle">Scheduled</text>
+<circle class="dot c4" cx="746" cy="44" r="7"/>
+<text class="label" x="746" y="76" text-anchor="middle">Live</text>
+<g class="mover"><rect class="card" x="16" y="98" width="236" height="128" rx="12"/>
+<text class="title" x="32" y="124">Roof Repair vs Replacement</text>
+<rect class="ln" x="32" y="136" width="204" height="6" rx="3"/>
+<rect class="ln" x="32" y="148" width="180" height="6" rx="3"/>
+<rect class="ln" x="32" y="160" width="192" height="6" rx="3"/>
+<g class="s0"><rect x="32" y="178" width="55" height="20" rx="10" style="fill:var(--draft)"/><text x="60" y="192" text-anchor="middle" style="fill:var(--draft-fg);font-size:11.5px;font-weight:600">Draft</text><text class="cap" x="32" y="214">Pasted from Google Docs</text></g>
+<g class="s1"><rect x="32" y="178" width="134" height="20" rx="10" style="fill:var(--awaiting)"/><text x="99" y="192" text-anchor="middle" style="fill:var(--awaiting-fg);font-size:11.5px;font-weight:600">Awaiting approval</text><text class="cap" x="32" y="214">Review link sent to client</text></g>
+<g class="s2"><rect x="32" y="178" width="75" height="20" rx="10" style="fill:var(--approved)"/><text x="69" y="192" text-anchor="middle" style="fill:var(--approved-fg);font-size:11.5px;font-weight:600">Approved</text><text class="cap" x="32" y="214">Approved by Sarah · Oct 8</text></g>
+<g class="s3"><rect x="32" y="178" width="81" height="20" rx="10" style="fill:var(--scheduled)"/><text x="73" y="192" text-anchor="middle" style="fill:var(--scheduled-fg);font-size:11.5px;font-weight:600">Scheduled</text><text class="cap" x="32" y="214">Publishes Oct 12, 9:00 AM</text></g>
+<g class="s4"><rect x="32" y="178" width="81" height="20" rx="10" style="fill:var(--published)"/><text x="73" y="192" text-anchor="middle" style="fill:var(--published-fg);font-size:11.5px;font-weight:600">Published</text><text class="cap" x="32" y="214">yoursite.com/roof-repair-guide</text></g>
+</g></svg>

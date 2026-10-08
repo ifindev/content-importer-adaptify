@@ -886,6 +886,32 @@
         "title": "SessionRequest",
         "type": "object"
       },
+      "SiteConnectionTest": {
+        "properties": {
+          "wp_app_password": {
+            "description": "WordPress application password. Stored encrypted; never echoed back.",
+            "title": "Wp App Password",
+            "type": "string"
+          },
+          "wp_base_url": {
+            "description": "WordPress site base URL, e.g. https://client.example.com.",
+            "title": "Wp Base Url",
+            "type": "string"
+          },
+          "wp_username": {
+            "description": "WordPress username for the application password.",
+            "title": "Wp Username",
+            "type": "string"
+          }
+        },
+        "required": [
+          "wp_base_url",
+          "wp_username",
+          "wp_app_password"
+        ],
+        "title": "SiteConnectionTest",
+        "type": "object"
+      },
       "SiteCreate": {
         "properties": {
           "name": {
@@ -910,16 +936,34 @@
           }
         },
         "required": [
-          "name",
           "wp_base_url",
           "wp_username",
-          "wp_app_password"
+          "wp_app_password",
+          "name"
         ],
         "title": "SiteCreate",
         "type": "object"
       },
       "SiteOut": {
         "properties": {
+          "connection_checked_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "When WordPress was last checked, UTC.",
+            "title": "Connection Checked At"
+          },
+          "connection_ok": {
+            "description": "Whether the last WordPress check passed.",
+            "title": "Connection Ok",
+            "type": "boolean"
+          },
           "id": {
             "description": "Site id.",
             "title": "Id",
@@ -934,14 +978,140 @@
             "description": "WordPress site base URL.",
             "title": "Wp Base Url",
             "type": "string"
+          },
+          "wp_username": {
+            "description": "WordPress username the app password belongs to.",
+            "title": "Wp Username",
+            "type": "string"
           }
         },
         "required": [
           "id",
           "name",
-          "wp_base_url"
+          "wp_base_url",
+          "wp_username",
+          "connection_ok"
         ],
         "title": "SiteOut",
+        "type": "object"
+      },
+      "SiteSummary": {
+        "properties": {
+          "article_count": {
+            "description": "Articles in this site.",
+            "title": "Article Count",
+            "type": "integer"
+          },
+          "connection_checked_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "When WordPress was last checked, UTC.",
+            "title": "Connection Checked At"
+          },
+          "connection_ok": {
+            "description": "Whether the last WordPress check passed.",
+            "title": "Connection Ok",
+            "type": "boolean"
+          },
+          "id": {
+            "description": "Site id.",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "description": "Display name.",
+            "title": "Name",
+            "type": "string"
+          },
+          "needs_attention_count": {
+            "description": "Articles that are Failed or carry a sync warning.",
+            "title": "Needs Attention Count",
+            "type": "integer"
+          },
+          "wp_base_url": {
+            "description": "WordPress site base URL.",
+            "title": "Wp Base Url",
+            "type": "string"
+          },
+          "wp_username": {
+            "description": "WordPress username the app password belongs to.",
+            "title": "Wp Username",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "wp_base_url",
+          "wp_username",
+          "connection_ok",
+          "article_count",
+          "needs_attention_count"
+        ],
+        "title": "SiteSummary",
+        "type": "object"
+      },
+      "SiteUpdate": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "New display name.",
+            "title": "Name"
+          },
+          "wp_app_password": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "New application password. Omitted or empty keeps the stored one.",
+            "title": "Wp App Password"
+          },
+          "wp_base_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "New WordPress site base URL.",
+            "title": "Wp Base Url"
+          },
+          "wp_username": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "New WordPress username.",
+            "title": "Wp Username"
+          }
+        },
+        "title": "SiteUpdate",
         "type": "object"
       },
       "SitesOut": {
@@ -949,7 +1119,7 @@
           "sites": {
             "description": "Every site the agency manages.",
             "items": {
-              "$ref": "#/components/schemas/SiteOut"
+              "$ref": "#/components/schemas/SiteSummary"
             },
             "title": "Sites",
             "type": "array"
@@ -1452,6 +1622,125 @@
         ]
       }
     },
+    "/sites/test-connection": {
+      "post": {
+        "operationId": "test_connection_route_sites_test_connection_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SiteConnectionTest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Test Connection Route",
+        "tags": [
+          "Sites"
+        ]
+      }
+    },
+    "/sites/{site_id}": {
+      "delete": {
+        "operationId": "delete_site_route_sites__site_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "site_id",
+            "required": true,
+            "schema": {
+              "title": "Site Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Site Route",
+        "tags": [
+          "Sites"
+        ]
+      },
+      "patch": {
+        "operationId": "update_site_route_sites__site_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "site_id",
+            "required": true,
+            "schema": {
+              "title": "Site Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SiteUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SiteOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update Site Route",
+        "tags": [
+          "Sites"
+        ]
+      }
+    },
     "/sites/{site_id}/articles": {
       "get": {
         "operationId": "list_articles_sites__site_id__articles_get",
@@ -1614,6 +1903,48 @@
       }
     },
     "/sites/{site_id}/articles/{article_id}": {
+      "delete": {
+        "operationId": "delete_article_route_sites__site_id__articles__article_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "article_id",
+            "required": true,
+            "schema": {
+              "title": "Article Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "site_id",
+            "required": true,
+            "schema": {
+              "title": "Site Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Article Route",
+        "tags": [
+          "Articles"
+        ]
+      },
       "get": {
         "operationId": "get_article_sites__site_id__articles__article_id__get",
         "parameters": [
@@ -2060,6 +2391,59 @@
         "summary": "Reset Review Link Route",
         "tags": [
           "Review link"
+        ]
+      }
+    },
+    "/sites/{site_id}/test-connection": {
+      "post": {
+        "description": "Tests the stored credentials, with any fields in the body overriding\nthem (the edit dialog, where an empty password means the stored one).\nTesting exactly what is stored records the result on the site.",
+        "operationId": "test_site_connection_route_sites__site_id__test_connection_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "site_id",
+            "required": true,
+            "schema": {
+              "title": "Site Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/SiteUpdate"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Body"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Test Site Connection Route",
+        "tags": [
+          "Sites"
         ]
       }
     }

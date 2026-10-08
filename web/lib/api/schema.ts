@@ -124,6 +124,41 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/sites/test-connection": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Test Connection Route */
+        post: operations["test_connection_route_sites_test_connection_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/sites/{site_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Site Route */
+        delete: operations["delete_site_route_sites__site_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Site Route */
+        patch: operations["update_site_route_sites__site_id__patch"];
+        trace?: never;
+    };
     "/sites/{site_id}/articles": {
         parameters: {
             query?: never;
@@ -186,7 +221,8 @@ export interface paths {
         get: operations["get_article_sites__site_id__articles__article_id__get"];
         put?: never;
         post?: never;
-        delete?: never;
+        /** Delete Article Route */
+        delete: operations["delete_article_route_sites__site_id__articles__article_id__delete"];
         options?: never;
         head?: never;
         /** Update Article */
@@ -306,6 +342,28 @@ export interface paths {
         put?: never;
         /** Reset Review Link Route */
         post: operations["reset_review_link_route_sites__site_id__review_link_reset_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/sites/{site_id}/test-connection": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Test Site Connection Route
+         * @description Tests the stored credentials, with any fields in the body overriding
+         *     them (the edit dialog, where an empty password means the stored one).
+         *     Testing exactly what is stored records the result on the site.
+         */
+        post: operations["test_site_connection_route_sites__site_id__test_connection_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -807,6 +865,24 @@ export interface components {
              */
             id_token: string;
         };
+        /** SiteConnectionTest */
+        SiteConnectionTest: {
+            /**
+             * Wp App Password
+             * @description WordPress application password. Stored encrypted; never echoed back.
+             */
+            wp_app_password: string;
+            /**
+             * Wp Base Url
+             * @description WordPress site base URL, e.g. https://client.example.com.
+             */
+            wp_base_url: string;
+            /**
+             * Wp Username
+             * @description WordPress username for the application password.
+             */
+            wp_username: string;
+        };
         /** SiteCreate */
         SiteCreate: {
             /**
@@ -833,6 +909,16 @@ export interface components {
         /** SiteOut */
         SiteOut: {
             /**
+             * Connection Checked At
+             * @description When WordPress was last checked, UTC.
+             */
+            connection_checked_at?: string | null;
+            /**
+             * Connection Ok
+             * @description Whether the last WordPress check passed.
+             */
+            connection_ok: boolean;
+            /**
              * Id
              * @description Site id.
              */
@@ -847,6 +933,77 @@ export interface components {
              * @description WordPress site base URL.
              */
             wp_base_url: string;
+            /**
+             * Wp Username
+             * @description WordPress username the app password belongs to.
+             */
+            wp_username: string;
+        };
+        /** SiteSummary */
+        SiteSummary: {
+            /**
+             * Article Count
+             * @description Articles in this site.
+             */
+            article_count: number;
+            /**
+             * Connection Checked At
+             * @description When WordPress was last checked, UTC.
+             */
+            connection_checked_at?: string | null;
+            /**
+             * Connection Ok
+             * @description Whether the last WordPress check passed.
+             */
+            connection_ok: boolean;
+            /**
+             * Id
+             * @description Site id.
+             */
+            id: string;
+            /**
+             * Name
+             * @description Display name.
+             */
+            name: string;
+            /**
+             * Needs Attention Count
+             * @description Articles that are Failed or carry a sync warning.
+             */
+            needs_attention_count: number;
+            /**
+             * Wp Base Url
+             * @description WordPress site base URL.
+             */
+            wp_base_url: string;
+            /**
+             * Wp Username
+             * @description WordPress username the app password belongs to.
+             */
+            wp_username: string;
+        };
+        /** SiteUpdate */
+        SiteUpdate: {
+            /**
+             * Name
+             * @description New display name.
+             */
+            name?: string | null;
+            /**
+             * Wp App Password
+             * @description New application password. Omitted or empty keeps the stored one.
+             */
+            wp_app_password?: string | null;
+            /**
+             * Wp Base Url
+             * @description New WordPress site base URL.
+             */
+            wp_base_url?: string | null;
+            /**
+             * Wp Username
+             * @description New WordPress username.
+             */
+            wp_username?: string | null;
         };
         /** SitesOut */
         SitesOut: {
@@ -854,7 +1011,7 @@ export interface components {
              * Sites
              * @description Every site the agency manages.
              */
-            sites: components["schemas"]["SiteOut"][];
+            sites: components["schemas"]["SiteSummary"][];
         };
         /**
          * Status
@@ -1176,6 +1333,101 @@ export interface operations {
             };
         };
     };
+    test_connection_route_sites_test_connection_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SiteConnectionTest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_site_route_sites__site_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                site_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_site_route_sites__site_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                site_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SiteUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SiteOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_articles_sites__site_id__articles_get: {
         parameters: {
             query?: {
@@ -1299,6 +1551,36 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["ArticleDetail"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_article_route_sites__site_id__articles__article_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                article_id: string;
+                site_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {
@@ -1560,6 +1842,39 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["ReviewLinkOut"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    test_site_connection_route_sites__site_id__test_connection_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                site_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["SiteUpdate"] | null;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {

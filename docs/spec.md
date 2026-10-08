@@ -337,14 +337,15 @@ The agency app has five screens, all scoped to one client site except Sites. The
 | Sites          | Agency | Every client site with its WordPress connection status, article count and needs-attention count; the last opened site has a "Current" badge. "Add site" opens a dialog that tests the WordPress connection before saving. Each row has Edit and Delete; delete removes the site's articles too and asks for the site name. | E8           |
 | Import         | Agency | Paste tab with a title field and the editor, Upload tab with a `.docx` drop zone for one or more files, per-file results with Delete, and a link to the articles list.                                                                        | E1           |
 | Articles       | Agency | One row per article: title (with the WordPress error under a Failed one), status, sync warning, publish date, live URL. "Set date" on Approved rows, "Change date" on Scheduled, "Retry" on Failed; a "More actions" menu with Open, View live, Copy live link and Delete. Checkboxes on deletable rows for bulk delete. "Copy review link" at the top, with "Reset review link" beside it. Search and status filter. | E3, E4, E5   |
-| Article detail | Agency | Editor for title, slug, body. Client feedback and activity log on the side. The primary action follows the status: send, resubmit, pull back, set date, retry, view live. Delete for Draft and Changes requested.  | E2, E3, E7   |
+| Article detail | Agency | Editor for title, slug, body. Client feedback and activity log on the side; each change request in the log opens to show its comment. The primary action follows the status: send, resubmit, pull back, set date, unschedule and change date, retry or set a new date, view live. Delete for Draft and Changes requested.  | E2, E3, E7   |
 | Report         | Agency | Cards for published this month, time to approval and change rounds; articles by status; needs attention, upcoming, change rounds per article, and published lists.           | E6           |
 | Review page    | Client | Site name, articles grouped as waiting (with the date sent), upcoming, published. Article reader with Approve and Request changes; after a decision the client returns to the list. | E3, E6       |
 
 - **Last opened site.** `/` opens the site the agency last worked in (a cookie), or the first site.
 - **Site switcher.** Every agency screen has a site switcher at the top of the sidebar: search, one row per site with a red dot when its WordPress connection failed, then "All sites" and "Add site". "All sites" is also pinned at the bottom of the sidebar.
 - **Status filter.** A select at every width: "All", each status with its count, and "Needs attention" (Failed or any sync warning).
-- **Editing after approval.** On an Approved or Scheduled article, "Edit" first asks for confirmation: editing resets the client's approval.
+- **Fresh data.** Articles, Article detail and the client's review pages refetch when the tab regains focus (at most every 5 seconds), and have a Refresh button, so the other side's changes show without a reload. Article detail skips both while there are unsaved changes.
+- **Editing after approval.** On an Approved article, "Edit" first asks for confirmation: editing resets the client's approval. A Scheduled article has no Edit; it says to unschedule first.
 
 **Decision:** The review page is a separate, simple route with no agency navigation. It works on a phone, since clients often open links from email on mobile.
 

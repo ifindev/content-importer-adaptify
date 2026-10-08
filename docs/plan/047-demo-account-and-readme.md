@@ -29,11 +29,10 @@ Signed in as yourself on the live app, add `https://wp.aiwitharifin.com` as a si
 - They can add their own WordPress site. The README warns them about it.
 - All reviewers share one agency account, so they see each other's sites and articles. That's how the product works (one agency), and the README says so.
 
-### README rewrite
-The root `README.md` still says "Status: Phase 1", and "Getting started" is a placeholder. New sections, in order:
-1. **What it is:** 3 lines. Agencies import articles written elsewhere, clients approve them through a private link with no account, and approved articles are scheduled and published to WordPress. Built for Adaptify SEO's roadmap item "Ability to import existing content".
-2. **Try it:** the live web URL and the demo login.
-3. **Two-minute walkthrough:**
+### README: fill the demo slots
+The README already tells the full story, with screenshots and animated SVGs in `docs/images/`. This ticket adds what needs the live app, at the `<!-- T-047 -->` comment under the badges:
+1. **Try it:** the live web URL and the demo login.
+2. **Two-minute walkthrough:**
    1. Sign in. The site `wp.aiwitharifin.com` is already there.
    2. Import: paste an article, or upload a `.docx`.
    3. Open it and click Send for review.
@@ -41,18 +40,10 @@ The root `README.md` still says "Status: Phase 1", and "Getting started" is a pl
    5. Back in the agency app, set a publish date at least 6 minutes ahead.
    6. Wait. The article turns Published, and its live URL opens the post on WordPress.
    7. Optional: request changes instead of approving, and see the comment in the agency app. Open the Report.
-4. **Notes:**
-   - The first page after a quiet period can take a few seconds (the servers wake up).
-   - The demo account is shared with other reviewers.
-   - Publish times must be at least 5 minutes ahead.
-5. **Using your own WordPress?**
-   - Use a test site, not a live one.
-   - It needs HTTPS, and the REST API must not be blocked by a security plugin.
-   - Create an application password under Users → Profile.
-   - Other reviewers share this account and can see sites you add.
-   - When you're done, delete the site under Sites, and revoke the application password in WordPress.
-6. **Run it locally:** `cp .env.example .env`, `make up`, `make wp-setup`, `make agency-user`, open `http://localhost:3000`, add the local site (link to architecture "Adding the local WordPress as a site"), `make wp-cron` to publish due posts.
-7. **Stack and docs:** one line on the stack; links to spec, architecture, workflow, plan.
+3. **Good to know:** the first page after a quiet period takes a few seconds while the servers wake up; the demo account is shared with other reviewers; publish times are at least 5 minutes ahead.
+4. **Using your own WordPress?** Use a test site with HTTPS and an open REST API, create an application password under Users → Profile, and delete the site and revoke the password when you're done. Other reviewers share this account and can see sites you add.
+
+Optionally retake the screenshots against the live app, so they show `wp.aiwitharifin.com`.
 
 ### Cleanup
 By hand, through the UI, when the demo gets messy: delete stray sites and articles, re-add the demo site if someone deleted it. One line in architecture "Environments". No reset script.
@@ -72,7 +63,7 @@ By hand, through the UI, when the demo gets messy: delete stray sites and articl
 ## Acceptance criteria
 - [ ] Both accounts exist; sign-up is still off.
 - [ ] The demo site is on the live app, and its connection test passes.
-- [ ] The README has the sections above. It holds no secret except the demo login.
+- [ ] The README's demo slots are filled. It holds no secret except the demo login.
 - [ ] Someone who has never seen the app (a friend, or you in a fresh private window following only the README) gets a post live on `wp.aiwitharifin.com`.
 - [ ] A phone at 375px can run the client part from the review link.
 - [ ] `docs/plan/README.md`, `docs/workflow.md` and architecture updated.
@@ -80,7 +71,7 @@ By hand, through the UI, when the demo gets messy: delete stray sites and articl
 ## Tasks
 - [ ] Create both Firebase accounts.
 - [ ] Add the demo site in the live app.
-- [ ] Rewrite `README.md`.
+- [ ] Fill the README's demo slots.
 - [ ] Run the walkthrough from the README in a fresh private window, then with someone new.
 - [ ] Update plan README, workflow and architecture.
 
@@ -88,4 +79,3 @@ By hand, through the UI, when the demo gets messy: delete stray sites and articl
 - Seed data and a reset script.
 - Per-reviewer accounts or sandboxes (a multi-tenancy feature).
 - A WordPress admin login for reviewers.
-- Screenshots or a video in the README. Add them later if wanted.

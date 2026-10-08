@@ -299,7 +299,9 @@ type MutationResult<T> = { ok: true; data: T } | { ok: false; code: string }
 
 **Filters live in the URL.** The articles status filter is a search param. Filter components call `useFilterParams().setParams({...})`, which merges changes into the current URL. The Server Component reads `searchParams` and refetches. Filtered views can be bookmarked, and the back button works.
 
-**Upload size.** Server Actions accept 1 MB request bodies by default. `next.config` raises `serverActions.bodySizeLimit` so several `.docx` files fit in one upload.
+**Upload size.** Server Actions accept 1 MB request bodies by default. `next.config` raises `serverActions.bodySizeLimit` to 31 MB so several `.docx` files fit in one upload. Cloud Run refuses HTTP/1 bodies over 32 MiB with a bare 413 before they reach Next, so the upload screen checks the total first and refuses anything over 30 MB with `upload_too_large`. The extra 1 MB covers multipart overhead.
+
+**`API_URL` is read on use.** `apiUrl()` in `lib/api-server.ts` throws when it's unset, but only when called. `next build` loads server modules to collect page data, and the production image is built without runtime env.
 
 **Shared domain components.** Components used by more than one module (status and sync warning badges, the "Can't reach WordPress" banner, `LocalTime`) live in `components/`, not in a module.
 
@@ -402,6 +404,14 @@ Terraform manages GCP only. The VPS gets set up once by hand from the files in `
 
 
 
+
+### Production images
+
+Each Dockerfile has a `dev` stage (used by `docker compose`) and a `prod` stage (used by Cloud Run).
+
+- **API:** `python:3.12-slim`, runtime dependencies only (`uv sync --no-dev`), non-root, `fastapi run` on `$PORT` (8080 if unset).
+- **Web:** `deps` → `build` → `prod`. `output: "standalone"` makes `next build` emit a minimal `server.js`. The prod stage copies only that and `.next/static`, runs as `node`, and listens on `$PORT`.
+- `NEXT_PUBLIC_FIREBASE_*` are build args, inlined into the browser bundle, so a web image belongs to one Firebase project. `NEXT_PUBLIC_FIREBASE_AUTH_EMULATOR_URL` is left unset in real builds. `API_URL`, `APP_ENV` and `INTERNAL_API_SECRET` are runtime env.
 
 ### What Terraform creates
 

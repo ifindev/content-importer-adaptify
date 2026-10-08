@@ -5,6 +5,7 @@ import {
   CircleCheck,
   FileText,
   Loader2,
+  TriangleAlert,
   Upload,
 } from "lucide-react";
 import Link from "next/link";
@@ -281,12 +282,23 @@ function UploadPanel({ siteId }: { siteId: string }) {
                   <div className="truncate text-[13.5px] font-medium">
                     {r.filename}
                   </div>
-                  {r.ok ? (
+                  {r.ok && (
                     <div className="text-muted-foreground flex items-center gap-1.5 text-[12.5px]">
                       <CircleCheck className="size-3.5 text-emerald-600" />{" "}
                       Converted to a Draft
                     </div>
-                  ) : (
+                  )}
+                  {r.ok && r.warnings.length > 0 && (
+                    <ul className="text-status-changes-fg mt-0.5 flex flex-col gap-0.5 text-[12.5px]">
+                      {r.warnings.map((w) => (
+                        <li key={w} className="flex gap-1.5">
+                          <TriangleAlert className="mt-0.5 size-3.5 shrink-0" />
+                          {w}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  {!r.ok && (
                     <div className="text-status-failed-fg text-[12.5px]">
                       {messageFor(r.code ?? "")}
                     </div>

@@ -168,20 +168,31 @@ flowchart LR
 
 ### Backend: ports and adapters
 
+The backend is built so the business rules don't know anything about the outside world. The rules about when an article can be edited, when approval resets, and when it may go to WordPress all live in plain Python. When a rule needs something from outside, like saving an article or creating a WordPress post, it asks through a small interface called a **port**. An **adapter** is the real code behind that port.
+
+Take scheduling. The `schedule` use case checks that the article is approved and that the date is at least 5 minutes ahead. Then it calls `publisher.create_scheduled(...)`. It has no idea whether that publisher is `WordPressPublisher`, which makes real REST calls, or `ScriptedPublisher`, a fake the tests use to act out "WordPress timed out" or "WordPress refused". `container.py` decides which one gets plugged in.
+
 ```
 server/app/
-├── core/        business rules: domain, use cases, ports. Pure Python, no SDKs.
-├── adapters/    Firestore, WordPress REST, .docx parsing, encryption
+├── core/        the rules: domain, use cases, ports. Pure Python, no SDKs.
+├── adapters/    Firestore, WordPress REST, .docx parsing, encryption, test fakes
 ├── api/         FastAPI routes: thin, they call use cases
 └── container.py wires real adapters (or in-memory ones for tests)
 ```
 
-- **`core/` never imports an SDK or an HTTP client**, and import-linter enforces that on every CI run.
-- The rules (the lifecycle, approval resets, scheduling) live in one place and read like the spec.
-- Adapters plug in behind small ports, so the unit tests use in-memory fakes and run in seconds with no services. Integration tests then hit a real Firestore emulator and a real WordPress.
-- External adapters log every request and response, which keeps WordPress problems easy to debug.
+Why it pays off:
+- **Clear rules.** The lifecycle, approval resets and scheduling live in one place, not scattered across routes and database code.
+- **Fast, thorough tests.** Unit tests swap in in-memory fakes, so 295 of them run in about 10 seconds with no services. Integration tests then check the real adapters against the Firestore emulator and a real WordPress.
+- **Enforced boundary** `core/` never imports an SDK or an HTTP client, and import-linter fails CI if it ever does.
+- **Easy to debug.** External adapters log every request and response, so a WordPress problem shows exactly what was sent and what came back.
+
+More in [architecture.md › Server](docs/architecture.md#server).
 
 ### Frontend: feature modules
+
+The frontend is grouped by feature instead of by file type. Everything about articles (its screens, components and data calls) lives together in `modules/articles/`. The files in `app/` are only the routes: each one reads the URL and renders a page from a module.
+
+Data follows one simple rule. **Reads happen in Server Components and writes happen in Server Actions**, both on the Next.js server. The articles page, for example, loads its list on the server through `articles.queries.ts`. Clicking Schedule calls a Server Action in `articles.mutations.ts`, which calls the API and refreshes the page. The browser never holds a copy of the data that could go stale, and it never talks to FastAPI directly.
 
 ```
 web/
@@ -192,9 +203,12 @@ web/
 └── lib/        API client, generated API types, helpers
 ```
 
-- **Reads happen in Server Components and writes in Server Actions**, so there's no client-side data layer to keep in sync.
-- **API types are generated** from FastAPI's OpenAPI schema and never written by hand. CI fails if they drift from the server.
-- Every screen works at phone, tablet and desktop widths, with loading, empty, error and "Can't reach WordPress" states.
+Why it pays off:
+- **Features are easy to find and change.** One folder holds a whole feature, and routes stay a few lines long.
+- **Types can't drift.** API types are generated from FastAPI's OpenAPI schema and never written by hand. CI fails if they stop matching the server.
+- **Every state is designed.** Each screen works at phone, tablet and desktop widths, with loading, empty, error and "Can't reach WordPress" states.
+
+More in [architecture.md › Frontend](docs/architecture.md#frontend).
 
 ### Secure by design
 - The session cookie is `httpOnly`, `secure` and `sameSite=lax`.

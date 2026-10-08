@@ -15,6 +15,7 @@ from app.api.deps import (
     get_sync_cache,
 )
 from app.api.main import app
+from app.core.domain.errors import WordPressError
 from app.core.domain.models import Article, Site
 from app.core.domain.statuses import Status
 from app.core.ports.document_parser import ParsedDocument
@@ -49,12 +50,17 @@ def repository():
 
 
 @pytest.fixture
-def client(repository):
+def publisher():
+    return ScriptedPublisher()
+
+
+@pytest.fixture
+def client(repository, publisher):
     site_context = SiteContext(
         site_id=SITE_ID,
         site=Site(id=SITE_ID, name="Test site", wp_base_url="http://wp.test"),
         repository=repository,
-        publisher=ScriptedPublisher(),
+        publisher=publisher,
     )
     app.dependency_overrides[require_session] = lambda: "test-uid"
     app.dependency_overrides[get_site_context] = lambda: site_context
@@ -264,3 +270,24 @@ def test_list_articles_includes_live_url_and_last_error(client, repository):
 
     assert by_id["a1"]["published_url"] == "https://x.test/a"
     assert by_id["a2"]["last_error"] == "403 Forbidden"
+
+
+def test_delete_draft_with_a_wordpress_post_trashes_it(client, repository, publisher):
+    repository.create_article(_article("a1", Status.DRAFT).model_copy(update={"wp_post_id": 42}))
+
+    response = client.delete(f"/sites/{SITE_ID}/articles/a1")
+
+    assert response.status_code == 204
+    assert publisher.trashed == [42]
+    assert repository.get_article("a1") is None
+
+
+def test_delete_keeps_the_article_when_wordpress_refuses(client, repository, publisher):
+    repository.create_article(_article("a1", Status.DRAFT).model_copy(update={"wp_post_id": 42}))
+    publisher.trash_error = WordPressError(500, "server_error", "oops")
+
+    response = client.delete(f"/sites/{SITE_ID}/articles/a1")
+
+    assert response.status_code == 502
+    assert response.json()["code"] == "wordpress_error"
+    assert repository.get_article("a1") is not None

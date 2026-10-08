@@ -171,7 +171,7 @@ async def retry_route(
 
 
 @router.delete("/articles/{article_id}", status_code=204, tags=[ARTICLES])
-def delete_article_route(
+async def delete_article_route(
     article_id: str,
     ctx: SiteContext = Depends(get_site_context),
 ) -> Response:
@@ -179,5 +179,5 @@ def delete_article_route(
     if article is None:
         raise ArticleNotFoundError
 
-    delete_article(article, ctx.repository)
+    await delete_article(article, ctx.repository, ctx.publisher)
     return Response(status_code=204)

@@ -13,7 +13,7 @@ Phases and the master list of tickets. How tickets work: [workflow.md](../workfl
 | 3 | API | Every P0 and P1 endpoint, by epic: lifecycle core → import → review → schedule → sync → report | The spec's end-to-end test passes through the API alone: paste → send → approve → schedule → wp-cron → Published |
 | 4 | Frontend | Every screen's UI on fixtures → data layer → wire each screen to real data | The full flow works in the browser, agency and client |
 | 5 | Deploy | The app runs on GCP against the VPS WordPress | The live URL runs the full flow; budget alert and kill switch are in place |
-| 6 | Demo readiness | Someone new can run it | A new person runs the full flow from the README alone; seed data covers every status |
+| 6 | Demo readiness | Someone new can run it | Someone new signs in with the demo login and runs the full flow from the README, starting from an empty account |
 | 7 | AI (P2) | AI change drafting | A sample draft passes hand review; the spend limit refuses past $2 |
 
 ### Requirements by phase
@@ -91,11 +91,23 @@ Build order for this phase: T-026 (done) → T-033 (all UI on fixtures, no API n
 
 ### Phase 5: Deploy
 
-Tickets are written when Phase 4 is nearly done.
+| ID | Ticket | Refs | Status |
+| --- | --- | --- | --- |
+| T-040 | [Review token encrypted in Firestore](040-api-review-token-in-firestore.md) | R3.1, R3.2, R3.7 | analyzed |
+| T-041 | [Production Dockerfiles](041-deploy-production-dockerfiles.md) | architecture: Infrastructure | analyzed |
+| T-042 | [Terraform for GCP](042-deploy-terraform-gcp.md) | R8.1, architecture: Infrastructure, Auth | analyzed |
+| T-043 | [WordPress on the VPS](043-infra-vps-wordpress.md) | spec: WordPress integration | analyzed |
+| T-044 | [CI workflow](044-deploy-ci-workflow.md) | architecture: Deployment and CI | analyzed |
+| T-045 | [Auto-deploy to Cloud Run](045-deploy-auto-deploy.md) | R8.1, R8.2, architecture: Deployment and CI | analyzed |
+| T-046 | [Budget alert and kill switch](046-deploy-budget-kill-switch.md) | architecture: Cost and limits | analyzed |
+
+Build order: T-040, T-041, T-042, T-043 and T-044 in any order → T-045 → T-046. GCP project `content-importer-adaptify` in `us-central1`; WordPress at `wp.aiwitharifin.com` on the Tencent VPS. Access is sign-up off: only accounts created in the Firebase console can log in.
 
 ### Phase 6: Demo readiness
 
-Tickets are written when Phase 5 is nearly done.
+| ID | Ticket | Refs | Status |
+| --- | --- | --- | --- |
+| T-047 | [Demo account and README](047-demo-account-and-readme.md) | R8.1, plan: Phase 6 | analyzed |
 
 ### Phase 7: AI (P2)
 

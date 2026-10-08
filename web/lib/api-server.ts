@@ -27,14 +27,29 @@ async function redirectToLogin(): Promise<never> {
   redirect(`/login?next=${encodeURIComponent(pathname)}&expired=1`);
 }
 
+/** Shared with the API, which trusts X-Client-IP only alongside it. */
+const INTERNAL_API_SECRET = process.env.INTERNAL_API_SECRET ?? "";
+
+/**
+ * The client's address for the API's per-client rate limit. Next only sets
+ * x-forwarded-for when it's missing, so a client can send its own; the last
+ * entry is the one the nearest proxy appended (or Next's socket address).
+ * ponytail: assumes one proxy in front; recheck the entry on Cloud Run (Phase 5).
+ */
+function clientIp(forwardedFor: string | null): string {
+  return forwardedFor?.split(",").at(-1)?.trim() ?? "";
+}
+
 export async function apiServer(): Promise<HttpClient> {
   const [cookieStore, headerList] = await Promise.all([cookies(), headers()]);
   const session = cookieStore.get("session")?.value;
-  const forwardedFor = headerList.get("x-forwarded-for") ?? "";
+  const ip = clientIp(headerList.get("x-forwarded-for"));
 
   const client = new HttpClient(API_URL, () => ({
     ...(session ? { Cookie: `session=${session}` } : {}),
-    "X-Forwarded-For": forwardedFor,
+    ...(ip && INTERNAL_API_SECRET
+      ? { "X-Client-IP": ip, "X-Internal-Secret": INTERNAL_API_SECRET }
+      : {}),
   }));
 
   return new Proxy(client, {

@@ -53,6 +53,17 @@ All UI, states and layout are done in T-033. This ticket points `modules/article
 - [ ] Manual pass of each flow against `make up`.
 - [ ] Docs, if any behavior differs from T-033's.
 
+## Fixed after the wiring audit (2026-10-08)
+Code is done; the boxes above are ticked during the browser pass.
+- `wordpress_error` (a 502) now shows its message inline, and the page revalidates so the row shows Failed with its error. Before, it fell through to the generic error page.
+- "Reset review link" beside "Copy review link", with a confirm; the new link is copied.
+- Paste shows "Article imported." before opening the article.
+- The schedule dialog keeps the picked date after `publish_at_in_past` (`onSubmit` instead of a form `action`, which React resets).
+- Scheduled rows get "Change date" inline (R4.5); each row has a "More actions" menu (Open, View live, Copy live link, Delete).
+- Activity shows "Agency", "WordPress" or the client's name instead of a Firebase uid.
+- The `not_editable` message says to reload; schema validation errors show a message (`validation_error`).
+- Live URL column and the error line under Failed titles (T-036).
+
 ## Out of scope
 - UI, layout and states (T-033).
 - "Draft this change" (Phase 7). Bulk actions. Image import.

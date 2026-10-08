@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  ChevronDown,
   CircleAlert,
   CircleCheck,
   Eye,
@@ -237,11 +238,54 @@ export function SiteDialog({
               </div>
             </Field>
           </div>
-          <span className="text-muted-foreground -mt-2 text-xs">
-            {editing && "Leave the password empty to keep the current one. "}
-            Create one in WordPress under Users → Profile → Application
-            Passwords.
-          </span>
+          {editing && (
+            <span className="text-muted-foreground -mt-2 text-xs">
+              Leave the password empty to keep the current one.
+            </span>
+          )}
+          <details className="group -mt-2 text-[12.5px]">
+            <summary className="text-muted-foreground hover:text-foreground focus-visible:ring-ring/50 inline-flex cursor-pointer list-none items-center gap-1 rounded-sm outline-none focus-visible:ring-3 [&::-webkit-details-marker]:hidden">
+              How do I get a username and application password?
+              <ChevronDown className="size-3.5 transition-transform group-open:rotate-180" />
+            </summary>
+            <div className="bg-muted/40 mt-2 rounded-[10px] border px-3.5 py-3 leading-normal">
+              <ol className="text-muted-foreground flex list-decimal flex-col gap-2 pl-4">
+                <li>
+                  <span className="text-foreground font-medium">
+                    Create a user for this app.
+                  </span>{" "}
+                  In WordPress admin, open Users → Add New User. Pick a
+                  username, for example{" "}
+                  <code className="text-foreground">content-importer</code>, and
+                  the <span className="text-foreground">Author</span> role. An
+                  Author can create, schedule and delete its own posts, and
+                  nothing else. An existing user also works.
+                </li>
+                <li>
+                  <span className="text-foreground font-medium">
+                    Create its application password.
+                  </span>{" "}
+                  Open Users → All Users and click that user. Scroll to
+                  Application Passwords, type a name such as Content Importer,
+                  and click Add New Application Password.
+                </li>
+                <li>
+                  <span className="text-foreground font-medium">
+                    Copy the password WordPress shows.
+                  </span>{" "}
+                  It&apos;s shown only once. Paste it above, with{" "}
+                  <span className="text-foreground">
+                    that same user&apos;s username
+                  </span>
+                  . The password works only for the user it was created for.
+                </li>
+              </ol>
+              <p className="text-muted-foreground mt-2.5 border-t border-[oklch(0.955_0.003_264)] pt-2.5">
+                The site must use https://. Security plugins that block the
+                WordPress REST API also block this app.
+              </p>
+            </div>
+          </details>
         </form>
         <div className="flex flex-wrap items-center gap-2 rounded-b-[14px] border-t bg-[oklch(0.985_0_0)] px-6 py-3.5">
           <Button

@@ -61,8 +61,13 @@ def test_clean_html_mixed_levels_not_promoted(parser):
 def test_parse_docx_with_image_warns_and_drops_image(parser):
     content = (FIXTURES / "with_image.docx").read_bytes()
     parsed = parser.parse_docx(content, "with_image.docx")
-    assert parsed.warnings == ["This document had 1 images. Images are not imported."]
+    assert parsed.warnings == ["This document had 1 image. Images are not imported."]
     assert "img" not in parsed.body_html
+
+
+def test_clean_html_counts_images_in_plural(parser):
+    parsed = parser.clean_html('<p>x</p><img src="a.png"><img src="b.png">')
+    assert parsed.warnings == ["This document had 2 images. Images are not imported."]
 
 
 def test_parse_docx_with_table_keeps_table(parser):

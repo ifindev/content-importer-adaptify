@@ -49,6 +49,10 @@ The app follows the roadmap sentence step by step: **import → customer approva
 - **Upload `.docx` files**, several at once. Each file becomes its own draft.
 - The title is picked up from the first heading, and you get a friendly heads-up when something like an image was left out.
 
+| Paste from anywhere | Upload `.docx` files |
+| --- | --- |
+| <img src="docs/images/import-paste.png" alt="Import screen, Paste tab: an article pasted from Google Docs with headings, a list, bold text and a link kept" width="440"> | <img src="docs/images/import-upload.png" alt="Import screen, Upload tab: three .docx files converted to drafts, one with a note that its image was not imported" width="440"> |
+
 ### All your client sites in one place
 - Manage many WordPress sites from a single dashboard, with a quick site switcher.
 - Each site's connection is tested when you add it, and its health shows at a glance.

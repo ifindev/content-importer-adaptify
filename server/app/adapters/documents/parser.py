@@ -14,11 +14,11 @@ _TAG_RE = re.compile(r"<[^>]+>")
 _IMG_RE = re.compile(r"<img\b[^>]*>", re.IGNORECASE)
 
 
-def _image_warnings(html: str) -> list[str]:
-    count = len(_IMG_RE.findall(html))
+def _image_warnings(count: int) -> list[str]:
     if not count:
         return []
-    return [f"This document had {count} images. Images are not imported."]
+    images = "1 image" if count == 1 else f"{count} images"
+    return [f"This document had {images}. Images are not imported."]
 
 
 def _strip_tags(html: str) -> str:
@@ -54,7 +54,7 @@ def _clean(html: str) -> tuple[str | None, str]:
 
 class RealDocumentParser:
     def clean_html(self, html: str) -> ParsedDocument:
-        warnings = _image_warnings(html)
+        warnings = _image_warnings(len(_IMG_RE.findall(html)))
         title, body = _clean(html)
         return ParsedDocument(title=title, body_html=body, warnings=warnings)
 
@@ -70,7 +70,4 @@ class RealDocumentParser:
             BytesIO(content), convert_image=mammoth.images.img_element(_handle_image)
         )
         title, body = _clean(result.value)
-        warnings = []
-        if image_count:
-            warnings.append(f"This document had {image_count} images. Images are not imported.")
-        return ParsedDocument(title=title, body_html=body, warnings=warnings)
+        return ParsedDocument(title=title, body_html=body, warnings=_image_warnings(image_count))

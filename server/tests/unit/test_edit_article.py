@@ -4,21 +4,18 @@ import pytest
 
 from app.adapters.testing.clock import FixedClock
 from app.adapters.testing.in_memory_repository import InMemoryArticleRepository
-from app.adapters.testing.scripted_publisher import ScriptedPublisher
 from app.core.domain.errors import NotEditableError
 from app.core.domain.models import Article
 from app.core.domain.statuses import Status
 from app.core.ports.document_parser import ParsedDocument
 from app.core.use_cases.edit_article import edit_article
 
-pytestmark = pytest.mark.anyio
-
 CREATED = datetime(2026, 10, 1, 9, 0, 0, tzinfo=UTC)
 NOW = datetime(2026, 10, 7, 12, 0, 0, tzinfo=UTC)
 
-EDITABLE = [Status.DRAFT, Status.CHANGES_REQUESTED, Status.APPROVED, Status.SCHEDULED]
-NOT_EDITABLE = [Status.AWAITING_APPROVAL, Status.PUBLISHED, Status.FAILED]
-RESET_FROM = {Status.APPROVED: "approved", Status.SCHEDULED: "scheduled"}
+EDITABLE = [Status.DRAFT, Status.CHANGES_REQUESTED, Status.APPROVED]
+# Scheduled is read-only: the agency unschedules it (back to Approved) first.
+NOT_EDITABLE = [Status.AWAITING_APPROVAL, Status.SCHEDULED, Status.PUBLISHED, Status.FAILED]
 
 
 class FakeParser:
@@ -59,67 +56,38 @@ def clock():
     return FixedClock(NOW)
 
 
-@pytest.fixture
-def publisher():
-    return ScriptedPublisher()
-
-
 @pytest.mark.parametrize("status", EDITABLE)
-async def test_edit_allowed_statuses_bump_version(status, repository, clock, publisher):
+def test_edit_allowed_statuses_bump_version(status, repository, clock):
     article = _article(status)
     repository.create_article(article)
 
-    updated = await edit_article(
-        article, "New Title", None, None, repository, FakeParser(), clock, publisher, "uid"
-    )
+    updated = edit_article(article, "New Title", None, None, repository, FakeParser(), clock, "uid")
 
     assert updated.version == 4
     assert updated.title == "New Title"
     assert updated.slug == "old-title"
-    assert updated.approved_version == 2
 
 
-@pytest.mark.parametrize("status", [Status.APPROVED, Status.SCHEDULED])
-async def test_edit_resets_approved_and_scheduled_to_draft(status, repository, clock, publisher):
-    article = _article(status, wp_post_id=42)
+def test_edit_resets_approved_to_draft(repository, clock):
+    article = _article(Status.APPROVED, wp_post_id=42)
     repository.create_article(article)
 
-    updated = await edit_article(
-        article, None, None, None, repository, FakeParser(), clock, publisher, "uid"
-    )
+    updated = edit_article(article, None, None, None, repository, FakeParser(), clock, "uid")
 
     assert updated.status == Status.DRAFT
+    assert updated.approved_version is None
+    assert updated.wp_post_id == 42
     events = repository.list_events("a1")
     assert events[-1].type.value == "edited"
-    assert events[-1].data == {"reset_from": RESET_FROM[status]}
-
-
-async def test_edit_resets_scheduled_sets_wordpress_draft(repository, clock, publisher):
-    article = _article(Status.SCHEDULED, wp_post_id=42)
-    repository.create_article(article)
-
-    await edit_article(article, None, None, None, repository, FakeParser(), clock, publisher, "uid")
-
-    assert publisher.drafted == [42]
-
-
-async def test_edit_resets_approved_does_not_set_wordpress_draft(repository, clock, publisher):
-    article = _article(Status.APPROVED)
-    repository.create_article(article)
-
-    await edit_article(article, None, None, None, repository, FakeParser(), clock, publisher, "uid")
-
-    assert publisher.drafted == []
+    assert events[-1].data == {"reset_from": "approved"}
 
 
 @pytest.mark.parametrize("status", [Status.DRAFT, Status.CHANGES_REQUESTED])
-async def test_edit_does_not_reset_draft_or_changes_requested(status, repository, clock, publisher):
+def test_edit_does_not_reset_draft_or_changes_requested(status, repository, clock):
     article = _article(status)
     repository.create_article(article)
 
-    updated = await edit_article(
-        article, None, None, None, repository, FakeParser(), clock, publisher, "uid"
-    )
+    updated = edit_article(article, None, None, None, repository, FakeParser(), clock, "uid")
 
     assert updated.status == status
     events = repository.list_events("a1")
@@ -127,21 +95,19 @@ async def test_edit_does_not_reset_draft_or_changes_requested(status, repository
 
 
 @pytest.mark.parametrize("status", NOT_EDITABLE)
-async def test_edit_refused_from_non_editable_statuses(status, repository, clock, publisher):
+def test_edit_refused_from_non_editable_statuses(status, repository, clock):
     article = _article(status)
     repository.create_article(article)
 
     with pytest.raises(NotEditableError):
-        await edit_article(
-            article, "x", None, None, repository, FakeParser(), clock, publisher, "uid"
-        )
+        edit_article(article, "x", None, None, repository, FakeParser(), clock, "uid")
 
 
-async def test_edit_no_op_still_bumps_version_and_appends_event(repository, clock, publisher):
+def test_edit_no_op_still_bumps_version_and_appends_event(repository, clock):
     article = _article(Status.DRAFT)
     repository.create_article(article)
 
-    updated = await edit_article(
+    updated = edit_article(
         article,
         article.title,
         article.slug,
@@ -149,7 +115,6 @@ async def test_edit_no_op_still_bumps_version_and_appends_event(repository, cloc
         repository,
         FakeParser(),
         clock,
-        publisher,
         "uid",
     )
 
@@ -157,11 +122,11 @@ async def test_edit_no_op_still_bumps_version_and_appends_event(repository, cloc
     assert len(repository.list_events("a1")) == 1
 
 
-async def test_edit_body_html_is_recleaned(repository, clock, publisher):
+def test_edit_body_html_is_recleaned(repository, clock):
     article = _article(Status.DRAFT)
     repository.create_article(article)
 
-    updated = await edit_article(
+    updated = edit_article(
         article,
         None,
         None,
@@ -169,31 +134,26 @@ async def test_edit_body_html_is_recleaned(repository, clock, publisher):
         repository,
         FakeParser(),
         clock,
-        publisher,
         "uid",
     )
 
     assert updated.body_html == "cleaned:<script>evil()</script>"
 
 
-async def test_edit_clears_client_comment(repository, clock, publisher):
+def test_edit_clears_client_comment(repository, clock):
     article = _article(Status.CHANGES_REQUESTED, client_comment="please fix the intro")
     repository.create_article(article)
 
-    updated = await edit_article(
-        article, None, None, None, repository, FakeParser(), clock, publisher, "uid"
-    )
+    updated = edit_article(article, None, None, None, repository, FakeParser(), clock, "uid")
 
     assert updated.client_comment is None
 
 
-async def test_edit_partial_update_leaves_other_fields(repository, clock, publisher):
+def test_edit_partial_update_leaves_other_fields(repository, clock):
     article = _article(Status.DRAFT)
     repository.create_article(article)
 
-    updated = await edit_article(
-        article, None, "new-slug", None, repository, FakeParser(), clock, publisher, "uid"
-    )
+    updated = edit_article(article, None, "new-slug", None, repository, FakeParser(), clock, "uid")
 
     assert updated.slug == "new-slug"
     assert updated.title == "Old Title"

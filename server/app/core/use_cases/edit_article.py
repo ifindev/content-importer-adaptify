@@ -1,18 +1,19 @@
 import uuid
 
+from app.core.domain import lifecycle
 from app.core.domain.errors import NotEditableError
 from app.core.domain.models import Article, Event
 from app.core.domain.statuses import EventType, Status
 from app.core.ports.article_repository import ArticleRepository
 from app.core.ports.clock import Clock
 from app.core.ports.document_parser import DocumentParser
-from app.core.ports.publisher import Publisher
 
-EDITABLE_STATUSES = {Status.DRAFT, Status.CHANGES_REQUESTED, Status.APPROVED, Status.SCHEDULED}
-RESET_STATUSES = {Status.APPROVED, Status.SCHEDULED}
+# Scheduled is read-only, like Awaiting approval: the agency unschedules it
+# (back to Approved) first, so editing never has to touch WordPress.
+EDITABLE_STATUSES = {Status.DRAFT, Status.CHANGES_REQUESTED, Status.APPROVED}
 
 
-async def edit_article(
+def edit_article(
     article: Article,
     title: str | None,
     slug: str | None,
@@ -20,18 +21,26 @@ async def edit_article(
     repository: ArticleRepository,
     parser: DocumentParser,
     clock: Clock,
-    publisher: Publisher,
     actor: str,
 ) -> Article:
     if article.status not in EDITABLE_STATUSES:
         raise NotEditableError(article.status)
 
     now = clock.now()
-    reset_from = article.status.value if article.status in RESET_STATUSES else None
+    reset = article.status == Status.APPROVED
+    data = {"reset_from": Status.APPROVED.value} if reset else None
+    if reset:
+        # Edits reset approval: the client approves the text that goes live.
+        updated, event = lifecycle.transition(
+            article, Status.DRAFT, actor, EventType.EDITED, now, data
+        )
+    else:
+        updated = article
+        event = Event(id=str(uuid.uuid4()), type=EventType.EDITED, actor=actor, at=now)
 
     updates: dict = {"version": article.version + 1, "updated_at": now, "client_comment": None}
-    if reset_from is not None:
-        updates["status"] = Status.DRAFT
+    if reset:
+        updates["approved_version"] = None
     if title is not None:
         updates["title"] = title
     if slug is not None:
@@ -39,15 +48,6 @@ async def edit_article(
     if body_html is not None:
         updates["body_html"] = parser.clean_html(body_html).body_html
 
-    updated = article.model_copy(update=updates)
-    event = Event(
-        id=str(uuid.uuid4()),
-        type=EventType.EDITED,
-        actor=actor,
-        at=now,
-        data={"reset_from": reset_from} if reset_from else None,
-    )
+    updated = updated.model_copy(update=updates)
     repository.save_article(updated, event)
-    if reset_from == Status.SCHEDULED.value:
-        await publisher.set_draft(article.wp_post_id)
     return updated

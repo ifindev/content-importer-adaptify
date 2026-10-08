@@ -79,7 +79,7 @@ async def update_article(
     if article is None:
         raise ArticleNotFoundError
 
-    updated = await edit_article(
+    updated = edit_article(
         article,
         body.title,
         body.slug,
@@ -87,7 +87,6 @@ async def update_article(
         ctx.repository,
         parser,
         clock,
-        ctx.publisher,
         actor=uid,
     )
     events = ctx.repository.list_events(article_id)

@@ -1,6 +1,6 @@
 # T-027 API data layer
 
-**Phase:** 4 · Frontend · **Status:** analyzed · **Size:** M
+**Phase:** 4 · Frontend · **Status:** done · **Size:** M
 **Refs:** E1–E6, spec: API endpoints; architecture: Frontend (Rules)
 **Depends on:** T-022 (report endpoint + regenerated types), T-026 (`createSession` / `logout` and the 401 redirect), T-031 (API: `siteId`-scoped routes), T-032 (site switcher — every agency route below lives under `/sites/{siteId}/...`)
 
@@ -54,11 +54,12 @@ Review mutations revalidate `/review/{token}`.
 ### Shared pieces
 - `lib/error-messages.ts`: `messageFor(code)` maps every code above to one user-facing sentence, with a generic fallback. One place, so screens don't each invent wording.
 - `components/local-time.tsx` (client): formats an ISO UTC string in the browser's timezone with `Intl.DateTimeFormat`. Server Components render in UTC, so dates must go through this. Skipped: a date library.
-- `modules/articles/schemas/`:
+- ~~`modules/articles/schemas/`~~ (dropped, see Decisions):
   - `statusFilterSchema`: the 7 statuses or empty.
   - `articleFormSchema`: title required, slug optional and lowercase-hyphen, body HTML non-empty.
   - `scheduleSchema`: the `datetime-local` string converted to ISO with the browser's offset (`toIsoWithOffset`), so the API gets `publish_at` with a timezone (spec: Dates).
-- `modules/review/schemas/decisionSchema`: name required, comment required for request changes.
+- ~~`modules/review/schemas/decisionSchema`~~: name required, comment required for request changes.
+- `lib/mutation-result.ts`: `toResult(call)` turns a 4xx `ApiError` into `{ ok: false, code }` and rethrows the rest; `orNotFound(call, notFound)` turns a 404 read into the not-found page.
 - `next.config`: `experimental.serverActions.bodySizeLimit` set to `100mb`, which fits the API's upload limit (10 files × 10 MB, `server/app/api/routes/imports.py`).
 
 ### Edge cases
@@ -69,18 +70,23 @@ Review mutations revalidate `/review/{token}`.
 | 401 on any agency call | T-026's redirect, not a mutation result |
 | `datetime-local` in the past | Client-side check plus API `publish_at_in_past` |
 
+## Decisions
+- **Wiring is done here** (2026-10-08): every `data.ts`/`actions.ts` points at its repository, and all fixtures (`modules/*/fixtures/`, `lib/fixtures/`) are deleted. T-028, T-029 and T-032 shrink to the manual browser pass.
+- **No zod schemas.** Native `required`, `DecisionPanel`'s checks and `ScheduleDialog` (`new Date(local).toISOString()` sends UTC) already cover them; the API does the real validation.
+- Sites gain `testConnection(form, siteId?)`, `updateSite`, `deleteSite` (T-031 follow-ups, T-035) and articles `deleteArticle` (T-034).
+
 ## Acceptance criteria
-- [ ] Every agency and client endpoint in spec: API endpoints (except AI, P2) has exactly one function.
-- [ ] No hand-written request/response types; `pnpm typecheck` passes.
-- [ ] Each expected error code returns `{ ok: false, code }`; `messageFor` covers all of them.
-- [ ] Unit test: `toIsoWithOffset` (two offsets, DST edge) and `messageFor` fallback.
+- [x] Every agency and client endpoint in spec: API endpoints (except AI, P2) has exactly one function.
+- [x] No hand-written request/response types; `pnpm typecheck` passes.
+- [x] Each expected error code returns `{ ok: false, code }`; `messageFor` covers all of them.
+- [ ] ~~Unit test: `toIsoWithOffset` and `messageFor` fallback.~~ Out of scope (CLAUDE.md); `toIsoWithOffset` not needed.
 
 ## Tasks
 - T-033 already added `lib/error-messages.ts` (`messageFor`), `components/local-time.tsx`, and the `data.ts` / `actions.ts` seam per module; wiring swaps their re-exports instead of building these again.
-- [ ] Wait for T-022 and T-031 to land; `make gen-api`.
-- [ ] Sites, articles, review, report repositories.
-- [ ] `lib/error-messages.ts`, `components/local-time.tsx`, zod schemas.
-- [ ] `next.config` body size limit.
+- [x] Wait for T-022 and T-031 to land; `make gen-api`.
+- [x] Sites, articles, review, report repositories; seams swapped; fixtures deleted.
+- [x] `lib/error-messages.ts`, `components/local-time.tsx` (from T-033). ~~zod schemas~~: dropped.
+- [x] `next.config` body size limit.
 - [ ] ~~Add a minimal test runner and the unit test.~~ Out of scope: no new vitest tests for UI work (CLAUDE.md).
 
 ## Out of scope

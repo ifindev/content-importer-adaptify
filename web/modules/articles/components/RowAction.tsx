@@ -11,7 +11,10 @@ import { retryArticle } from "@/modules/articles/actions";
 
 import { ScheduleDialog } from "./ScheduleDialog";
 
-/** The one inline action a row offers: Set date when Approved, Retry when Failed. */
+/**
+ * The one inline action a row offers: Set date when Approved, Change date
+ * when Scheduled (R4.5), Retry when Failed.
+ */
 export function RowAction({
   siteId,
   article,
@@ -34,6 +37,22 @@ export function RowAction({
             className="text-foreground/70 border-dashed border-[oklch(0.87_0.004_264)] bg-transparent shadow-none"
           >
             <CalendarDays /> Set date
+          </Button>
+        }
+      />
+    );
+  }
+
+  if (article.status === "scheduled") {
+    return (
+      <ScheduleDialog
+        siteId={siteId}
+        articleId={article.id}
+        title={article.title}
+        current={article.publish_at_utc}
+        trigger={
+          <Button variant="ghost" size="sm" className="text-foreground/70">
+            <CalendarDays /> Change date
           </Button>
         }
       />

@@ -44,9 +44,7 @@ async def upload_articles(
             )
             continue
         try:
-            article = import_from_docx(
-                filename, content, ctx.repository, parser, clock, actor=uid
-            )
+            article = import_from_docx(filename, content, ctx.repository, parser, clock, actor=uid)
         except Exception:
             results.append(UploadFileResult(filename=filename, ok=False, code="unreadable_file"))
             continue

@@ -3,6 +3,7 @@
 import {
   ArrowLeft,
   CalendarDays,
+  ChevronDown,
   ExternalLink,
   Loader2,
   RotateCw,
@@ -573,19 +574,46 @@ function SidePanel({ article }: { article: Article }) {
                   event.type === "failed" && "border-red-600",
                 )}
               />
-              <div>
-                <div className="text-[13px]">
-                  <span className="font-medium">{actorLabel(event)}</span>{" "}
-                  {EVENT_TEXT[event.type]}
-                </div>
-                <div className="text-muted-foreground text-xs">
-                  <LocalTime iso={event.at} format="datetime" />
-                </div>
-              </div>
+              <ActivityEntry event={event} />
             </li>
           ))}
         </ol>
       </section>
     </div>
+  );
+}
+
+/** A change request's comment opens under its line, collapsed by default. */
+function ActivityEntry({ event }: { event: Schemas["EventOut"] }) {
+  const line = (
+    <>
+      <div className="text-[13px]">
+        <span className="font-medium">{actorLabel(event)}</span>{" "}
+        {EVENT_TEXT[event.type]}
+      </div>
+      <div className="text-muted-foreground text-xs">
+        <LocalTime iso={event.at} format="datetime" />
+      </div>
+    </>
+  );
+  const comment =
+    event.type === "changes_requested" ? event.data?.comment : undefined;
+  if (typeof comment !== "string" || !comment) {
+    return <div>{line}</div>;
+  }
+  return (
+    <details className="group min-w-0 flex-1">
+      <summary className="focus-visible:ring-ring/50 cursor-pointer list-none rounded-sm outline-none focus-visible:ring-3 [&::-webkit-details-marker]:hidden">
+        {line}
+        <span className="text-muted-foreground hover:text-foreground mt-0.5 inline-flex items-center gap-1 text-xs">
+          <span className="group-open:hidden">Show feedback</span>
+          <span className="hidden group-open:inline">Hide feedback</span>
+          <ChevronDown className="size-3.5 transition-transform group-open:rotate-180" />
+        </span>
+      </summary>
+      <blockquote className="text-foreground/85 mt-2 rounded-lg border border-[oklch(0.93_0.035_85)] bg-[oklch(0.985_0.012_85)] px-3 py-2 text-[12.5px] leading-normal whitespace-pre-line">
+        {comment}
+      </blockquote>
+    </details>
   );
 }

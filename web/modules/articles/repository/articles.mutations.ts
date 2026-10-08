@@ -15,14 +15,17 @@ function revalidate(siteId: string, id?: string) {
   revalidatePath("/review", "layout");
 }
 
-/** Runs `call` and revalidates the site's pages when it succeeds. */
+/**
+ * Runs `call` and revalidates the site's pages when it succeeds, or when
+ * WordPress failed: the API saved the article as Failed with `last_error`.
+ */
 async function mutate<T>(
   siteId: string,
   id: string | undefined,
   call: Promise<T>,
 ): Promise<MutationResult<T>> {
   const result = await toResult(call);
-  if (result.ok) revalidate(siteId, id);
+  if (result.ok || result.code === "wordpress_error") revalidate(siteId, id);
   return result;
 }
 

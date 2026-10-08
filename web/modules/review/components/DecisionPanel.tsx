@@ -158,6 +158,7 @@ export function DecisionPanel({
         rows={rows}
         value={comment}
         onChange={(e) => setComment(e.target.value)}
+        maxLength={2000}
         aria-invalid={error === "comment_required" || undefined}
         className="resize-y max-lg:text-[15px]"
       />

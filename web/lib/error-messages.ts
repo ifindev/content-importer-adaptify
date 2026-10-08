@@ -25,6 +25,8 @@ const MESSAGES: Record<string, string> = {
   article_changed:
     "The agency changed this article while you were reading. Reload to see the latest version.",
   rate_limited: "Too many requests. Try again in a minute.",
+  validation_error:
+    "Some details aren't valid. Check the form: slugs use only lowercase letters, numbers and hyphens.",
 };
 
 /** The user-facing sentence for an API error code, with a generic fallback. */

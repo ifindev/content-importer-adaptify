@@ -81,9 +81,11 @@ class WordPressPublisher:
             data.get("date_gmt"),
         )
 
-    async def set_draft(self, wp_post_id: int) -> None:
-        await self._request("POST", f"/posts/{wp_post_id}", json={"status": "draft"})
-        logger.info("WordPress set post %s to draft", wp_post_id)
+    async def trash_post(self, wp_post_id: int) -> None:
+        # Without force=true WordPress moves the post to its trash, where the
+        # site owner can still restore it.
+        await self._request("DELETE", f"/posts/{wp_post_id}")
+        logger.info("WordPress moved post %s to trash", wp_post_id)
 
     async def find_by_slug(self, slug: str) -> int | None:
         params = {

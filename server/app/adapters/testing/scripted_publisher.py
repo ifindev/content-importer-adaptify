@@ -8,7 +8,6 @@ class ScriptedPublisher:
     def __init__(self) -> None:
         self.created: list[dict] = []
         self.updated: list[dict] = []
-        self.drafted: list[int] = []
         self.find_by_slug_calls: list[str] = []
         self.create_error: WordPressError | None = None
         self.update_error: WordPressError | None = None
@@ -16,6 +15,8 @@ class ScriptedPublisher:
         self.get_statuses_result: list[PostStatus] = []
         self.get_statuses_error: WordPressError | None = None
         self.check_credentials_error: WordPressError | None = None
+        self.trash_error: WordPressError | None = None
+        self.trashed: list[int] = []
         self._next_id = 1
 
     async def check_credentials(self) -> None:
@@ -57,8 +58,10 @@ class ScriptedPublisher:
             }
         )
 
-    async def set_draft(self, wp_post_id: int) -> None:
-        self.drafted.append(wp_post_id)
+    async def trash_post(self, wp_post_id: int) -> None:
+        if self.trash_error is not None:
+            raise self.trash_error
+        self.trashed.append(wp_post_id)
 
     async def find_by_slug(self, slug: str) -> int | None:
         self.find_by_slug_calls.append(slug)

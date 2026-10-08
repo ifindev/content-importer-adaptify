@@ -93,3 +93,13 @@ async def test_get_statuses_asks_in_chunks_of_100():
 
     assert [len(chunk) for chunk in asked] == [100, 50]
     assert len(statuses) == 150
+
+
+async def test_trash_post_deletes_without_force():
+    def handler(request):
+        assert request.method == "DELETE"
+        assert request.url.path == "/wp-json/wp/v2/posts/42"
+        assert "force" not in request.url.params
+        return httpx.Response(200, json={"id": 42, "status": "trash"})
+
+    await _publisher(handler).trash_post(42)

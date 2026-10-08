@@ -1,6 +1,6 @@
-// Reads for the article screens. T-028 swaps this re-export for the repository.
+// Reads for the article screens.
 export {
   getArticle,
   getReviewLink,
   listArticles,
-} from "./fixtures/articles.queries";
+} from "./repository/articles.queries";

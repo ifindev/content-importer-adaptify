@@ -1,5 +1,4 @@
-// Writes for the article screens, importable from client components. T-028
-// swaps this re-export for the repository.
+// Writes for the article screens, importable from client components.
 export {
   deleteArticle,
   pasteArticle,
@@ -10,4 +9,4 @@ export {
   sendForReview,
   updateArticle,
   uploadArticles,
-} from "./fixtures/articles.mutations";
+} from "./repository/articles.mutations";

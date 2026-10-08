@@ -17,6 +17,7 @@ import { toast } from "sonner";
 
 import { ArticleEditor } from "@/components/article-editor";
 import { LocalTime } from "@/components/local-time";
+import { RefreshOnFocus } from "@/components/refresh-on-focus";
 import { StatusBadge } from "@/components/status-badge";
 import { SyncWarningBadge } from "@/components/sync-warning-badge";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -314,6 +315,9 @@ export function ArticleDetail({
             {saveState}
           </span>
         )}
+        {/* Not while editing: a refetch that brings a new version remounts
+            the editor and would drop unsaved text. */}
+        <RefreshOnFocus enabled={!dirty} />
         <div className="flex items-center gap-2 max-md:hidden">
           {dirty && saveButton}
           {RESETS_APPROVAL.has(article.status) && !unlocked && (

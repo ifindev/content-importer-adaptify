@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Response
 
 from app.api.auth import require_session
 from app.api.deps import get_clock, get_container
-from app.api.http_errors import SiteNotFoundError
+from app.api.http_errors import EmptyUpdateError, SiteNotFoundError
 from app.api.schemas.sites import (
     SiteConnectionTest,
     SiteCreate,
@@ -19,6 +19,7 @@ from app.core.domain.statuses import Status
 from app.core.ports.clock import Clock
 from app.core.use_cases.check_site_connection import check_site_connection
 from app.core.use_cases.create_site import create_site
+from app.core.use_cases.edit_site import edit_site
 
 router = APIRouter(tags=[SITES], dependencies=[Depends(require_session)])
 
@@ -124,3 +125,34 @@ def list_sites_route(container: Container = Depends(get_container)) -> SitesOut:
             )
         )
     return SitesOut(sites=summaries)
+
+
+@router.patch("/sites/{site_id}")
+async def update_site_route(
+    site_id: str,
+    body: SiteUpdate,
+    container: Container = Depends(get_container),
+    clock: Clock = Depends(get_clock),
+) -> SiteOut:
+    site = _get_site(site_id, container)
+    if not any(body.model_dump().values()):
+        raise EmptyUpdateError
+    updated = await edit_site(
+        site,
+        body.name,
+        body.wp_base_url,
+        body.wp_username,
+        body.wp_app_password,
+        container.site_repository,
+        container.credential_cipher,
+        clock,
+        container.build_publisher_from_credentials,
+    )
+    return _out(updated)
+
+
+@router.delete("/sites/{site_id}", status_code=204)
+def delete_site_route(site_id: str, container: Container = Depends(get_container)) -> Response:
+    _get_site(site_id, container)
+    container.delete_site(site_id)
+    return Response(status_code=204)

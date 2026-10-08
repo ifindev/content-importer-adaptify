@@ -11,6 +11,8 @@ EXPECTED_OPERATIONS = {
         "POST /sites",
         "POST /sites/test-connection",
         "POST /sites/{site_id}/test-connection",
+        "PATCH /sites/{site_id}",
+        "DELETE /sites/{site_id}",
     ],
     "Import": [
         "POST /sites/{site_id}/articles/upload",

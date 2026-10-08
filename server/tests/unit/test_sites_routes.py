@@ -50,6 +50,10 @@ class FakeContainer:
     def repository_for(self, site_id: str) -> InMemoryArticleRepository:
         return self.repos.setdefault(site_id, InMemoryArticleRepository())
 
+    def delete_site(self, site_id: str) -> None:
+        self.site_repository.delete_site(site_id)
+        self.repos.pop(site_id, None)
+
 
 @pytest.fixture
 def publisher():
@@ -156,6 +160,71 @@ def test_test_connection_returns_wp_connection_failed(client, publisher):
 
     assert response.status_code == 422
     assert response.json()["code"] == "wp_connection_failed"
+
+
+def test_update_site_name_only_skips_wordpress(client, container):
+    site_id = client.post("/sites", json=SITE_PAYLOAD).json()["id"]
+    container.publisher_calls.clear()
+
+    response = client.patch(f"/sites/{site_id}", json={"name": "Renamed", "wp_app_password": ""})
+
+    assert response.status_code == 200
+    assert response.json()["name"] == "Renamed"
+    assert container.publisher_calls == []
+    stored = container.site_repository.get_site(site_id)
+    assert stored.wp_app_password_encrypted == "enc:app-password"
+
+
+def test_update_site_url_retests_with_stored_password(client, container):
+    site_id = client.post("/sites", json=SITE_PAYLOAD).json()["id"]
+    container.publisher_calls.clear()
+
+    response = client.patch(f"/sites/{site_id}", json={"wp_base_url": "https://new.example.com"})
+
+    assert response.status_code == 200
+    assert container.publisher_calls == [("https://new.example.com", "agency", "app-password")]
+
+
+def test_update_site_connection_failure_saves_nothing(client, container, publisher):
+    site_id = client.post("/sites", json=SITE_PAYLOAD).json()["id"]
+    publisher.check_credentials_error = WordPressError(401, "rest_not_logged_in", "bad password")
+
+    response = client.patch(
+        f"/sites/{site_id}", json={"name": "Renamed", "wp_app_password": "wrong"}
+    )
+
+    assert response.status_code == 422
+    assert response.json()["code"] == "wp_connection_failed"
+    stored = container.site_repository.get_site(site_id)
+    assert (stored.name, stored.wp_app_password_encrypted) == ("Client A", "enc:app-password")
+
+
+def test_update_site_with_nothing_returns_empty_update(client):
+    site_id = client.post("/sites", json=SITE_PAYLOAD).json()["id"]
+
+    response = client.patch(f"/sites/{site_id}", json={"wp_app_password": ""})
+
+    assert response.status_code == 422
+    assert response.json() == {"code": "empty_update"}
+
+
+def test_delete_site_removes_site_and_articles(client, container):
+    site_id = client.post("/sites", json=SITE_PAYLOAD).json()["id"]
+    container.repository_for(site_id).create_article(_article("a1", Status.DRAFT))
+
+    response = client.delete(f"/sites/{site_id}")
+
+    assert response.status_code == 204
+    assert container.site_repository.get_site(site_id) is None
+    assert container.repository_for(site_id).list_articles() == []
+
+
+@pytest.mark.parametrize("method", ["patch", "delete"])
+def test_unknown_site_returns_site_not_found(client, method):
+    kwargs = {"json": {"name": "x"}} if method == "patch" else {}
+    response = getattr(client, method)("/sites/missing", **kwargs)
+    assert response.status_code == 404
+    assert response.json() == {"code": "site_not_found"}
 
 
 def test_stored_site_connection_failure_is_recorded(client, container, publisher):

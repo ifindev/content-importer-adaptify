@@ -26,7 +26,6 @@ const ROW =
 export async function ReportPage({ siteId }: { siteId: string }) {
   const report = await getReport(siteId);
   const total = Object.values(report.status_counts).reduce((a, b) => a + b, 0);
-  const rounds = report.change_rounds.reduce((sum, r) => sum + r.rounds, 0);
   const article = (id: string) => `/sites/${siteId}/articles/${id}`;
   const month = new Date().toLocaleDateString("en-US", {
     month: "long",
@@ -57,8 +56,12 @@ export async function ReportPage({ siteId }: { siteId: string }) {
           />
           <Kpi
             label="Change rounds"
-            value={total ? (rounds / total).toFixed(1) : "—"}
-            unit={total ? "per article" : undefined}
+            value={
+              report.avg_change_rounds == null
+                ? "—"
+                : report.avg_change_rounds.toFixed(1)
+            }
+            unit={report.avg_change_rounds == null ? undefined : "per article"}
             note="Average client change requests"
           />
         </section>

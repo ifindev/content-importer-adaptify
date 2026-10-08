@@ -36,6 +36,12 @@ class FirestoreSiteRepository:
             return None
         return Site(id=snapshot.id, **snapshot.to_dict())
 
+    def delete_site(self, site_id: str) -> None:
+        # Removes the site document and every subcollection under it
+        # (articles and their events).
+        self._client.recursive_delete(self._sites_ref().document(site_id))
+        logger.info("Firestore delete_site %s", site_id)
+
     def find_site_id_by_review_token_hash(self, token_hash: str) -> str | None:
         query = self._sites_ref().where(filter=FieldFilter("review_token_hash", "==", token_hash))
         docs = list(query.limit(1).stream())

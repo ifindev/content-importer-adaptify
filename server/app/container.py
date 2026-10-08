@@ -51,6 +51,12 @@ class Container:
             InMemoryArticleRepository(site_id=site_id, site_repository=self.site_repository),
         )
 
+    def delete_site(self, site_id: str) -> None:
+        """Removes the site and its articles. Firestore cascades the
+        subcollections; the in-memory fallback keeps articles here."""
+        self.site_repository.delete_site(site_id)
+        self._in_memory_repos.pop(site_id, None)
+
     def build_publisher_from_credentials(
         self, base_url: str, username: str, app_password: str
     ) -> Publisher:

@@ -19,6 +19,9 @@ class InMemorySiteRepository:
     def get_site(self, site_id: str) -> Site | None:
         return self._sites.get(site_id)
 
+    def delete_site(self, site_id: str) -> None:
+        self._sites.pop(site_id, None)
+
     def find_site_id_by_review_token_hash(self, token_hash: str) -> str | None:
         for site_id, site in self._sites.items():
             if site.review_token_hash == token_hash:

@@ -436,8 +436,8 @@ Tests follow the architecture. The lifecycle rules get the most tests, because a
 | Unit        | Every status and action pair, allowed or refused. The approval reset rules. Sync status mapping. Report math with a fixed clock. | Test adapters, no network          |
 | Unit        | Paste and `.docx` cleaning: headings, lists, links kept; styles stripped; image warning raised                                   | Fixture files in `tests/fixtures/` |
 | Integration | Firestore repository reads and writes                                                                                            | Firestore emulator                 |
-| Integration | WordPress adapter: create a scheduled post, change its date, move it to draft, find it by slug, batch status check               | Local WordPress container          |
-| End to end  | Paste, send for review, approve through the client route, schedule one minute ahead, call `wp-cron.php`, see Published           | Full local `docker compose`        |
+| Integration | WordPress adapter: create a scheduled post, change its date, trash it (unschedule and delete), find it by slug, batch status check | Local WordPress container          |
+| By hand     | The full flow in the browser: paste, send for review, approve as the client, schedule, call `wp-cron.php`, see Published. No automated end-to-end suite for the MVP. | Full local `docker compose`        |
 | AI (P2)     | About 15 change requests, reviewed by hand after each prompt change                                                              | LangSmith dataset                  |
 
 

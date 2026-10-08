@@ -1,6 +1,6 @@
 # T-034 Delete draft articles
 
-**Phase:** 4 · API · **Status:** analyzed · **Size:** S
+**Phase:** 4 · API · **Status:** done · **Size:** S
 **Refs:** R2.5, spec: Article lifecycle, API endpoints
 **Depends on:** T-031
 
@@ -22,7 +22,7 @@ The agency can delete an article that is still in Draft or Changes requested, on
 No bulk endpoint: the UI's "Delete selected" calls this once per article and reports the ones that failed.
 
 ### Data changes
-- Hard delete: the article document and its events subcollection are removed.
+- Hard delete: the article document and its events subcollection are removed (Firestore `recursive_delete`).
 
 ### Core
 - New use case `delete_article`: loads the article, raises `NotDeletableError` unless the status is Draft or Changes requested, then calls a new `ArticleRepository.delete_article(article_id)`.
@@ -41,17 +41,17 @@ No bulk endpoint: the UI's "Delete selected" calls this once per article and rep
 - Awaiting approval can't be deleted; the agency pulls it back first.
 
 ## Acceptance criteria
-- [ ] `DELETE` returns 204 for Draft and Changes requested, and the article and its events are gone.
-- [ ] Every other status returns `409 not_deletable` and changes nothing.
-- [ ] Unknown article and unknown site return 404.
-- [ ] Unit tests cover the status × delete table; the Firestore adapter test covers removing the events.
-- [ ] `openapi.json` and `web/lib/api/schema.ts` regenerated.
+- [x] `DELETE` returns 204 for Draft and Changes requested, and the article and its events are gone.
+- [x] Every other status returns `409 not_deletable` and changes nothing.
+- [x] Unknown article and unknown site return 404.
+- [x] Unit tests cover the status × delete table; the Firestore adapter test covers removing the events.
+- [x] `openapi.json` and `web/lib/api/schema.ts` regenerated.
 
 ## Tasks
-- [ ] `NotDeletableError`, `delete_article` use case, unit tests (status table).
-- [ ] `ArticleRepository.delete_article` in the port, in-memory and Firestore adapters.
-- [ ] Route and error mapping.
-- [ ] `make gen-api`.
+- [x] `NotDeletableError`, `delete_article` use case, unit tests (status table).
+- [x] `ArticleRepository.delete_article` in the port, in-memory and Firestore adapters.
+- [x] Route and error mapping.
+- [x] `make gen-api`.
 
 ## Out of scope
 - Deleting Approved, Scheduled, Failed or Published articles (they may exist in WordPress).

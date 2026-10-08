@@ -209,3 +209,35 @@ def test_pull_back_not_found_returns_404(client):
     response = client.post(f"/sites/{SITE_ID}/articles/missing/pull-back")
     assert response.status_code == 404
     assert response.json() == {"code": "not_found"}
+
+
+@pytest.mark.parametrize(
+    ("status", "expected"),
+    [
+        (Status.DRAFT, 204),
+        (Status.CHANGES_REQUESTED, 204),
+        (Status.AWAITING_APPROVAL, 409),
+        (Status.APPROVED, 409),
+        (Status.SCHEDULED, 409),
+        (Status.PUBLISHED, 409),
+        (Status.FAILED, 409),
+    ],
+)
+def test_delete_article_by_status(client, repository, status, expected):
+    repository.create_article(_article("a1", status))
+
+    response = client.delete(f"/sites/{SITE_ID}/articles/a1")
+
+    assert response.status_code == expected
+    if expected == 204:
+        assert repository.get_article("a1") is None
+        assert repository.list_events("a1") == []
+    else:
+        assert response.json() == {"code": "not_deletable"}
+        assert repository.get_article("a1") is not None
+
+
+def test_delete_unknown_article_returns_404(client):
+    response = client.delete(f"/sites/{SITE_ID}/articles/missing")
+    assert response.status_code == 404
+    assert response.json() == {"code": "not_found"}

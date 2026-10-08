@@ -20,6 +20,7 @@ EXPECTED_OPERATIONS = {
         "GET /sites/{site_id}/articles",
         "GET /sites/{site_id}/articles/{article_id}",
         "PATCH /sites/{site_id}/articles/{article_id}",
+        "DELETE /sites/{site_id}/articles/{article_id}",
     ],
     "Publishing": [
         "POST /sites/{site_id}/articles/{article_id}/send-for-review",

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Response
 
 from app.api.auth import require_session
 from app.api.deps import (
@@ -21,6 +21,7 @@ from app.api.tags import ARTICLES, PUBLISHING
 from app.core.domain.statuses import Status
 from app.core.ports.clock import Clock
 from app.core.ports.document_parser import DocumentParser
+from app.core.use_cases.delete_article import delete_article
 from app.core.use_cases.edit_article import edit_article
 from app.core.use_cases.review import pull_back, send_for_review
 from app.core.use_cases.schedule import retry, schedule
@@ -168,3 +169,16 @@ async def retry_route(
     return ArticleDetail(
         **updated.model_dump(), events=[EventOut(**e.model_dump()) for e in events]
     )
+
+
+@router.delete("/articles/{article_id}", status_code=204, tags=[ARTICLES])
+def delete_article_route(
+    article_id: str,
+    ctx: SiteContext = Depends(get_site_context),
+) -> Response:
+    article = ctx.repository.get_article(article_id)
+    if article is None:
+        raise ArticleNotFoundError
+
+    delete_article(article, ctx.repository)
+    return Response(status_code=204)

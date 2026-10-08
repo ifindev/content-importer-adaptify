@@ -29,10 +29,10 @@ def test_falls_back_to_in_memory_when_firestore_unavailable_in_test_env():
     assert isinstance(container.repository_for("site-a"), InMemoryArticleRepository)
 
 
-def test_raises_when_firestore_unavailable_in_gcp():
+def test_raises_when_firestore_unavailable_in_prod():
     with patch("app.container.firestore.Client", side_effect=RuntimeError("no creds")):
         with pytest.raises(RuntimeError):
-            build_container(_settings("gcp"))
+            build_container(_settings("prod"))
 
 
 def test_repository_for_reuses_the_same_in_memory_instance_per_site():

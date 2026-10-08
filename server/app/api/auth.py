@@ -19,9 +19,17 @@ class InvalidSessionError(Exception):
     pass
 
 
-def create_session(id_token: str) -> str:
+def create_session(id_token: str, allowed_emails: frozenset[str] = frozenset()) -> str:
     try:
         decoded = auth.verify_id_token(id_token)
+    except (FirebaseError, ValueError) as exc:
+        logger.info("Firebase session creation failed: %s", exc)
+        raise InvalidSessionError from exc
+    # No session cookie means no access, so checking here covers every route.
+    if allowed_emails and decoded.get("email", "").lower() not in allowed_emails:
+        logger.info("Sign-in refused for uid=%s: email not in AGENCY_EMAILS", decoded["uid"])
+        raise InvalidSessionError
+    try:
         cookie = auth.create_session_cookie(id_token, expires_in=SESSION_EXPIRES_IN)
     except (FirebaseError, ValueError) as exc:
         logger.info("Firebase session creation failed: %s", exc)

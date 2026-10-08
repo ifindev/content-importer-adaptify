@@ -74,5 +74,9 @@ def get_internal_api_secret(request: Request) -> str:
     return request.app.state.container.internal_api_secret
 
 
+def get_agency_emails(request: Request) -> frozenset[str]:
+    return request.app.state.container.agency_emails
+
+
 def get_container(request: Request) -> Container:
     return request.app.state.container

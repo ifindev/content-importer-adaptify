@@ -13,7 +13,7 @@ _ROOT_ENV_FILE = Path(__file__).resolve().parent.parent.parent / ".env"
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=_ROOT_ENV_FILE, extra="ignore")
 
-    app_env: Literal["local", "gcp", "test"] = "local"
+    app_env: Literal["local", "prod", "test"] = "local"
 
     web_base_url: str = ""
 
@@ -26,3 +26,7 @@ class Settings(BaseSettings):
     # Shared with the web app, which sends it with the client's IP so the
     # API can rate-limit per client (see public_review._client_ip).
     internal_api_secret: str = ""
+    # Comma-separated emails allowed to sign in. Required in prod: Firebase
+    # sign-up can't be turned off on the free plan, so anyone with the public
+    # web API key could create an account.
+    agency_emails: str = ""

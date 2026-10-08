@@ -36,6 +36,8 @@ class Container:
     credential_cipher: CredentialCipher
     firestore_client: Client | None
     internal_api_secret: str = ""
+    # Empty means any Firebase account may sign in; allowed outside prod only.
+    agency_emails: frozenset[str] = frozenset()
     # http:// WordPress URLs send the app password unencrypted; local only.
     allow_http_wordpress: bool = False
     _in_memory_repos: dict[str, ArticleRepository] = field(default_factory=dict, repr=False)
@@ -67,8 +69,8 @@ class Container:
 def build_container(settings: Settings) -> Container:
     encryption_key = settings.credential_encryption_key
     if not encryption_key:
-        if settings.app_env == "gcp":
-            raise RuntimeError("CREDENTIAL_ENCRYPTION_KEY is required when APP_ENV=gcp")
+        if settings.app_env == "prod":
+            raise RuntimeError("CREDENTIAL_ENCRYPTION_KEY is required when APP_ENV=prod")
         encryption_key = Fernet.generate_key().decode()
         logger.warning(
             "CREDENTIAL_ENCRYPTION_KEY not set; generated a one-off key for this process. "
@@ -76,13 +78,19 @@ def build_container(settings: Settings) -> Container:
             "CREDENTIAL_ENCRYPTION_KEY in .env for local persistence."
         )
 
-    if settings.app_env == "gcp" and not settings.internal_api_secret:
-        raise RuntimeError("INTERNAL_API_SECRET is required when APP_ENV=gcp")
+    if settings.app_env == "prod" and not settings.internal_api_secret:
+        raise RuntimeError("INTERNAL_API_SECRET is required when APP_ENV=prod")
+
+    agency_emails = frozenset(
+        e.strip().lower() for e in settings.agency_emails.split(",") if e.strip()
+    )
+    if settings.app_env == "prod" and not agency_emails:
+        raise RuntimeError("AGENCY_EMAILS is required when APP_ENV=prod")
 
     try:
         firestore_client: Client | None = firestore.Client()
     except Exception as exc:
-        if settings.app_env == "gcp":
+        if settings.app_env == "prod":
             raise
         logger.error(
             "Firestore unavailable (%s); falling back to in-memory repositories. Check "
@@ -105,6 +113,7 @@ def build_container(settings: Settings) -> Container:
         site_repository=site_repository,
         credential_cipher=FernetCredentialCipher(encryption_key),
         firestore_client=firestore_client,
-        allow_http_wordpress=settings.app_env != "gcp",
+        allow_http_wordpress=settings.app_env != "prod",
         internal_api_secret=settings.internal_api_secret,
+        agency_emails=agency_emails,
     )

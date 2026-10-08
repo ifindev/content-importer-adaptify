@@ -24,6 +24,31 @@ def test_create_session_returns_cookie():
         assert create_session("valid-id-token") == "cookie-value"
 
 
+def test_create_session_refuses_email_not_in_allowlist():
+    with (
+        patch(
+            "app.api.auth.auth.verify_id_token", return_value={"uid": "u2", "email": "x@evil.test"}
+        ),
+        patch("app.api.auth.auth.create_session_cookie") as create_cookie,
+    ):
+        with pytest.raises(InvalidSessionError):
+            create_session("valid-id-token", frozenset({"agency@example.test"}))
+    create_cookie.assert_not_called()
+
+
+def test_create_session_allows_listed_email_case_insensitively():
+    with (
+        patch(
+            "app.api.auth.auth.verify_id_token",
+            return_value={"uid": "u1", "email": "Agency@Example.test"},
+        ),
+        patch("app.api.auth.auth.create_session_cookie", return_value="cookie-value"),
+    ):
+        assert (
+            create_session("valid-id-token", frozenset({"agency@example.test"})) == "cookie-value"
+        )
+
+
 def test_create_session_rejects_invalid_token():
     with patch("app.api.auth.auth.verify_id_token", side_effect=ValueError("bad token")):
         with pytest.raises(InvalidSessionError):

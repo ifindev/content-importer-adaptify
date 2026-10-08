@@ -2,6 +2,7 @@ import { Download, FileText, SearchX } from "lucide-react";
 import Link from "next/link";
 
 import { PageHeader } from "@/components/page-header";
+import { RefreshOnFocus } from "@/components/refresh-on-focus";
 import { buttonVariants } from "@/components/ui/button";
 import { WordPressBanner } from "@/components/wordpress-banner";
 import type { Schemas } from "@/lib/api/types";
@@ -50,6 +51,7 @@ export async function ArticlesPage({
         title="Articles"
         subtitle={`${articles.length} ${articles.length === 1 ? "article" : "articles"} on this site`}
       >
+        <RefreshOnFocus />
         <ReviewLinkActions siteId={siteId} url={reviewLink.url} />
       </PageHeader>
       {wordpress_unreachable && (

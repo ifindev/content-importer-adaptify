@@ -25,6 +25,8 @@ class ArticleSummary(BaseModel):
         None, description="Warning from the last WordPress status check, if any."
     )
     publish_at_utc: datetime | None = Field(None, description="Scheduled publish time, UTC.")
+    published_url: str | None = Field(None, description="Live URL, once published.")
+    last_error: str | None = Field(None, description="Last WordPress error, for a failed article.")
     updated_at: datetime = Field(..., description="Last update time, UTC.")
 
 

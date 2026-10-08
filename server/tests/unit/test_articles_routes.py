@@ -241,3 +241,17 @@ def test_delete_unknown_article_returns_404(client):
     response = client.delete(f"/sites/{SITE_ID}/articles/missing")
     assert response.status_code == 404
     assert response.json() == {"code": "not_found"}
+
+
+def test_list_articles_includes_live_url_and_last_error(client, repository):
+    repository.create_article(
+        _article("a1", Status.PUBLISHED).model_copy(update={"published_url": "https://x.test/a"})
+    )
+    repository.create_article(
+        _article("a2", Status.FAILED).model_copy(update={"last_error": "403 Forbidden"})
+    )
+
+    by_id = {a["id"]: a for a in client.get(f"/sites/{SITE_ID}/articles").json()["articles"]}
+
+    assert by_id["a1"]["published_url"] == "https://x.test/a"
+    assert by_id["a2"]["last_error"] == "403 Forbidden"

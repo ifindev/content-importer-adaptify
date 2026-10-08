@@ -206,7 +206,7 @@ web/
 │   └── review/[token]/                   # client pages: no login, no agency navigation
 │       ├── layout.tsx                    # noindex, toaster
 │       ├── not-found.tsx                 # "link isn't valid"
-│       ├── error.tsx                     # rate limited
+│       ├── error.tsx                     # unexpected errors (a 429 renders RateLimited instead)
 │       ├── page.tsx
 │       └── articles/[id]/page.tsx
 ├── modules/

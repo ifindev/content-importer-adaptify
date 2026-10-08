@@ -103,6 +103,7 @@ function PastePanel({ siteId }: { siteId: string }) {
         setError(result.code);
         return;
       }
+      toast.success("Article imported.");
       router.push(`/sites/${siteId}/articles/${result.data.id}`);
     });
   }

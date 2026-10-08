@@ -1,6 +1,7 @@
-# The app on the VPS (T-048), next to WordPress. The deploy job copies this file
-# to ~/app and runs it with IMAGE_TAG set to the commit SHA. nginx + certbot on
-# the host proxy app.aiwitharifin.com to 127.0.0.1:3000.
+# The app on a VPS (docs/deploy-vps.md). The deploy job copies this file to
+# ~/app, runs it with IMAGE_TAG set to the commit SHA, then records that tag
+# in ~/app/.env so later manual `docker compose up -d` runs keep it. nginx on the host
+# proxies app.<domain> to the web and api.<domain> to the API.
 services:
   api:
     image: ghcr.io/ifindev/content-importer-adaptify-api:${IMAGE_TAG:?}
@@ -11,7 +12,9 @@ services:
       GOOGLE_APPLICATION_CREDENTIALS: /run/secrets/firebase.json
     volumes:
       - ./firebase-service-account.json:/run/secrets/firebase.json:ro
-    # No ports: only the web container reaches the API, over the compose network.
+    ports:
+      # 127.0.0.1 only: Docker's port rules bypass ufw. The web uses http://api:8080.
+      - "127.0.0.1:8000:8080"
 
   web:
     image: ghcr.io/ifindev/content-importer-adaptify-web:${IMAGE_TAG:?}

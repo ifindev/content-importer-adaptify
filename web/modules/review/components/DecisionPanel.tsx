@@ -15,12 +15,6 @@ import { LocalTime } from "@/components/local-time";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetTitle,
-} from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
 import type { Schemas } from "@/lib/api/types";
 import { messageFor } from "@/lib/error-messages";
@@ -248,69 +242,77 @@ export function DecisionPanel({
         </div>
       </aside>
 
-      {/* Below lg: bottom bar, and the request form as a bottom sheet */}
-      <div className="bg-background sticky bottom-0 flex flex-col gap-3 border-t px-4 pt-3 pb-4 lg:hidden">
-        {mode === "decide" && errorBox}
-        {nameField("name-bar")}
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            className="h-10 flex-1"
-            onClick={() => {
-              setError(null);
-              setMode("changes");
-            }}
-            disabled={pending}
-          >
-            Request changes
-          </Button>
-          <Button
-            className="h-10 flex-1"
-            onClick={() => decide("approve")}
-            disabled={pending}
-          >
-            {spin("approve")} Approve
-          </Button>
-        </div>
-      </div>
-      <Sheet
-        open={mode === "changes"}
-        onOpenChange={(open) => !open && setMode("decide")}
+      {/* Below lg: a sticky bottom bar. Request changes grows it into the
+          form over a light blur; the article stays readable above it. */}
+      {mode === "changes" && (
+        // A light veil to set the form apart; it doesn't catch touches, so
+        // the article above still scrolls and stays readable.
+        <div
+          aria-hidden
+          className="bg-foreground/5 pointer-events-none fixed inset-0 z-10 backdrop-blur-[1.5px] lg:hidden"
+        />
+      )}
+      <section
+        aria-label={mode === "changes" ? "Request changes" : "Your decision"}
+        onKeyDown={(e) => e.key === "Escape" && setMode("decide")}
+        className="bg-background sticky bottom-0 z-20 flex max-h-[70svh] flex-col gap-3 overflow-y-auto border-t px-4 pt-3 pb-4 lg:hidden"
       >
-        <SheetContent
-          side="bottom"
-          className="gap-4 rounded-t-2xl px-4 pt-5 pb-6 lg:hidden"
-        >
-          <div className="pr-8">
-            <SheetTitle className="text-base font-semibold">
-              Request changes
-            </SheetTitle>
-            <SheetDescription className="text-muted-foreground mt-1 text-[13px]">
-              The agency sees this note on the article and sends it back for
-              your approval.
-            </SheetDescription>
-          </div>
-          {errorBox}
-          {commentField("comment-sheet", 4)}
-          {nameField("name-sheet")}
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              className="h-10 flex-1"
-              onClick={() => setMode("decide")}
-            >
-              Cancel
-            </Button>
-            <Button
-              className="h-10 flex-1"
-              onClick={() => decide("changes")}
-              disabled={pending}
-            >
-              {spin("changes")} Send request
-            </Button>
-          </div>
-        </SheetContent>
-      </Sheet>
+        {mode === "changes" ? (
+          <>
+            <div>
+              <h2 className="text-[15px] font-semibold">Request changes</h2>
+              <p className="text-muted-foreground mt-0.5 text-[13px]">
+                The agency sees this note on the article and sends it back for
+                your approval.
+              </p>
+            </div>
+            {errorBox}
+            {commentField("comment-bar", 3)}
+            {nameField("name-bar")}
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                className="h-10 flex-1"
+                onClick={() => setMode("decide")}
+              >
+                Cancel
+              </Button>
+              <Button
+                className="h-10 flex-1"
+                onClick={() => decide("changes")}
+                disabled={pending}
+              >
+                {spin("changes")} Send request
+              </Button>
+            </div>
+          </>
+        ) : (
+          <>
+            {errorBox}
+            {nameField("name-bar")}
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                className="h-10 flex-1"
+                onClick={() => {
+                  setError(null);
+                  setMode("changes");
+                }}
+                disabled={pending}
+              >
+                Request changes
+              </Button>
+              <Button
+                className="h-10 flex-1"
+                onClick={() => decide("approve")}
+                disabled={pending}
+              >
+                {spin("approve")} Approve
+              </Button>
+            </div>
+          </>
+        )}
+      </section>
     </>
   );
 }

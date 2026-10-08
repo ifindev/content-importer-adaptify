@@ -1,7 +1,9 @@
 import { Check, Globe, Plus } from "lucide-react";
+import { cookies } from "next/headers";
 import Link from "next/link";
 
 import { PageHeader } from "@/components/page-header";
+import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { SiteDialog } from "@/modules/sites/components/SiteDialog";
@@ -9,14 +11,20 @@ import { SiteRowActions } from "@/modules/sites/components/SiteRowActions";
 import { SiteAvatar } from "@/modules/sites/components/SiteAvatar";
 import { siteHost } from "@/modules/sites/site-host";
 import { TestConnectionButton } from "@/modules/sites/components/TestConnectionButton";
+import { LAST_SITE_COOKIE } from "@/lib/last-site";
 import { listSites, type SiteWithStats } from "@/modules/sites/data";
 
 export async function SitesPage() {
-  const { sites } = await listSites();
+  const [{ sites }, cookieStore] = await Promise.all([listSites(), cookies()]);
+  const currentId = cookieStore.get(LAST_SITE_COOKIE)?.value;
 
   return (
     <>
-      {sites.length === 0 ? <ZeroSites /> : <SitesList sites={sites} />}
+      {sites.length === 0 ? (
+        <ZeroSites />
+      ) : (
+        <SitesList sites={sites} currentId={currentId} />
+      )}
       <SiteDialog sites={sites} allowHttp={process.env.APP_ENV === "local"} />
     </>
   );
@@ -30,7 +38,13 @@ function AddSiteLink() {
   );
 }
 
-function SitesList({ sites }: { sites: SiteWithStats[] }) {
+function SitesList({
+  sites,
+  currentId,
+}: {
+  sites: SiteWithStats[];
+  currentId: string | undefined;
+}) {
   return (
     <>
       <PageHeader
@@ -69,8 +83,11 @@ function SitesList({ sites }: { sites: SiteWithStats[] }) {
                   >
                     <SiteAvatar label={site.name} size="lg" />
                     <span className="min-w-0">
-                      <span className="block text-[13.5px] font-medium">
+                      <span className="flex items-center gap-2 text-[13.5px] font-medium">
                         {site.name}
+                        {site.id === currentId && (
+                          <Badge variant="outline">Current</Badge>
+                        )}
                       </span>
                       <span className="text-muted-foreground block truncate text-[12.5px]">
                         {siteHost(site.wp_base_url)}

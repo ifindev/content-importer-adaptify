@@ -9,6 +9,7 @@ import {
 } from "@tiptap/react";
 import { BubbleMenu } from "@tiptap/react/menus";
 import StarterKit from "@tiptap/starter-kit";
+import { useEffect } from "react";
 import {
   Bold,
   ChevronDown,
@@ -88,6 +89,15 @@ export function ArticleEditor({
     },
     onUpdate: ({ editor }) => onChange?.(editor.getHTML()),
   });
+
+  // useEditor reads `editable` once: on later renders Tiptap keeps the
+  // instance's current editability (@tiptap/react EditorInstanceManager), so
+  // unlocking an article ("Edit anyway") must flip it here. No update event:
+  // it would hand onChange Tiptap's re-serialized HTML and mark the article
+  // dirty without an edit.
+  useEffect(() => {
+    editor?.setEditable(editable, false);
+  }, [editor, editable]);
 
   if (!editor) {
     // Server render and first paint: the same HTML, read-only.

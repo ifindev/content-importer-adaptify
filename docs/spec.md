@@ -331,13 +331,14 @@ The agency app has five screens, all scoped to one client site except Sites. The
 
 | Screen         | Who    | What it shows                                                                                                                                                                  | Requirements |
 | -------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------ |
-| Sites          | Agency | Every client site with its WordPress connection status, article count and needs-attention count. "Add site" opens a dialog that tests the WordPress connection before saving. Each row has Edit and Delete; delete removes the site's articles too and asks for the site name. | T-031        |
+| Sites          | Agency | Every client site with its WordPress connection status, article count and needs-attention count; the last opened site has a "Current" badge. "Add site" opens a dialog that tests the WordPress connection before saving. Each row has Edit and Delete; delete removes the site's articles too and asks for the site name. | T-031        |
 | Import         | Agency | Paste tab with a title field and the editor, Upload tab with a `.docx` drop zone for one or more files, per-file results with Delete, and a link to the articles list.                                                                        | E1           |
-| Articles       | Agency | One row per article: title, status, sync warning, publish date. "Set date" on Approved rows, "Retry" on Failed rows. Checkboxes on deletable rows for bulk delete. "Copy review link" at the top. Search and status filter. | E3, E4, E5   |
+| Articles       | Agency | One row per article: title (with the WordPress error under a Failed one), status, sync warning, publish date, live URL. "Set date" on Approved rows, "Change date" on Scheduled, "Retry" on Failed; a "More actions" menu with Open, View live, Copy live link and Delete. Checkboxes on deletable rows for bulk delete. "Copy review link" at the top, with "Reset review link" beside it. Search and status filter. | E3, E4, E5   |
 | Article detail | Agency | Editor for title, slug, body. Client feedback and activity log on the side. The primary action follows the status: send, resubmit, pull back, set date, retry, view live. Delete for Draft and Changes requested.  | E2, E3, E7   |
 | Report         | Agency | Cards for published this month, time to approval and change rounds; articles by status; needs attention, upcoming, change rounds per article, and published lists.           | E6           |
-| Review page    | Client | Site name, articles grouped as waiting, upcoming, published. Article reader with Approve and Request changes.                                                                  | E3, E6       |
+| Review page    | Client | Site name, articles grouped as waiting (with the date sent), upcoming, published. Article reader with Approve and Request changes; after a decision the client returns to the list. | E3, E6       |
 
+- **Last opened site.** `/` opens the site the agency last worked in (a cookie), or the first site.
 - **Site switcher.** Every agency screen has a site switcher at the top of the sidebar: search, one row per site with a red dot when its WordPress connection failed, then "All sites" and "Add site". "All sites" is also pinned at the bottom of the sidebar.
 - **Status filter.** A select at every width: "All", each status with its count, and "Needs attention" (Failed or any sync warning).
 - **Editing after approval.** On an Approved or Scheduled article, "Edit" first asks for confirmation: editing resets the client's approval.
@@ -501,6 +502,8 @@ ai_usage/{yyyy-mm}
 ## API endpoints
 
 Agency routes need a Firebase **session cookie**: the web app exchanges the Firebase ID token for one at `POST /auth/session`, and `auth.py` checks it with `verify_session_cookie` (see [architecture.md](architecture.md#auth)). Client routes need only the review token in the path. Endpoints that show statuses run the WordPress status check first.
+
+Every error body is `{"code": "..."}`. A request that fails schema validation (for example a slug with capitals, or a comment over 2,000 characters) returns `422 {"code": "validation_error", "fields": ["body.slug"]}`.
 
 ### Agency
 

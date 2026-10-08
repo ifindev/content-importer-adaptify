@@ -1,6 +1,5 @@
 import logging
 from dataclasses import dataclass, field
-from pathlib import Path
 
 from cryptography.fernet import Fernet
 from google.cloud import firestore
@@ -11,7 +10,6 @@ from app.adapters.crypto.fernet_cipher import FernetCredentialCipher
 from app.adapters.documents.parser import RealDocumentParser
 from app.adapters.firestore.repository import FirestoreArticleRepository
 from app.adapters.firestore.site_repository import FirestoreSiteRepository
-from app.adapters.secret_store import LocalFileSecretStore
 from app.adapters.testing.in_memory_repository import InMemoryArticleRepository
 from app.adapters.testing.in_memory_site_repository import InMemorySiteRepository
 from app.adapters.wordpress.publisher import WordPressPublisher
@@ -21,12 +19,9 @@ from app.core.ports.clock import Clock
 from app.core.ports.credential_cipher import CredentialCipher
 from app.core.ports.document_parser import DocumentParser
 from app.core.ports.publisher import Publisher
-from app.core.ports.secret_store import SecretStore
 from app.core.ports.site_repository import SiteRepository
 from app.core.use_cases.sync_status import SyncCache
 from app.settings import Settings
-
-SECRET_STORE_PATH = Path(__file__).resolve().parent.parent / ".secrets.local.json"
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +30,6 @@ logger = logging.getLogger(__name__)
 class Container:
     clock: Clock
     document_parser: DocumentParser
-    secret_store: SecretStore
     web_base_url: str
     sync_cache: SyncCache
     site_repository: SiteRepository
@@ -58,7 +52,6 @@ class Container:
         """Removes the site and its articles. Firestore cascades the
         subcollections; the in-memory fallback keeps articles here."""
         self.site_repository.delete_site(site_id)
-        self.secret_store.delete_review_token(site_id)
         self._in_memory_repos.pop(site_id, None)
 
     def build_publisher_from_credentials(
@@ -107,7 +100,6 @@ def build_container(settings: Settings) -> Container:
     return Container(
         clock=SystemClock(),
         document_parser=RealDocumentParser(),
-        secret_store=LocalFileSecretStore(SECRET_STORE_PATH),
         web_base_url=settings.web_base_url,
         sync_cache=SyncCache(),
         site_repository=site_repository,

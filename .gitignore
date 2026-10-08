@@ -16,7 +16,6 @@ node_modules/
 !.env.example
 
 # Local secret store (T-016 review link token)
-server/.secrets.local.json
 
 # OS / editor
 .DS_Store

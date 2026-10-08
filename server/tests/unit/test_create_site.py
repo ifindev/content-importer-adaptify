@@ -5,7 +5,6 @@ import pytest
 from app.adapters.testing.clock import FixedClock
 from app.adapters.testing.in_memory_site_repository import InMemorySiteRepository
 from app.adapters.testing.scripted_publisher import ScriptedPublisher
-from app.adapters.testing.secret_store import InMemorySecretStore
 from app.core.domain.errors import WordPressConnectionTestFailedError, WordPressError
 from app.core.lib.tokens import hash_token
 from app.core.use_cases.create_site import create_site
@@ -28,7 +27,6 @@ class FakeCipher:
 
 async def test_create_site_succeeds_and_mints_a_review_token():
     site_repository = InMemorySiteRepository()
-    secret_store = InMemorySecretStore()
     publisher = ScriptedPublisher()
 
     site = await create_site(
@@ -38,15 +36,14 @@ async def test_create_site_succeeds_and_mints_a_review_token():
         "secret-app-password",
         site_repository,
         FakeCipher(),
-        secret_store,
         FixedClock(NOW),
         build_publisher=lambda *_: publisher,
     )
 
     assert site_repository.get_site(site.id) == site
     assert site.wp_app_password_encrypted == "enc:secret-app-password"
-    token = secret_store.get_review_token(site.id)
-    assert token is not None
+    token = FakeCipher().decrypt(site.review_token_encrypted)
+    assert token
     assert site.review_token_hash == hash_token(token)
     assert site.review_token_created_at == NOW
     assert (site.connection_ok, site.connection_checked_at) == (True, NOW)
@@ -64,7 +61,6 @@ async def test_create_site_raises_on_wordpress_connection_failure():
             "wrong-password",
             InMemorySiteRepository(),
             FakeCipher(),
-            InMemorySecretStore(),
             FixedClock(NOW),
             build_publisher=lambda *_: publisher,
         )

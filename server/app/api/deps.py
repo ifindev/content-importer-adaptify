@@ -9,9 +9,9 @@ from app.core.domain.models import Site
 from app.core.lib.tokens import hash_token
 from app.core.ports.article_repository import ArticleRepository
 from app.core.ports.clock import Clock
+from app.core.ports.credential_cipher import CredentialCipher
 from app.core.ports.document_parser import DocumentParser
 from app.core.ports.publisher import Publisher
-from app.core.ports.secret_store import SecretStore
 from app.core.use_cases.sync_status import SyncCache
 
 
@@ -62,8 +62,8 @@ def get_sync_cache(request: Request) -> SyncCache:
     return request.app.state.container.sync_cache
 
 
-def get_secret_store(request: Request) -> SecretStore:
-    return request.app.state.container.secret_store
+def get_credential_cipher(request: Request) -> CredentialCipher:
+    return request.app.state.container.credential_cipher
 
 
 def get_web_base_url(request: Request) -> str:

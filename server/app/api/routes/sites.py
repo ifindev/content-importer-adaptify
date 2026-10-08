@@ -56,7 +56,6 @@ async def create_site_route(
         body.wp_app_password,
         container.site_repository,
         container.credential_cipher,
-        container.secret_store,
         clock,
         container.build_publisher_from_credentials,
     )

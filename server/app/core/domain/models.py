@@ -27,6 +27,7 @@ class Site(BaseModel):
     wp_username: str = ""
     wp_app_password_encrypted: str = ""
     review_token_hash: str | None = None
+    review_token_encrypted: str = ""
     review_token_created_at: datetime | None = None
     connection_ok: bool = True
     connection_checked_at: datetime | None = None

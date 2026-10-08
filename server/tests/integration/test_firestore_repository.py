@@ -2,21 +2,22 @@ import uuid
 from datetime import UTC, datetime
 
 import pytest
+from cryptography.fernet import Fernet
 from fastapi.testclient import TestClient
 from google.cloud import firestore
 
+from app.adapters.crypto.fernet_cipher import FernetCredentialCipher
 from app.adapters.firestore.repository import FirestoreArticleRepository
 from app.adapters.firestore.site_repository import FirestoreSiteRepository
 from app.adapters.testing.clock import FixedClock
 from app.adapters.testing.scripted_publisher import ScriptedPublisher
-from app.adapters.testing.secret_store import InMemorySecretStore
 from app.api.auth import require_session
 from app.api.deps import (
     SiteContext,
     get_clock,
+    get_credential_cipher,
     get_internal_api_secret,
     get_public_site_context,
-    get_secret_store,
     get_site_context,
     get_sync_cache,
     get_web_base_url,
@@ -152,10 +153,10 @@ def test_send_for_review_route_works_against_the_firestore_emulator(repository, 
 
 def test_review_link_routes_work_against_the_firestore_emulator(repository, site_id):
     repository.save_site(_site(site_id))
-    secret_store = InMemorySecretStore()
+    cipher = FernetCredentialCipher(Fernet.generate_key().decode())
     app.dependency_overrides[require_session] = lambda: "test-uid"
     app.dependency_overrides[get_site_context] = lambda: _site_context(site_id, repository)
-    app.dependency_overrides[get_secret_store] = lambda: secret_store
+    app.dependency_overrides[get_credential_cipher] = lambda: cipher
     app.dependency_overrides[get_clock] = lambda: FixedClock(datetime.now(UTC))
     app.dependency_overrides[get_web_base_url] = lambda: "https://app.example.com"
     try:
@@ -170,7 +171,36 @@ def test_review_link_routes_work_against_the_firestore_emulator(repository, site
     assert first.json()["url"] == second.json()["url"]
     assert reset.status_code == 200
     assert reset.json()["url"] != first.json()["url"]
-    assert repository.get_site().review_token_hash is not None
+    stored = repository.get_site()
+    assert stored.review_token_hash == hash_token(_token(reset.json()["url"]))
+    assert cipher.decrypt(stored.review_token_encrypted) == _token(reset.json()["url"])
+
+
+def test_firestore_site_document_holds_no_plaintext_review_token(repository, site_id):
+    repository.save_site(_site(site_id))
+    cipher = FernetCredentialCipher(Fernet.generate_key().decode())
+    app.dependency_overrides[require_session] = lambda: "test-uid"
+    app.dependency_overrides[get_site_context] = lambda: _site_context(site_id, repository)
+    app.dependency_overrides[get_credential_cipher] = lambda: cipher
+    app.dependency_overrides[get_clock] = lambda: FixedClock(datetime.now(UTC))
+    app.dependency_overrides[get_web_base_url] = lambda: "https://app.example.com"
+    try:
+        client = TestClient(app)
+        urls = [
+            client.get(f"/sites/{site_id}/review-link").json()["url"],
+            client.post(f"/sites/{site_id}/review-link/reset").json()["url"],
+        ]
+    finally:
+        app.dependency_overrides.clear()
+
+    raw = firestore.Client().collection("sites").document(site_id).get().to_dict()
+    assert raw["review_token_hash"] and raw["review_token_encrypted"]
+    for url in urls:
+        assert not any(_token(url) in str(value) for value in raw.values())
+
+
+def _token(url: str) -> str:
+    return url.rsplit("/", 1)[-1]
 
 
 def test_public_review_routes_work_against_the_firestore_emulator(repository, site_id):

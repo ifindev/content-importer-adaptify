@@ -6,7 +6,6 @@ from app.core.lib.tokens import generate_token, hash_token
 from app.core.ports.clock import Clock
 from app.core.ports.credential_cipher import CredentialCipher
 from app.core.ports.publisher import Publisher
-from app.core.ports.secret_store import SecretStore
 from app.core.ports.site_repository import SiteRepository
 from app.core.use_cases.check_site_connection import check_site_connection
 
@@ -18,7 +17,6 @@ async def create_site(
     wp_app_password: str,
     site_repository: SiteRepository,
     credential_cipher: CredentialCipher,
-    secret_store: SecretStore,
     clock: Clock,
     build_publisher: Callable[[str, str, str], Publisher],
 ) -> Site:
@@ -33,10 +31,10 @@ async def create_site(
         wp_username=wp_username,
         wp_app_password_encrypted=credential_cipher.encrypt(wp_app_password),
         review_token_hash=hash_token(token),
+        review_token_encrypted=credential_cipher.encrypt(token),
         review_token_created_at=now,
         connection_ok=True,
         connection_checked_at=now,
     )
     site_repository.create_site(site)
-    secret_store.set_review_token(site.id, token)
     return site

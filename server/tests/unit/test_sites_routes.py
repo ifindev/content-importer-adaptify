@@ -8,7 +8,6 @@ from app.adapters.testing.clock import FixedClock
 from app.adapters.testing.in_memory_repository import InMemoryArticleRepository
 from app.adapters.testing.in_memory_site_repository import InMemorySiteRepository
 from app.adapters.testing.scripted_publisher import ScriptedPublisher
-from app.adapters.testing.secret_store import InMemorySecretStore
 from app.api.auth import require_session
 from app.api.deps import get_clock, get_container
 from app.api.main import app
@@ -39,7 +38,6 @@ class FakeContainer:
     publisher: ScriptedPublisher
     site_repository: InMemorySiteRepository
     credential_cipher: FakeCipher
-    secret_store: InMemorySecretStore
     allow_http_wordpress: bool = True
     repos: dict[str, InMemoryArticleRepository] = field(default_factory=dict)
     publisher_calls: list[tuple[str, str, str]] = field(default_factory=list)
@@ -67,7 +65,6 @@ def container(publisher):
         publisher=publisher,
         site_repository=InMemorySiteRepository(),
         credential_cipher=FakeCipher(),
-        secret_store=InMemorySecretStore(),
     )
 
 

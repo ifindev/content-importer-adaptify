@@ -405,6 +405,11 @@ export interface components {
              */
             published_url?: string | null;
             /**
+             * Sent For Review At
+             * @description When the agency last sent it for review, UTC.
+             */
+            sent_for_review_at?: string | null;
+            /**
              * Slug
              * @description URL slug.
              */
@@ -534,10 +539,20 @@ export interface components {
              */
             id: string;
             /**
+             * Last Error
+             * @description Last WordPress error, for a failed article.
+             */
+            last_error?: string | null;
+            /**
              * Publish At Utc
              * @description Scheduled publish time, UTC.
              */
             publish_at_utc?: string | null;
+            /**
+             * Published Url
+             * @description Live URL, once published.
+             */
+            published_url?: string | null;
             /**
              * Slug
              * @description URL slug.
@@ -710,6 +725,11 @@ export interface components {
              */
             avg_approval_seconds?: number | null;
             /**
+             * Avg Change Rounds
+             * @description Change requests per article, over all articles; null if none.
+             */
+            avg_change_rounds?: number | null;
+            /**
              * Change Rounds
              * @description Articles that needed changes, with rounds per article.
              */
@@ -787,6 +807,11 @@ export interface components {
              * @description Article id.
              */
             id: string;
+            /**
+             * Sent For Review At
+             * @description When the agency last sent it for review, UTC.
+             */
+            sent_for_review_at?: string | null;
             /**
              * Slug
              * @description URL slug.
@@ -1061,6 +1086,12 @@ export interface components {
              * @description Whether this file was imported successfully.
              */
             ok: boolean;
+            /**
+             * Warnings
+             * @description Import warnings for the created article, e.g. dropped images.
+             * @default []
+             */
+            warnings: string[];
         };
         /** UploadResponse */
         UploadResponse: {

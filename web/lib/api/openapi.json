@@ -55,6 +55,19 @@
             "description": "Live URL, once published.",
             "title": "Published Url"
           },
+          "sent_for_review_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "When the agency last sent it for review, UTC.",
+            "title": "Sent For Review At"
+          },
           "slug": {
             "description": "URL slug.",
             "title": "Slug",
@@ -296,6 +309,18 @@
             "title": "Id",
             "type": "string"
           },
+          "last_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Last WordPress error, for a failed article.",
+            "title": "Last Error"
+          },
           "publish_at_utc": {
             "anyOf": [
               {
@@ -308,6 +333,18 @@
             ],
             "description": "Scheduled publish time, UTC.",
             "title": "Publish At Utc"
+          },
+          "published_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Live URL, once published.",
+            "title": "Published Url"
           },
           "slug": {
             "description": "URL slug.",
@@ -628,6 +665,18 @@
             "description": "Average sent-for-review-to-approved seconds; null if none approved.",
             "title": "Avg Approval Seconds"
           },
+          "avg_change_rounds": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Change requests per article, over all articles; null if none.",
+            "title": "Avg Change Rounds"
+          },
           "change_rounds": {
             "description": "Articles that needed changes, with rounds per article.",
             "items": {
@@ -754,6 +803,19 @@
             "description": "Article id.",
             "title": "Id",
             "type": "string"
+          },
+          "sent_for_review_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "When the agency last sent it for review, UTC.",
+            "title": "Sent For Review At"
           },
           "slug": {
             "description": "URL slug.",
@@ -1214,6 +1276,15 @@
             "description": "Whether this file was imported successfully.",
             "title": "Ok",
             "type": "boolean"
+          },
+          "warnings": {
+            "default": [],
+            "description": "Import warnings for the created article, e.g. dropped images.",
+            "items": {
+              "type": "string"
+            },
+            "title": "Warnings",
+            "type": "array"
           }
         },
         "required": [

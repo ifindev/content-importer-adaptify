@@ -123,13 +123,15 @@ function ConnectionStatus({ site }: { site: SiteWithStats }) {
         <span className="size-[7px] rounded-full bg-red-600" />
         Can&apos;t connect
       </span>
-      <span className="text-muted-foreground block pl-3.5 text-xs max-md:hidden">
-        Last checked{" "}
-        {new Date(site.connection_checked_at).toLocaleDateString("en-US", {
-          month: "short",
-          day: "numeric",
-        })}
-      </span>
+      {site.connection_checked_at && (
+        <span className="text-muted-foreground block pl-3.5 text-xs max-md:hidden">
+          Last checked{" "}
+          {new Date(site.connection_checked_at).toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+          })}
+        </span>
+      )}
     </>
   );
 }

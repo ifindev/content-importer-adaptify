@@ -112,6 +112,7 @@ Build order: T-040, T-041, T-043 and T-044 → T-048. GCP billing couldn't be se
 | ID | Ticket | Refs | Status |
 | --- | --- | --- | --- |
 | T-047 | [Demo account and README](047-demo-account-and-readme.md) | R8.1, plan: Phase 6 | analyzed |
+| T-052 | [Public landing page at "/"](052-ui-landing-page.md) | spec: Screens (Landing), architecture: Frontend | in progress |
 
 ### Phase 7: AI (P2)
 

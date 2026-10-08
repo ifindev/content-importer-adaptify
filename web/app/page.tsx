@@ -1,12 +1,14 @@
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+import type { Metadata } from "next";
 
-import { LAST_SITE_COOKIE } from "@/lib/last-site";
-import { listSites } from "@/modules/sites/data";
+export { default } from "@/modules/landing/pages/LandingPage";
 
-export default async function Page() {
-  const [{ sites }, cookieStore] = await Promise.all([listSites(), cookies()]);
-  const last = cookieStore.get(LAST_SITE_COOKIE)?.value;
-  const site = sites.find((s) => s.id === last) ?? sites[0];
-  redirect(site ? `/sites/${site.id}/articles` : "/sites");
-}
+export const metadata: Metadata = {
+  title: "Content Importer: client-approved articles, published on schedule",
+  description:
+    "Import articles from Google Docs or Word, get client approval from one private link, and publish to WordPress on schedule.",
+  openGraph: {
+    title: "Content Importer",
+    description:
+      "Import articles, get client approval from one private link, and publish to WordPress on schedule.",
+  },
+};

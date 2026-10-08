@@ -5,8 +5,9 @@ import { FirebaseError } from "firebase/app";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { ArrowUpRight, CircleAlert, Loader2 } from "lucide-react";
+import { CircleAlert, Loader2 } from "lucide-react";
 
+import { LogoMark } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -70,9 +71,7 @@ export function LoginForm({
   return (
     <div className="w-full max-w-[360px]">
       <div className="mb-6 flex flex-col items-center text-center">
-        <span className="bg-foreground text-background mb-4 flex size-9 items-center justify-center rounded-[10px]">
-          <ArrowUpRight className="size-[18px]" strokeWidth={2.5} />
-        </span>
+        <LogoMark size="lg" className="mb-4" />
         <h1 className="text-xl font-semibold tracking-tight">
           Sign in to Content Importer
         </h1>
@@ -128,16 +127,6 @@ export function LoginForm({
           {submitting ? "Signing in…" : "Sign in"}
         </Button>
       </form>
-      {/* The public demo account exists only on the live app. */}
-      {process.env.NODE_ENV === "production" && (
-        <p className="text-muted-foreground mt-4 text-center text-[12.5px]">
-          Demo login:{" "}
-          <span className="text-foreground font-medium">
-            agency@example.com
-          </span>{" "}
-          / <span className="text-foreground font-medium">pass@123</span>
-        </p>
-      )}
     </div>
   );
 }

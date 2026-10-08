@@ -3,9 +3,13 @@ import type { NextRequest } from "next/server";
 
 import { LAST_SITE_COOKIE, siteIdFromPath } from "@/lib/last-site";
 
+const AGENCY_HOME = "/app";
+
 function isAgencyPath(pathname: string): boolean {
   return (
-    pathname === "/" || pathname === "/sites" || pathname.startsWith("/sites/")
+    pathname === AGENCY_HOME ||
+    pathname === "/sites" ||
+    pathname.startsWith("/sites/")
   );
 }
 
@@ -15,16 +19,23 @@ export function proxy(request: NextRequest) {
 
   if (pathname === "/login") {
     // The API rejected this cookie (apiServer's 401 redirect). Drop it, or
-    // the hasSession check below would bounce back to "/" and loop.
+    // the hasSession check below would bounce back to the app and loop.
     if (request.nextUrl.searchParams.get("expired") === "1") {
       const response = NextResponse.next();
       response.cookies.delete("session");
       return response;
     }
     if (hasSession) {
-      return NextResponse.redirect(new URL("/", request.url));
+      return NextResponse.redirect(new URL(AGENCY_HOME, request.url));
     }
     return NextResponse.next();
+  }
+
+  // "/" is the public landing page; a signed-in agency goes straight to the app.
+  if (pathname === "/") {
+    return hasSession
+      ? NextResponse.redirect(new URL(AGENCY_HOME, request.url))
+      : NextResponse.next();
   }
 
   if (isAgencyPath(pathname) && !hasSession) {
@@ -36,7 +47,7 @@ export function proxy(request: NextRequest) {
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-pathname", pathname);
   const response = NextResponse.next({ request: { headers: requestHeaders } });
-  // Remembered so "/" reopens the last site and the Sites list marks it.
+  // Remembered so /app reopens the last site and the Sites list marks it.
   const siteId = siteIdFromPath(pathname);
   if (siteId && request.cookies.get(LAST_SITE_COOKIE)?.value !== siteId) {
     response.cookies.set(LAST_SITE_COOKIE, siteId, {
@@ -50,5 +61,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/", "/sites/:path*", "/login"],
+  matcher: ["/", "/app", "/sites/:path*", "/login"],
 };

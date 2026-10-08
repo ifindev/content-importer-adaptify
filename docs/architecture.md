@@ -193,7 +193,8 @@ The web app is a Next.js App Router project in `web/`. It splits into two direct
 ```
 web/
 ├── app/                                  # routing only
-│   ├── page.tsx                          # → /sites/{first site}/articles, or /sites when there are none
+│   ├── page.tsx                          # public landing page (signed-in visitors are sent to /app)
+│   ├── app/page.tsx                      # agency home: → /sites/{last or first site}/articles, or /sites when there are none
 │   ├── (agency)/
 │   │   ├── layout.tsx                    # inset sidebar shell with the site switcher
 │   │   ├── sites/page.tsx                # all sites; ?add=1 opens the Add site dialog
@@ -220,7 +221,8 @@ web/
 │   ├── sites/                            # sites list, Add site dialog, site switcher
 │   ├── review/                           # same shape
 │   ├── report/
-│   └── auth/
+│   ├── auth/
+│   └── landing/                          # public landing page: static sections, content.ts, landing.css; ScrollStory is the only client component
 ├── components/
 │   ├── ui/                               # shadcn components
 │   └── *.tsx                             # shared: StatusBadge, SyncWarningBadge, WordPressBanner, LocalTime, PageHeader, ArticleEditor
@@ -294,7 +296,7 @@ type MutationResult<T> = { ok: true; data: T } | { ok: false; code: string }
 
 **Unknown sites 404 in one place.** `app/(agency)/sites/[siteId]/layout.tsx` checks the id against `listSites()` and calls `notFound()`, so every site route (Import included, which reads nothing site-scoped) 404s the same way. `listSites` is wrapped in React `cache()`, so the agency layout and this guard share one request.
 
-**Last opened site.** `proxy.ts` stores the `{id}` of every `/sites/{id}/...` visit in an `httpOnly` `last_site` cookie (`lib/last-site.ts`). `/` redirects there when the site still exists, else to the first site, and the Sites list marks it "Current".
+**Last opened site.** `proxy.ts` stores the `{id}` of every `/sites/{id}/...` visit in an `httpOnly` `last_site` cookie (`lib/last-site.ts`). `/app` redirects there when the site still exists, else to the first site, and the Sites list marks it "Current".
 
 **Forms submit with `onSubmit`, not `action`.** React 19 resets a form after its `action` runs, which empties uncontrolled fields after an error (a wrong password, `wp_connection_failed`, a past publish date). Forms that can fail use `onSubmit` with `preventDefault()` and build `FormData` themselves.
 
@@ -324,11 +326,11 @@ type MutationResult<T> = { ok: true; data: T } | { ok: false; code: string }
 2. A Server Action sends the ID token to `POST /auth/session` on FastAPI, which creates a Firebase **session cookie** with `firebase_admin.auth.create_session_cookie`.
 3. The Server Action sets it on the browser as an `httpOnly`, `secure`, `sameSite=lax` cookie.
 4. `lib/api-server.ts` forwards the cookie on every request. FastAPI's `auth.py` checks it with `verify_session_cookie`.
-5. `proxy.ts` redirects agency paths to `/login?next=…` when there's no `session` cookie. This check is optimistic: it sees the cookie, not whether it's valid.
+5. `proxy.ts` redirects agency paths (`/app`, `/sites/…`) to `/login?next=…` when there's no `session` cookie, and sends `/` to `/app` when there is one; without it `/` is the public landing page. This check is optimistic: it sees the cookie, not whether it's valid.
 6. The real check is the API: `lib/api-server.ts` turns a 401 from any agency call into a redirect to `/login?next=…&expired=1`, so an expired, revoked, or tampered cookie fails on the first query of the page. There is no separate session-check endpoint.
-7. On `/login?expired=1`, `proxy.ts` deletes the rejected `session` cookie (otherwise its "already signed in" redirect would loop back to `/`), and the login page says "Please sign in again." A plain logged-out visit (step 5) shows no such notice.
+7. On `/login?expired=1`, `proxy.ts` deletes the rejected `session` cookie (otherwise its "already signed in" redirect would loop back to `/app`), and the login page says "Please sign in again." A plain logged-out visit (step 5) shows no such notice.
 
-`next` is used only when it's a relative path (starts with `/`, not `//`), which blocks open redirects. Logout is a Server Action that deletes the cookie; there's no server-side revoke while there's one agency user. Locally the same flow runs against the Firebase Auth emulator; `make agency-user` creates the one account there. It's local only: it calls the emulator's sign-up endpoint, and the emulator doesn't enforce the sign-up setting.
+`next` is used only when it's a relative path (starts with `/`, not `//`), which blocks open redirects; otherwise sign-in lands on `/app`. Logout is a Server Action that deletes the cookie; there's no server-side revoke while there's one agency user. Locally the same flow runs against the Firebase Auth emulator; `make agency-user` creates the one account there. It's local only: it calls the emulator's sign-up endpoint, and the emulator doesn't enforce the sign-up setting.
 
 **Only listed emails can sign in.** The Firebase project is on the free Spark plan, where turning sign-up off may not be available, so anyone with the public web API key could create an account. The API's `AGENCY_EMAILS` (comma-separated) is the access control: `POST /auth/session` refuses a token whose email isn't listed, with `401 invalid_token`, so no session cookie and no access. It's required when `APP_ENV=prod` (the API won't start without it); empty means anyone outside prod. The admin creates the accounts in the Firebase console (Authentication → Users → Add user) and lists their emails. The web API key is public by design: it identifies the project and isn't a secret.
 

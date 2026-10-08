@@ -124,6 +124,21 @@
       "h": 844,
       "expand": "fill",
       "title": "Request changes (client) — desktop"
+    },
+    "Landing.dc.html": {
+      "x": 0,
+      "y": 3584,
+      "w": 1280,
+      "h": 7012,
+      "expand": "fill",
+      "title": "Landing page — desktop"
+    },
+    "LandingMobile.dc.html": {
+      "x": 1360,
+      "y": 3584,
+      "w": 390,
+      "h": 7831,
+      "title": "Landing page — mobile"
     }
   },
   "createdOnFiles": {
@@ -158,6 +173,14 @@
       "w": 240,
       "x": 0,
       "y": 1924
+    },
+    "t4": {
+      "kind": "title1",
+      "maxW": 1750,
+      "text": "Landing page (/)",
+      "w": 240,
+      "x": 0,
+      "y": 3324
     }
   },
   "order": [
@@ -176,7 +199,9 @@
     "SwitcherOpen.dc.html",
     "Sites.dc.html",
     "AddSite.dc.html",
-    "SitesEmpty.dc.html"
+    "SitesEmpty.dc.html",
+    "Landing.dc.html",
+    "LandingMobile.dc.html"
   ],
   "pages": [],
   "title": "Content Importer UI Brainstorm"

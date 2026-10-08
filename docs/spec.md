@@ -329,11 +329,12 @@ Requirements fall into eight epics. Priority: **P0** = MVP must have, **P1** = M
 
 ## Screens
 
-The agency app has five screens, all scoped to one client site except Sites. The client sees one separate page. The articles table carries most of the daily work: status, scheduling, and the review link all live there.
+The agency app has five screens, all scoped to one client site except Sites. The client sees one separate page. A public landing page at `/` explains the product to agency owners. The articles table carries most of the daily work: status, scheduling, and the review link all live there.
 
 
 | Screen         | Who    | What it shows                                                                                                                                                                  | Requirements |
 | -------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------ |
+| Landing        | Public | At `/` when signed out: what the product does, how the four steps work (import, client approval, schedule, publish and report), features, FAQ, and links to the demo login. Signed-in visitors go to `/app`. | R8.1         |
 | Sites          | Agency | Every client site with its WordPress connection status, article count and needs-attention count; the last opened site has a "Current" badge. "Add site" opens a dialog that tests the WordPress connection before saving. A collapsed "How do I get a username and application password?" section in it explains how to create an Author user and its application password, and that the password only works with that user's username. Each row has Edit and Delete; delete removes the site's articles too and asks for the site name. | E8           |
 | Import         | Agency | Paste tab with a title field and the editor, Upload tab with a `.docx` drop zone for one or more files, per-file results with Delete, and a link to the articles list.                                                                        | E1           |
 | Articles       | Agency | One row per article: title (with the WordPress error under a Failed one), status, sync warning, publish date, live URL. "Set date" on Approved rows, "Change date" on Scheduled, "Retry" on Failed; a "More actions" menu with Open, View live, Copy live link and Delete. Checkboxes on deletable rows for bulk delete. "Copy review link" at the top, with "Reset review link" beside it. Search and status filter. | E3, E4, E5   |
@@ -341,7 +342,7 @@ The agency app has five screens, all scoped to one client site except Sites. The
 | Report         | Agency | Cards for published this month, time to approval and change rounds; articles by status; needs attention, upcoming, change rounds per article, and published lists.           | E6           |
 | Review page    | Client | Site name, articles grouped as waiting (with the date sent), upcoming, published. Article reader with Approve and Request changes; after a decision the client returns to the list. | E3, E6       |
 
-- **Last opened site.** `/` opens the site the agency last worked in (a cookie), or the first site.
+- **Last opened site.** `/app` opens the site the agency last worked in (a cookie), or the first site. Sign-in lands there.
 - **Site switcher.** Every agency screen has a site switcher at the top of the sidebar: search, one row per site with a red dot when its WordPress connection failed, then "All sites" and "Add site". "All sites" is also pinned at the bottom of the sidebar.
 - **Status filter.** A select at every width: "All", each status with its count, and "Needs attention" (Failed or any sync warning).
 - **Fresh data.** Articles, Article detail and the client's review pages refetch when the tab regains focus (at most every 5 seconds), and have a Refresh button, so the other side's changes show without a reload. Article detail skips both while there are unsaved changes.

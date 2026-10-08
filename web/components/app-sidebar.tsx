@@ -1,16 +1,10 @@
 "use client";
 
-import {
-  ArrowUpRight,
-  ChartColumn,
-  Download,
-  FileText,
-  Globe,
-  LogOut,
-} from "lucide-react";
+import { ChartColumn, Download, FileText, Globe, LogOut } from "lucide-react";
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
 
+import { LogoMark } from "@/components/logo";
 import {
   Sidebar,
   SidebarContent,
@@ -52,9 +46,7 @@ export function AppSidebar({
     <Sidebar variant="inset" collapsible="icon">
       <SidebarHeader className="gap-3.5 px-2.5 pt-3.5">
         <div className="flex items-center gap-2.5 px-2 pt-1 group-data-[collapsible=icon]:px-0">
-          <span className="bg-foreground text-background flex size-6 shrink-0 items-center justify-center rounded-[7px]">
-            <ArrowUpRight className="size-3.5" strokeWidth={2.5} />
-          </span>
+          <LogoMark />
           <span className="truncate text-[13.5px] font-semibold tracking-tight group-data-[collapsible=icon]:hidden">
             Content Importer
           </span>

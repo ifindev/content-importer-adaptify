@@ -302,15 +302,16 @@ Then open **http://localhost:3000**, sign in with `AGENCY_EMAIL` and `AGENCY_PAS
 <details>
 <summary><b>First-time setup</b></summary>
 
-1. `gcloud auth login` and `gcloud auth application-default login`.
-2. Create the state bucket: `gcloud storage buckets create gs://content-importer-adaptify-tfstate --location=us-central1 --uniform-bucket-level-access`.
-3. In `infra/terraform/`: `terraform init`, then `terraform apply`.
-4. Add the two secret values, which never touch Terraform state:
+1. Install the [Google Cloud CLI](https://cloud.google.com/sdk/docs/install). On macOS: `brew install --cask google-cloud-sdk`. Open a new terminal so `gcloud` is on your PATH.
+2. `gcloud auth login` and `gcloud auth application-default login`.
+3. Create the state bucket: `gcloud storage buckets create gs://content-importer-adaptify-tfstate --location=us-central1 --uniform-bucket-level-access`.
+4. In `infra/terraform/`: `terraform init`, then `terraform apply`.
+5. Add the two secret values, which never touch Terraform state:
    ```bash
    printf '%s' "<value>" | gcloud secrets versions add CREDENTIAL_ENCRYPTION_KEY --data-file=-
    printf '%s' "<value>" | gcloud secrets versions add INTERNAL_API_SECRET --data-file=-
    ```
-5. `terraform apply` again, then create the agency accounts in the Firebase console.
+6. `terraform apply` again, then create the agency accounts in the Firebase console.
 
 The full guide is in [architecture.md › Terraform](docs/architecture.md#terraform).
 

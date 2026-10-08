@@ -52,7 +52,10 @@ async def upload_articles(
             continue
         results.append(
             UploadFileResult(
-                filename=filename, ok=True, article=ArticleSummary(**article.model_dump())
+                filename=filename,
+                ok=True,
+                article=ArticleSummary(**article.model_dump()),
+                warnings=article.warnings,
             )
         )
     return UploadResponse(results=results)

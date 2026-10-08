@@ -14,6 +14,9 @@ class UploadFileResult(BaseModel):
         None, description="The created article, if import succeeded."
     )
     code: str | None = Field(None, description="Error code, if import failed.")
+    warnings: list[str] = Field(
+        [], description="Import warnings for the created article, e.g. dropped images."
+    )
 
 
 class UploadResponse(BaseModel):

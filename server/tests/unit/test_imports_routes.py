@@ -117,7 +117,17 @@ def test_upload_corrupt_file_fails_only_that_file(client):
         "ok": False,
         "article": None,
         "code": "unreadable_file",
+        "warnings": [],
     }
+
+
+def test_upload_returns_per_file_warnings(client):
+    response = client.post(
+        f"/sites/{SITE_ID}/articles/upload", files=[("files", _docx_file("with_image.docx"))]
+    )
+    result = response.json()["results"][0]
+    assert result["ok"] is True
+    assert result["warnings"]
 
 
 def test_upload_realistic_article_end_to_end(client):

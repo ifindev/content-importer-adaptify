@@ -1,4 +1,4 @@
-.PHONY: help lint test test-integration api web gen-api up down logs ps firebase-reset agency-user wp-setup wp-cron wp-reset
+.PHONY: help lint test test-integration api web gen-api up down logs ps firebase-reset agency-user wp-setup wp-cron wp-reset vps-setup
 
 help: ## List available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
@@ -59,3 +59,6 @@ wp-reset: ## Wipe the local WordPress and database volumes for a clean reinstall
 	docker compose rm -sf wordpress mariadb
 	docker volume rm -f $$(docker volume ls -q --filter label=com.docker.compose.volume=wordpress-data) \
 	                   $$(docker volume ls -q --filter label=com.docker.compose.volume=mariadb-data)
+
+vps-setup: ## One-time VPS + GitHub deploy setup (asks for its values)
+	./infra/app/setup.sh

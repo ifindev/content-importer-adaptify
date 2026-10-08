@@ -266,9 +266,9 @@ Requirements fall into eight epics. Priority: **P0** = MVP must have, **P1** = M
 
 | ID   | Requirement                                                                                  | Priority |
 | ---- | -------------------------------------------------------------------------------------------- | -------- |
-| R4.1 | The articles table has a publish date and time field for each Approved article.              | P0       |
+| R4.1 | The articles table has a publish date and time field for each Approved article. The time must be at least 5 minutes ahead. | P0       |
 | R4.2 | Setting the date sends the post to WordPress as scheduled, with title, slug, body, and date. | P0       |
-| R4.3 | Editing a Scheduled article moves its WordPress post back to draft.                          | P0       |
+| R4.3 | Unscheduling a Scheduled article moves its WordPress post to trash and keeps approval. | P0       |
 | R4.4 | A failed WordPress call sets Failed, stores the reason, and offers Retry.                    | P0       |
 | R4.5 | Changing only the date of a Scheduled article updates WordPress and keeps the status.        | P1       |
 
@@ -392,7 +392,7 @@ When a site is added, edited, or tested, the app calls `GET /wp-json/wp/v2/users
 | --------------------------------------- | -------------------------------- | ----------------------------------------------------------------- |
 | Agency sets a date (first time)         | `POST /wp-json/wp/v2/posts`      | `title`, `content` (HTML), `slug`, `status: "future"`, `date_gmt` |
 | Agency changes only the date            | `POST /wp-json/wp/v2/posts/{id}` | `date_gmt`                                                        |
-| Agency edits a Scheduled article        | `POST /wp-json/wp/v2/posts/{id}` | `status: "draft"`                                                 |
+| Agency unschedules an article           | `DELETE /wp-json/wp/v2/posts/{id}` | none: WordPress moves the post to its trash (a 404 counts as done) |
 | Article is approved and scheduled again | `POST /wp-json/wp/v2/posts/{id}` | new `title`, `content`, `slug`, `status: "future"`, `date_gmt`    |
 | Agency deletes a Draft that owns a post | `DELETE /wp-json/wp/v2/posts/{id}` | none: WordPress moves the post to its trash                     |
 | Status check                            | `GET /wp-json/wp/v2/posts`       | query below                                                       |

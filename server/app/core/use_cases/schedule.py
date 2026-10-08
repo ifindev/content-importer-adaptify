@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from app.core.domain import lifecycle
 from app.core.domain.errors import (
@@ -17,6 +17,8 @@ from app.core.ports.publisher import Publisher
 
 # Failed is here so the agency can pick a new date when the old one passed.
 SCHEDULABLE_STATUSES = {Status.APPROVED, Status.SCHEDULED, Status.FAILED}
+# A publish time closer than this (or in the past) is refused.
+MIN_LEAD = timedelta(minutes=5)
 
 
 async def schedule(
@@ -29,7 +31,7 @@ async def schedule(
 ) -> Article:
     if article.status not in SCHEDULABLE_STATUSES:
         raise NotSchedulableError(article.status)
-    if publish_at <= clock.now():
+    if publish_at < clock.now() + MIN_LEAD:
         raise PublishAtInPastError
     return await _create_or_update(article, publish_at, repository, publisher, clock, actor)
 
@@ -45,7 +47,7 @@ async def retry(
         raise NotFailedError(article.status)
     # A Failed article keeps the date it was meant to publish on. Once that's
     # past, the agency sets a new one (schedule accepts Failed).
-    if article.publish_at_utc is None or article.publish_at_utc <= clock.now():
+    if article.publish_at_utc is None or article.publish_at_utc < clock.now() + MIN_LEAD:
         raise PublishAtInPastError
     return await _create_or_update(
         article,

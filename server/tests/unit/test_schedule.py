@@ -372,3 +372,37 @@ async def test_other_404s_still_fail_the_schedule(repository, clock, publisher):
         await schedule(article, FUTURE, repository, publisher, clock, "agency")
 
     assert repository.get_article("a1").status == Status.FAILED
+
+
+async def test_schedule_accepts_exactly_five_minutes_ahead(repository, clock, publisher):
+    article = _article(Status.APPROVED)
+    repository.create_article(article)
+
+    updated = await schedule(
+        article, NOW + timedelta(minutes=5), repository, publisher, clock, "agency"
+    )
+
+    assert updated.status == Status.SCHEDULED
+
+
+async def test_schedule_refuses_under_five_minutes_ahead(repository, clock, publisher):
+    article = _article(Status.APPROVED)
+    repository.create_article(article)
+
+    with pytest.raises(PublishAtInPastError):
+        await schedule(
+            article,
+            NOW + timedelta(minutes=4, seconds=59),
+            repository,
+            publisher,
+            clock,
+            "agency",
+        )
+
+
+async def test_retry_refuses_a_date_under_five_minutes_ahead(repository, clock, publisher):
+    article = _article(Status.FAILED, publish_at_utc=NOW + timedelta(minutes=4))
+    repository.create_article(article)
+
+    with pytest.raises(PublishAtInPastError):
+        await retry(article, repository, publisher, clock, "agency")

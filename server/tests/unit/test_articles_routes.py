@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 
 import pytest
 from fastapi.testclient import TestClient
@@ -305,6 +305,18 @@ def test_unschedule_route(client, repository, publisher):
     assert response.json()["status"] == "approved"
     assert publisher.trashed == [42]
     assert response.json()["publish_at_utc"] is None
+
+
+def test_schedule_route_refuses_a_time_under_five_minutes_away(client, repository):
+    repository.create_article(_article("a1", Status.APPROVED))
+
+    response = client.post(
+        f"/sites/{SITE_ID}/articles/a1/schedule",
+        json={"publish_at": (NOW + timedelta(minutes=4)).isoformat()},
+    )
+
+    assert response.status_code == 422
+    assert response.json() == {"code": "publish_at_in_past"}
 
 
 def test_unschedule_route_refuses_other_statuses(client, repository):

@@ -1,5 +1,7 @@
 # T-028 Agency screens: wiring
 
+> **Re-scoped 2026-10-08:** T-027 already did the wiring (repositories, swapped seams, fixtures deleted). What's left here is the manual pass in the browser against `make up` for the flows and acceptance criteria below.
+
 **Phase:** 4 · Frontend · **Status:** analyzed · **Size:** M
 **Refs:** E1, E2, R3.2, R3.5–R3.7, E4, R5.1–R5.3, R6.1–R6.4, spec: Agency journey, Article lifecycle
 **Depends on:** T-027 (data layer), T-032 (sites wired, `siteId` routes live), T-033 (the screens, on fixtures)
@@ -46,7 +48,7 @@ All UI, states and layout are done in T-033. This ticket points `modules/article
 - [ ] No fixtures left in `modules/articles` or `modules/report`; T-033's UI suite still passes.
 
 ## Tasks
-- [ ] Point `modules/articles/data.ts` and `modules/report/data.ts` at T-027's repository; delete their fixtures.
+- [x] Point `modules/articles/data.ts` and `modules/report/data.ts` at T-027's repository; delete their fixtures (done in T-027).
 - [ ] Status filter counts per the open question.
 - [ ] Manual pass of each flow against `make up`.
 - [ ] Docs, if any behavior differs from T-033's.

@@ -1,5 +1,7 @@
 # T-032 Sites: wiring for the switcher, sites list and Add Site
 
+> **Re-scoped 2026-10-08:** T-027 already did the wiring (repositories, swapped seams, fixtures deleted). What's left here is the manual pass in the browser against `make up` for the flows and acceptance criteria below.
+
 **Phase:** 4 · Frontend · **Status:** analyzed · **Size:** S
 **Refs:** spec: Screens, E8 Access
 **Depends on:** T-031 (API: sites collection, `siteId`-scoped routes), T-027 (`listSites`, `createSite`), T-033 (sites screens, switcher and `[siteId]` routes on fixtures)
@@ -13,7 +15,7 @@ The agency sees every client site it manages, switches between them, and adds a 
 1. On login, the shell loads `listSites()`. Zero sites → `/sites` shows the "Add your first client site" empty state instead of an articles table.
 2. One or more sites → the switcher lists them; picking one navigates to `/sites/{siteId}/articles`. The current site stays in the URL, so two clients can be open in separate tabs.
 3. Add Site calls `createSite(form)`. `wp_connection_failed` → the inline error T-033 built ("Couldn't connect to WordPress with these details — check the URL and app password."), fields stay filled. Success → the new site's (empty) articles screen.
-4. Test connection, connection status and site counts need a follow-up API ticket (see T-031's design follow-ups). Until it exists, those parts stay hidden and the connection test runs only on submit.
+4. Test connection, connection status and site counts come from T-031's follow-ups (`POST /sites/test-connection`, `POST /sites/{siteId}/test-connection`, `GET /sites` fields).
 
 ### States
 | State | Shows |
@@ -36,9 +38,9 @@ The agency sees every client site it manages, switches between them, and adds a 
 - [ ] No fixtures left in `modules/sites`; T-033's UI suite still passes.
 
 ## Tasks
-- [ ] Point `modules/sites/data.ts` at T-027's repository; delete the sites fixtures.
-- [ ] Hide Test connection, connection status and counts until a follow-up API ticket adds them.
-- [ ] Tests: zero-sites redirect, switcher navigation, Add Site success and `wp_connection_failed`.
+- [x] Point `modules/sites/data.ts` at T-027's repository; delete the sites fixtures (done in T-027).
+- [x] ~~Hide Test connection, connection status and counts~~: the API has them now (T-031).
+- [ ] Hand check: zero-sites state, switcher navigation, Add Site success and `wp_connection_failed`, Test connection, edit, delete.
 
 ## Out of scope
 - UI, layout and route structure (T-033).

@@ -1,5 +1,7 @@
 # T-029 Client review: wiring and full-flow test
 
+> **Re-scoped 2026-10-08:** T-027 already did the wiring (repositories, swapped seams, fixtures deleted). What's left here is the manual pass in the browser against `make up` for the flows and acceptance criteria below.
+
 > **Re-scope before building:** Playwright is out of scope (CLAUDE.md). The full-flow test below becomes a hand check in the browser.
 
 **Phase:** 4 · Frontend · **Status:** analyzed · **Size:** M
@@ -59,9 +61,9 @@ Uses T-033's Playwright config; the spec lives in `web/e2e/flow/full-flow.spec.t
 - [ ] Phase 4 marked done in `docs/plan/README.md`.
 
 ## Tasks
-- [ ] Point `modules/review/data.ts` at T-027's repository; delete the review fixtures.
+- [x] Point `modules/review/data.ts` at T-027's repository; delete the review fixtures (done in T-027).
 - [ ] Full-flow spec, test helper for `make wp-cron`, `make e2e`.
-- [ ] Docs: architecture.md (reader HTML decision; Testing mentions the full-flow test).
+- [x] Docs: architecture.md reader HTML decision (already recorded). ~~Full-flow test~~: out of scope.
 
 ## Out of scope
 - UI, layout and states (T-033).

@@ -70,5 +70,9 @@ def get_web_base_url(request: Request) -> str:
     return request.app.state.container.web_base_url
 
 
+def get_internal_api_secret(request: Request) -> str:
+    return request.app.state.container.internal_api_secret
+
+
 def get_container(request: Request) -> Container:
     return request.app.state.container

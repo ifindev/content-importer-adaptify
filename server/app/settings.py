@@ -23,3 +23,6 @@ class Settings(BaseSettings):
     wp_app_password: str = ""
 
     credential_encryption_key: str = ""
+    # Shared with the web app, which sends it with the client's IP so the
+    # API can rate-limit per client (see public_review._client_ip).
+    internal_api_secret: str = ""

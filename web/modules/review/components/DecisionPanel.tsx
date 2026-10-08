@@ -61,6 +61,18 @@ export function DecisionPanel({
   // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setName(readName()), []);
 
+  // Below lg the form is a bottom sheet: lock the page behind it.
+  useEffect(() => {
+    if (mode !== "changes") return;
+    if (window.matchMedia("(min-width: 1024px)").matches) return;
+    const root = document.documentElement;
+    const previous = root.style.overflow;
+    root.style.overflow = "hidden";
+    return () => {
+      root.style.overflow = previous;
+    };
+  }, [mode]);
+
   if (article.status !== "awaiting_approval") {
     return <ReadOnlyPanel article={article} card={card} />;
   }
@@ -246,10 +258,8 @@ export function DecisionPanel({
       </aside>
 
       {/* Below lg: a sticky bottom bar. Request changes grows it into the
-          form over a light blur; the article stays readable above it. */}
+          form over a light blur, and the page behind stops scrolling. */}
       {mode === "changes" && (
-        // A light veil to set the form apart; it doesn't catch touches, so
-        // the article above still scrolls and stays readable.
         <div
           aria-hidden
           className="bg-foreground/5 pointer-events-none fixed inset-0 z-10 backdrop-blur-[1.5px] lg:hidden"

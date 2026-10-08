@@ -11,7 +11,7 @@ import { testConnection } from "@/modules/sites/actions";
 export function TestConnectionButton({
   site,
 }: {
-  site: { name: string; wp_base_url: string };
+  site: { id: string; name: string };
 }) {
   const [pending, startTransition] = useTransition();
 
@@ -22,12 +22,7 @@ export function TestConnectionButton({
       disabled={pending}
       onClick={() =>
         startTransition(async () => {
-          // ponytail: fixture-only; the real endpoint needs the stored creds.
-          const result = await testConnection({
-            wp_base_url: site.wp_base_url,
-            wp_username: "",
-            wp_app_password: "",
-          });
+          const result = await testConnection({}, site.id);
           if (result.ok) toast.success(`Connected to ${site.name}.`);
           else toast.error(messageFor(result.code));
         })

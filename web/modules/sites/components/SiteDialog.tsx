@@ -114,11 +114,12 @@ export function SiteDialog({ sites }: { sites: EditableSite[] }) {
     setTest("pending");
     startTest(async () => {
       const { wp_base_url, wp_username, wp_app_password } = fields();
-      const result = await testConnection({
-        wp_base_url,
-        wp_username,
-        wp_app_password,
-      });
+      // Editing tests against the stored site, so an empty password means
+      // the stored one.
+      const result = await testConnection(
+        { wp_base_url, wp_username, wp_app_password },
+        editing?.id,
+      );
       setTest(result.ok ? "passed" : "failed");
     });
   }

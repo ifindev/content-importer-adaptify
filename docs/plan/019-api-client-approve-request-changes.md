@@ -66,7 +66,7 @@ Same status codes as approve, plus the comment is stored.
 - [x] `api/routes/public_review.py`: both routes.
 - [x] Unit tests: version match/mismatch, status table, event content.
 - [x] Integration test: Firestore emulator, full approve round-trip.
-- [ ] Postman: chained request folder (paste → send-for-review → approve), using collection variables for the article id and token. **Manual step for the user** — no Postman collection file exists in this repo to edit.
+- ~~Postman: chained request folder (paste → send-for-review → approve).~~ Dropped: the repo has no Postman collection; Swagger is the API reference (T-038).
 - [x] `pnpm gen:api`.
 
 ## Follow-ups closed by this ticket

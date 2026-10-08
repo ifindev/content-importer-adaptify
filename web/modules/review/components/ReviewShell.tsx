@@ -1,12 +1,13 @@
 import type { Schemas } from "@/lib/api/types";
 import { getReview } from "@/modules/review/data";
 
+import { RateLimited } from "./RateLimited";
 import { ReviewNav } from "./ReviewNav";
 
 /**
  * Header plus, at lg+, the article list beside the page. Each review page
- * renders it (not the layout) so the segment's not-found and error files
- * still catch an invalid token or a rate limit.
+ * renders it (not the layout) so the segment's not-found file still catches
+ * an invalid token.
  */
 export async function ReviewShell({
   token,
@@ -16,6 +17,7 @@ export async function ReviewShell({
   children: (review: Schemas["ReviewPageOut"]) => React.ReactNode;
 }) {
   const review = await getReview(token);
+  if (!review) return <RateLimited href={`/review/${token}`} />;
 
   return (
     <div className="bg-app flex min-h-svh flex-col">

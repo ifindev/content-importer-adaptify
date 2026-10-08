@@ -5,6 +5,7 @@ import { PROSE } from "@/components/prose";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { DecisionPanel } from "@/modules/review/components/DecisionPanel";
+import { RateLimited } from "@/modules/review/components/RateLimited";
 import { ReviewShell } from "@/modules/review/components/ReviewShell";
 import { getReviewArticle } from "@/modules/review/data";
 
@@ -16,6 +17,9 @@ export async function ReviewArticlePage({
   articleId: string;
 }) {
   const article = await getReviewArticle(token, articleId);
+  if (!article) {
+    return <RateLimited href={`/review/${token}/articles/${articleId}`} />;
+  }
 
   return (
     <ReviewShell token={token}>

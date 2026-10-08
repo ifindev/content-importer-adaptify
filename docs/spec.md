@@ -196,7 +196,7 @@ stateDiagram-v2
 - **Delete only before WordPress.** The agency can delete an article in Draft or Changes requested, after a confirmation. The article and its history are removed for good. Other statuses can't be deleted: an Awaiting approval article is pulled back first, and later statuses may already exist in WordPress.
 - **History.** Every status change adds a log entry with time and actor, for example "Approved by Sarah, Oct 8".
 
-
+**Decision:** The agency sets a publish date only after approval (`schedule` accepts Approved, Scheduled and Failed). An article never reaches WordPress before the client approves it.
 
 ### Sync warnings
 
@@ -331,7 +331,7 @@ The agency app has five screens, all scoped to one client site except Sites. The
 
 | Screen         | Who    | What it shows                                                                                                                                                                  | Requirements |
 | -------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------ |
-| Sites          | Agency | Every client site with its WordPress connection status, article count and needs-attention count; the last opened site has a "Current" badge. "Add site" opens a dialog that tests the WordPress connection before saving. Each row has Edit and Delete; delete removes the site's articles too and asks for the site name. | T-031        |
+| Sites          | Agency | Every client site with its WordPress connection status, article count and needs-attention count; the last opened site has a "Current" badge. "Add site" opens a dialog that tests the WordPress connection before saving. Each row has Edit and Delete; delete removes the site's articles too and asks for the site name. | E8           |
 | Import         | Agency | Paste tab with a title field and the editor, Upload tab with a `.docx` drop zone for one or more files, per-file results with Delete, and a link to the articles list.                                                                        | E1           |
 | Articles       | Agency | One row per article: title (with the WordPress error under a Failed one), status, sync warning, publish date, live URL. "Set date" on Approved rows, "Change date" on Scheduled, "Retry" on Failed; a "More actions" menu with Open, View live, Copy live link and Delete. Checkboxes on deletable rows for bulk delete. "Copy review link" at the top, with "Reset review link" beside it. Search and status filter. | E3, E4, E5   |
 | Article detail | Agency | Editor for title, slug, body. Client feedback and activity log on the side. The primary action follows the status: send, resubmit, pull back, set date, retry, view live. Delete for Draft and Changes requested.  | E2, E3, E7   |
@@ -380,7 +380,7 @@ The app talks to WordPress only through its REST API, never through its database
 
 The app logs in with a WordPress **application password**: a separate password WordPress creates for apps, which the site owner can revoke at any time. It goes in an HTTP Basic auth header. WordPress turns off application passwords on sites without HTTPS, unless the site is marked as a local environment. The local Docker site sets `WP_ENVIRONMENT_TYPE=local`; the VPS site runs behind HTTPS.
 
-At startup the app calls `GET /wp-json/wp/v2/users/me?context=edit` once to check the credentials, and logs a clear error if they fail.
+When a site is added, edited, or tested, the app calls `GET /wp-json/wp/v2/users/me?context=edit` with its credentials. A failure refuses the save with `wp_connection_failed`; the last result is stored on the site as `connection_ok` and `connection_checked_at`.
 
 ### Calls
 
@@ -489,8 +489,8 @@ ai_usage/{yyyy-mm}
 | Collection  | Key fields                                                                                                                                                                                                                 | Notes                                                                                                                                                                                                                             |
 | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `sites`     | name, wp_base_url, wp_username, wp_app_password_encrypted, review_token_hash, review_token_created_at, connection_ok, connection_checked_at                                                                                                                      | One document per agency-managed client site, created through `POST /sites`. The WordPress app password is encrypted at rest (a symmetric key from config/Secret Manager); the plaintext review token still never touches Firestore (see the Decision below).                                                                                        |
-| `articles`  | title, slug, body_html, source (paste or docx), source_filename, warnings, status, sync_warning, version, approved_version, publish_at_utc, wp_post_id, published_url, last_error, last_checked_at, client_comment, created_at, updated_at | `version` goes up on every body edit. `approved_version` records which version the client approved. `client_comment` holds the client's latest change request; cleared when the agency edits or resubmits the article.                                                                                                                               |
-| `events`    | type, actor, at, data                                                                                                                                                                                                      | The history log. Types: imported, edited, sent_for_review, pulled_back, approved, changes_requested, scheduled, date_changed, published, failed, retried, ai_draft_created, ai_draft_accepted. `data` holds the comment or error. |
+| `articles`  | title, slug, body_html, source (paste or docx), source_filename, warnings, status, sync_warning, version, approved_version, publish_at_utc, wp_post_id, published_url, last_error, last_checked_at, client_comment, sent_for_review_at, created_at, updated_at | `version` goes up on every edit (title, slug, or body). `approved_version` records which version the client approved; cleared when an edit resets approval. `client_comment` holds the client's latest change request; cleared when the agency edits or resubmits, or the client approves. `sent_for_review_at` is the last send, shown to the client. |
+| `events`    | type, actor, at, data                                                                                                                                                                                                      | The history log. Types: imported, edited, sent_for_review, pulled_back, approved, changes_requested, scheduled, date_changed, unscheduled, published, failed, retried, ai_draft_created, ai_draft_accepted. `data` holds the comment, the error, or `reset_from` on an edit that reset approval. |
 | `ai_drafts` | revised_html, change_summary, not_done, status (open, accepted, discarded), cost_usd, created_at                                                                                                                           | P2.                                                                                                                                                                                                                               |
 | `ai_usage`  | spent_usd                                                                                                                                                                                                                  | P2. One document per month for the spend limit.                                                                                                                                                                                   |
 
@@ -503,13 +503,14 @@ ai_usage/{yyyy-mm}
 
 Agency routes need a Firebase **session cookie**: the web app exchanges the Firebase ID token for one at `POST /auth/session`, and `auth.py` checks it with `verify_session_cookie` (see [architecture.md](architecture.md#auth)). Client routes need only the review token in the path. Endpoints that show statuses run the WordPress status check first.
 
-Every error body is `{"code": "..."}`. A request that fails schema validation (for example a slug with capitals, or a comment over 2,000 characters) returns `422 {"code": "validation_error", "fields": ["body.slug"]}`.
+Every error body is `{"code": "..."}`; `wordpress_error` and `wp_connection_failed` add a `message` with WordPress's reason. A request that fails schema validation (for example a slug with capitals, or a comment over 2,000 characters) returns `422 {"code": "validation_error", "fields": ["body.slug"]}`.
 
 ### Agency
 
 
 | Method | Path                                                     | Purpose                                                           |
 | ------ | --------------------------------------------------------- | ----------------------------------------------------------------- |
+| GET    | `/health`                                                | Liveness check, no session needed.                                |
 | POST   | `/auth/session`                                          | Exchange a Firebase ID token for a session cookie.                |
 | POST   | `/sites`                                                 | Create a client site: tests the WordPress connection, stores the app password encrypted, and mints its review token. The URL must be `https://` (`422 insecure_url`); `http://` is accepted only in local development. |
 | GET    | `/sites`                                                 | List the agency's client sites, each with its last connection result, article count and needs-attention count (Failed or a sync warning). |
@@ -557,7 +558,7 @@ Client routes carry no `siteId` — the API resolves which site a token belongs 
 
 **Decision:** The review token is `secrets.token_urlsafe(32)` (`server/app/core/lib/tokens.py`): 32 random bytes, 43 URL-safe characters, 256 bits. That is the strength of an AES-256 key: guessing it is not a realistic attack at any request rate, and client routes are rate-limited too. A longer token only makes the URL longer in emails and chat; it adds no real security. The real risk is a leaked link, which reset (R3.7) handles. Reconsidered and kept on 2026-10-08.
 
-**Decision:** For the MVP, the review link is protected only by its long random token: no password and no on/off switch. A guessed link is not a realistic risk; a leaked link is, and the reset (R3.7) covers it. A password adds little, since agencies usually send it in the same message as the link. Possible next steps are a per-site on/off switch and an optional passcode. The README records this decision and its reasons.
+**Decision:** For the MVP, the review link is protected only by its long random token: no password and no on/off switch. A guessed link is not a realistic risk; a leaked link is, and the reset (R3.7) covers it. A password adds little, since agencies usually send it in the same message as the link. Possible next steps are a per-site on/off switch and an optional passcode.
 
 ## Build order
 
@@ -569,7 +570,6 @@ The items below stay open on purpose. Each one has a working default, so none bl
 
 ### Open questions
 
-- [ ] Can the agency set a publish date before approval, so an article goes live as soon as it is approved? The default is no: dates only after approval.
 - [ ] Which SEO plugin to support first if meta descriptions join the scope. Yoast is the most widely installed, which makes it the natural first choice.
 - [ ] When to add image import, since many articles contain images.
 - [x] Does the Firebase Auth emulator support session cookies? **Yes.** Checked in T-008: `create_session_cookie`/`verify_session_cookie` round-trip correctly against the emulator, and a tampered cookie is rejected. No local fallback is needed; the same auth flow (ID token → session cookie) runs unchanged in local and GCP.

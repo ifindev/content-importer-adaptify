@@ -327,7 +327,9 @@ type MutationResult<T> = { ok: true; data: T } | { ok: false; code: string }
 6. The real check is the API: `lib/api-server.ts` turns a 401 from any agency call into a redirect to `/login?next=…&expired=1`, so an expired, revoked, or tampered cookie fails on the first query of the page. There is no separate session-check endpoint.
 7. On `/login?expired=1`, `proxy.ts` deletes the rejected `session` cookie (otherwise its "already signed in" redirect would loop back to `/`), and the login page says "Please sign in again." A plain logged-out visit (step 5) shows no such notice.
 
-`next` is used only when it's a relative path (starts with `/`, not `//`), which blocks open redirects. Logout is a Server Action that deletes the cookie; there's no server-side revoke while there's one agency user. Locally the same flow runs against the Firebase Auth emulator; `make agency-user` creates the one account there.
+`next` is used only when it's a relative path (starts with `/`, not `//`), which blocks open redirects. Logout is a Server Action that deletes the cookie; there's no server-side revoke while there's one agency user. Locally the same flow runs against the Firebase Auth emulator; `make agency-user` creates the one account there. It's local only: it calls the emulator's sign-up endpoint, and the emulator doesn't enforce the sign-up setting.
+
+**Sign-up is off.** On GCP, Identity Platform has `disabled_user_signup` on (`infra/terraform/data.tf`). That is the access control: nobody can create an account through the public web API key, so the only accounts are the ones the admin creates in the Firebase console (Authentication → Users → Add user). The web API key is public by design: it identifies the project and isn't a secret.
 
 **Client.** The review pages need no login. The review token in the URL is the only credential (see the spec's API endpoints decisions). The review layout has no agency navigation and sets `noindex`. `next.config` sends `Referrer-Policy: no-referrer` on `/review/*`, so clicking a live-page link doesn't leak the token to the client's site through the Referer header. A bad or reset token shows a generic 404 page that doesn't confirm the link ever existed.
 
@@ -343,7 +345,7 @@ The app runs on GCP. WordPress runs on your own VPS in Docker. Locally, everythi
 | --------------------------------------------------- | -------------------------------------------------------- |
 | Cloud Run                                           | Two services: API and web. Both scale to zero when idle. |
 | Firestore                                           | All app data                                             |
-| Firebase Auth                                       | One agency login                                         |
+| Firebase Auth (Identity Platform)                   | Agency logins; sign-up off, accounts made in the console |
 | Secret Manager                                      | `CREDENTIAL_ENCRYPTION_KEY` (encrypts each site's WordPress app password and review token in Firestore); `INTERNAL_API_SECRET` (web → API client IP); LangSmith key (P2) |
 | Artifact Registry                                   | Docker images                                            |
 | Vertex AI                                           | Gemini, for P2 only                                      |
@@ -415,14 +417,39 @@ Each Dockerfile has a `dev` stage (used by `docker compose`) and a `prod` stage 
 
 ### What Terraform creates
 
-- **APIs:** Run, Firestore, Secret Manager, Artifact Registry, Billing Budgets, Pub/Sub, and Vertex AI (P2).
-- **Service accounts:** one for the API, one for the web service. Each gets only the roles it needs.
-- **Compute:** Cloud Run services for API and web.
-- **Data:** Firestore database.
-- **Secrets:** Secret Manager entries for `CREDENTIAL_ENCRYPTION_KEY`, `INTERNAL_API_SECRET` (both services read it; the API refuses to start on GCP without it) and the LangSmith key. You add the values by hand once, so they never sit in Terraform state. Each site's own WordPress app password and review token live encrypted in Firestore, not in Secret Manager (see spec.md's Data model).
-- **Cost backstop:** billing budget, Pub/Sub topic, and the kill-switch function.
+All in `infra/terraform/`, flat files, no modules.
 
-The Terraform state bucket is the one GCP resource you create by hand, before the first `terraform init`.
+- **APIs:** Run, Firestore, Artifact Registry, Secret Manager, IAM, IAM Credentials, STS, Firebase, Identity Toolkit, Cloud Resource Manager, Service Usage.
+- **Images:** Artifact Registry repo `app`, with a cleanup policy that keeps the 5 newest versions of each image. This keeps storage under the 0.5 GB free tier.
+- **Compute:** Cloud Run services `api` and `web`, scaling 0–2, 1 vCPU and 512 MiB, with startup CPU boost. Both are public (`allUsers` invoker). Each URL is computed from the project number, so the API gets `WEB_BASE_URL` and the web gets `API_URL` without a dependency cycle. Terraform ignores the image: the deploy workflow owns it.
+- **Data:** Firestore `(default)` in native mode.
+- **Auth:** Firebase on the project, Identity Platform with email and password sign-in and sign-up off, and a Firebase web app whose `api_key` and `auth_domain` become the web image's build args.
+- **Service accounts:**
+  - `api-run`: `datastore.user`, `firebaseauth.admin`, and `secretAccessor` on its two secrets only.
+  - `web-run`: `secretAccessor` on `INTERNAL_API_SECRET` only.
+  - `deployer`: `run.developer`, `artifactregistry.writer` on `app`, and `serviceAccountUser` on `api-run` and `web-run` only.
+- **Secrets:** `CREDENTIAL_ENCRYPTION_KEY` and `INTERNAL_API_SECRET` (both services read it; the API refuses to start on GCP without it). Terraform creates them empty. You add the values by hand, so they never sit in Terraform state. Each site's own WordPress app password lives encrypted in Firestore, not in Secret Manager (see spec.md's Data model).
+- **Keyless deploys:** a Workload Identity pool and an OIDC provider for GitHub. Only pushes to `main` in `ifindev/content-importer-adaptify` can act as `deployer`.
+
+The billing budget and kill switch (T-046), and Vertex AI with the LangSmith key (Phase 7), come later.
+
+### Terraform
+
+Run by hand from `infra/terraform/`, not in CI. `terraform.tfvars` holds only the project ID, region and repo, nothing secret.
+
+Once, as the project owner:
+
+1. `gcloud auth login` and `gcloud auth application-default login`.
+2. Create the state bucket: `gcloud storage buckets create gs://content-importer-adaptify-tfstate --location=us-central1 --uniform-bucket-level-access`, then `gcloud storage buckets update gs://content-importer-adaptify-tfstate --versioning`.
+3. `terraform init`, then `terraform apply`. If the plan wants to create a Firestore database or Firebase project that already exists, import it first: `terraform import google_firestore_database.default "projects/content-importer-adaptify/databases/(default)"`, and `terraform import google_firebase_project.default projects/content-importer-adaptify`.
+4. Add the secret values: `printf '%s' "<value>" | gcloud secrets versions add <NAME> --data-file=-`.
+   - `CREDENTIAL_ENCRYPTION_KEY`: `uv run python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"`.
+   - `INTERNAL_API_SECRET`: `openssl rand -base64 32`.
+
+   The first apply's Cloud Run revisions fail to start until these exist. Run `terraform apply` again after adding them.
+5. Create the agency accounts in the Firebase console.
+
+After that, `terraform plan` and `terraform apply` for changes. `terraform output` prints what the deploy workflow needs.
 
 ### VPS setup, once
 

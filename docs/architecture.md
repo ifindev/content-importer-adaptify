@@ -6,8 +6,8 @@ This doc covers **how** the code is organized. For **what** the system does, see
 
 ```mermaid
 flowchart LR
-    Browser -->|pages, Server Actions| Web[Next.js web<br/>Cloud Run]
-    Web -->|HTTP, session cookie| API[FastAPI api<br/>Cloud Run]
+    Browser -->|pages, Server Actions| Web[Next.js web<br/>VPS or Cloud Run]
+    Web -->|HTTP, session cookie| API[FastAPI api<br/>VPS or Cloud Run]
     API --> Firestore
     API -->|REST, application password| WordPress[WordPress<br/>VPS]
     API -.->|P2| Vertex[Gemini on Vertex AI]
@@ -34,8 +34,8 @@ flowchart LR
 | HTML cleaning          | `nh3`                                     | Keeps only allowed tags and attributes                                                          |
 | WordPress client       | `httpx`                                   | Async HTTP calls to the REST API                                                                |
 | AI (P2)                | LangChain, LangSmith, Gemini on Vertex AI | Adaptify stack for LangChain and LangSmith                                                      |
-| Infrastructure as code | Terraform                                 | Creates every GCP resource                                                                      |
-| CI and deploy          | GitHub Actions                            | Tests on every push, deploy on main                                                             |
+| CI and deploy          | GitHub Actions, GHCR                      | Tests on every push; a green push to main deploys to the VPS                                    |
+| Infrastructure as code | Terraform                                 | Creates every GCP resource, for the GCP target                                                  |
 | WordPress host         | WordPress 6 and MariaDB on Docker, nginx  | Runs on your VPS                                                                                |
 
 
@@ -135,7 +135,7 @@ content-importer/
 │   │   │       ├── ai_drafts.py         # P2
 │   │   │       └── public_review.py     # token-only routes for the client; resolves its own site
 │   │   ├── container.py                 # composition root
-│   │   └── settings.py                  # pydantic-settings, APP_ENV = local | gcp | test
+│   │   └── settings.py                  # pydantic-settings, APP_ENV = local | prod | test
 │   ├── tests/
 │   │   ├── unit/                        # lifecycle rules, use cases with test adapters
 │   │   ├── integration/                 # Firestore emulator, local WordPress
@@ -144,9 +144,10 @@ content-importer/
 │   └── pyproject.toml                   # deps, ruff, pytest, import-linter
 ├── web/                                 # Next.js, see Frontend below
 ├── infra/
-│   ├── terraform/                       # GCP only
+│   ├── app/                             # VPS: the app's docker-compose, nginx site, .env.example
+│   ├── terraform/                       # GCP: Cloud Run, Firestore, Auth, secrets
 │   └── wordpress/                       # VPS: docker-compose, nginx site, backup.sh, crontab; local-setup.sh for `make wp-setup`
-├── .github/workflows/                   # ci.yml, deploy.yml
+├── .github/workflows/                   # ci.yml (checks, then deploy on main)
 ├── docker-compose.yml                   # local: api, web, firebase emulator, wordpress, mariadb
 ├── Makefile
 ├── .env.example
@@ -299,7 +300,7 @@ type MutationResult<T> = { ok: true; data: T } | { ok: false; code: string }
 
 **Filters live in the URL.** The articles status filter is a search param. Filter components call `useFilterParams().setParams({...})`, which merges changes into the current URL. The Server Component reads `searchParams` and refetches. Filtered views can be bookmarked, and the back button works.
 
-**Upload size.** Server Actions accept 1 MB request bodies by default. `next.config` raises `serverActions.bodySizeLimit` to 31 MB so several `.docx` files fit in one upload. Cloud Run refuses HTTP/1 bodies over 32 MiB with a bare 413 before they reach Next, so the upload screen checks the total first and refuses anything over 30 MB with `upload_too_large`. The extra 1 MB covers multipart overhead.
+**Upload size.** Server Actions accept 1 MB request bodies by default. `next.config` raises `serverActions.bodySizeLimit` to 31 MB so several `.docx` files fit in one upload. Both hosts refuse bodies over 32 MB with a bare 413 (Cloud Run for HTTP/1, nginx's `client_max_body_size` on the VPS) before they reach Next, so the upload screen checks the total first and refuses anything over 30 MB with `upload_too_large`. The extra 1 MB covers multipart overhead.
 
 **`API_URL` is read on use.** `apiUrl()` in `lib/api-server.ts` throws when it's unset, but only when called. `next build` loads server modules to collect page data, and the production image is built without runtime env.
 
@@ -329,31 +330,32 @@ type MutationResult<T> = { ok: true; data: T } | { ok: false; code: string }
 
 `next` is used only when it's a relative path (starts with `/`, not `//`), which blocks open redirects. Logout is a Server Action that deletes the cookie; there's no server-side revoke while there's one agency user. Locally the same flow runs against the Firebase Auth emulator; `make agency-user` creates the one account there. It's local only: it calls the emulator's sign-up endpoint, and the emulator doesn't enforce the sign-up setting.
 
-**Sign-up is off.** On GCP, Identity Platform has `disabled_user_signup` on (`infra/terraform/data.tf`). That is the access control: nobody can create an account through the public web API key, so the only accounts are the ones the admin creates in the Firebase console (Authentication → Users → Add user). The web API key is public by design: it identifies the project and isn't a secret.
+**Only listed emails can sign in.** The Firebase project is on the free Spark plan, where turning sign-up off may not be available, so anyone with the public web API key could create an account. The API's `AGENCY_EMAILS` (comma-separated) is the access control: `POST /auth/session` refuses a token whose email isn't listed, with `401 invalid_token`, so no session cookie and no access. It's required when `APP_ENV=prod` (the API won't start without it); empty means anyone outside prod. The admin creates the accounts in the Firebase console (Authentication → Users → Add user) and lists their emails. The web API key is public by design: it identifies the project and isn't a secret.
 
 **Client.** The review pages need no login. The review token in the URL is the only credential (see the spec's API endpoints decisions). The review layout has no agency navigation and sets `noindex`. `next.config` sends `Referrer-Policy: no-referrer` on `/review/*`, so clicking a live-page link doesn't leak the token to the client's site through the Referer header. A bad or reset token shows a generic 404 page that doesn't confirm the link ever existed.
 
 ## Infrastructure
 
-The app runs on GCP. WordPress runs on your own VPS in Docker. Locally, everything runs in one `docker compose` setup, so you can build and test the full flow at zero cost.
+The app has two deploy targets. Both use the same `prod` images, `APP_ENV=prod`, and Firestore and Firebase Auth.
 
+| Target | API and web | Secrets | Set up with | Status |
+| --- | --- | --- | --- | --- |
+| **VPS** | Docker Compose behind nginx, next to WordPress | `.env` and a Firebase key file | Manual steps below; CI deploys | Live |
+| **GCP** | Cloud Run, scale to zero | Secret Manager | `infra/terraform/` | Ready, not applied: needs a GCP billing account |
 
-### GCP services
+WordPress runs on the VPS either way. Locally, everything runs in one `docker compose` setup, so you can build and test the full flow at zero cost.
 
+**Decision:** The VPS is the live target (T-048). The GCP billing account couldn't be set up (the card was refused), and Cloud Run, Secret Manager and Artifact Registry all need one. Firestore and Firebase Auth work on Firebase's free Spark plan, so the VPS target needs no billing account. The Terraform stays so the app can move to GCP once billing works.
 
-| Service                                             | Use                                                      |
-| --------------------------------------------------- | -------------------------------------------------------- |
-| Cloud Run                                           | Two services: API and web. Both scale to zero when idle. |
-| Firestore                                           | All app data                                             |
-| Firebase Auth (Identity Platform)                   | Agency logins; sign-up off, accounts made in the console |
-| Secret Manager                                      | `CREDENTIAL_ENCRYPTION_KEY` (encrypts each site's WordPress app password and review token in Firestore); `INTERNAL_API_SECRET` (web → API client IP); LangSmith key (P2) |
-| Artifact Registry                                   | Docker images                                            |
-| Vertex AI                                           | Gemini, for P2 only                                      |
-| Cloud Billing budget + Pub/Sub + one small function | Spending alert and kill switch (see Cost and limits)     |
-| Cloud Logging                                       | Logs and errors, included with Cloud Run                 |
+### The app on the VPS
 
-
-**Decision:** Deploy in `us-central1`, a Tier 1 region with the full Cloud Run free tier.
+- **Site:** `https://app.aiwitharifin.com`.
+- **Containers:** `api` and `web` from `infra/app/docker-compose.yml`, in `~/app`. The web listens on `127.0.0.1:3000`; the API publishes no port and is reached only by the web, at `http://api:8080` on the compose network. `restart: unless-stopped` brings both back after a reboot.
+- **Images:** `ghcr.io/ifindev/content-importer-adaptify-{api,web}`, tagged with the commit SHA. The compose file needs `IMAGE_TAG`.
+- **Config:** `~/app/.env` (`chmod 600`, from `infra/app/.env.example`): `WEB_BASE_URL`, `CREDENTIAL_ENCRYPTION_KEY`, `INTERNAL_API_SECRET`, `AGENCY_EMAILS`. The compose file sets `APP_ENV=prod` and `API_URL`.
+- **Firebase credentials:** a service-account key from the Firebase console (Project settings → Service accounts → Generate new private key), saved as `~/app/firebase-service-account.json` and mounted read-only. `GOOGLE_APPLICATION_CREDENTIALS` points at it; Firestore and `firebase_admin` read the project ID from it. It's the one long-lived secret on the VPS. Keep `~` at `700`; the file itself is `644` so the container's non-root user can read it.
+- **HTTPS:** nginx on the host (`infra/app/nginx/`), with a certbot certificate, the same as WordPress. nginx appends the visitor's IP to `X-Forwarded-For`, which is the entry the web reads for the API's per-client rate limit.
+- **Memory:** the two app containers sit next to WordPress and MariaDB. Watch `docker stats` after the first deploy; add swap if the VPS runs short.
 
 ### WordPress on the VPS
 
@@ -372,8 +374,8 @@ The app runs on GCP. WordPress runs on your own VPS in Docker. Locally, everythi
 
 | Service                 | Stands in for                                                                                   |
 | ----------------------- | ----------------------------------------------------------------------------------------------- |
-| `api`                   | Cloud Run API, with `APP_ENV=local`                                                             |
-| `web`                   | Cloud Run web, Next.js dev server                                                               |
+| `api`                   | The VPS API, with `APP_ENV=local`                                                               |
+| `web`                   | The VPS web, Next.js dev server                                                                 |
 | `firebase`              | Firestore and Firebase Auth emulators                                                           |
 | `wordpress` + `mariadb` | The VPS WordPress, with `WP_ENVIRONMENT_TYPE=local` so application passwords work without HTTPS |
 
@@ -394,28 +396,60 @@ Set `CREDENTIAL_ENCRYPTION_KEY` in `.env`. Without it the API makes a new key on
 
 ## Deployment and CI
 
-Terraform manages GCP only. The VPS gets set up once by hand from the files in `infra/wordpress/`. GitHub Actions runs the tests and deploys the app.
+The VPS gets set up once by hand from `infra/wordpress/` and `infra/app/`. After that, GitHub Actions runs the checks on every push and deploys every green push to `main` to the VPS. The GCP target is set up with Terraform and deployed by hand (GCP target, below).
 
 ### Environments
 
 
-| Environment | App                          | WordPress                 |
-| ----------- | ---------------------------- | ------------------------- |
-| Local       | `docker compose up`          | Local WordPress container |
-| Demo        | GCP project in `us-central1` | Your VPS                  |
-
-
+| Environment | App                 | WordPress                 |
+| ----------- | ------------------- | ------------------------- |
+| Local       | `docker compose up` | Local WordPress container |
+| Demo        | The VPS (`~/app`)   | The VPS (`~/wordpress`)   |
+| GCP (ready) | Cloud Run, `us-central1` | The VPS (`~/wordpress`) |
 
 
 ### Production images
 
-Each Dockerfile has a `dev` stage (used by `docker compose`) and a `prod` stage (used by Cloud Run).
+Each Dockerfile has a `dev` stage (used by local `docker compose`) and a `prod` stage (used on the VPS and on Cloud Run).
 
 - **API:** `python:3.12-slim`, runtime dependencies only (`uv sync --no-dev`), non-root, `fastapi run` on `$PORT` (8080 if unset).
-- **Web:** `deps` → `build` → `prod`. `output: "standalone"` makes `next build` emit a minimal `server.js`. The prod stage copies only that and `.next/static`, runs as `node`, and listens on `$PORT`.
+- **Web:** `deps` → `build` → `prod`. `output: "standalone"` makes `next build` emit a minimal `server.js`. The prod stage copies only that and `.next/static`, runs as `node`, and listens on `$PORT` (3000 if unset).
 - `NEXT_PUBLIC_FIREBASE_*` are build args, inlined into the browser bundle, so a web image belongs to one Firebase project. `NEXT_PUBLIC_FIREBASE_AUTH_EMULATOR_URL` is left unset in real builds. `API_URL`, `APP_ENV` and `INTERNAL_API_SECRET` are runtime env.
 
-### What Terraform creates
+### Firebase setup, once
+
+1. In the Firebase console, add Firebase to the `content-importer-adaptify` project (or create one). Stay on the Spark plan.
+2. Build → Firestore Database → Create database, in production mode, location `us-central1`. The app reaches it only through the Admin SDK, which ignores security rules, so the default deny-all rules are right.
+3. Build → Authentication → Sign-in method → Email/Password on. Add the agency accounts under Users. If Settings → User actions offers it, turn off "Enable create (sign-up)" as well; `AGENCY_EMAILS` is the guard either way.
+4. Add a web app (Project settings → Your apps). Its `apiKey`, `authDomain` and `projectId` become the GitHub variables below.
+5. Add `app.aiwitharifin.com` under Authentication → Settings → Authorized domains.
+6. Generate the service-account key (see The app on the VPS).
+
+**Firestore indexes:** none known. If the live flow logs a "query requires an index" error, it includes a link that creates the index.
+
+### VPS setup, once
+
+1. DNS `A` records for `wp.` and `app.`; open only 22, 80 and 443 in the cloud firewall and `ufw`.
+2. Install Docker (`get.docker.com`), nginx, and `certbot python3-certbot-nginx`.
+3. **WordPress:** copy `infra/wordpress/` to `~/wordpress`, fill in `.env` from `.env.example`, and run `docker compose up -d`. Copy its nginx site config into `sites-available`, enable it, reload nginx, then run `sudo certbot --nginx -d wp.aiwitharifin.com`. Finish the install in the browser, set permalinks to "Post name", create the `content-importer` Author and its application password, and install the two lines from `crontab.txt` with `crontab -e`.
+4. **App:** `mkdir -m 700 ~/app`, write `~/app/.env` from `infra/app/.env.example`, and copy the Firebase key to `~/app/firebase-service-account.json`. Install `infra/app/nginx/app.aiwitharifin.com.conf` and run `sudo certbot --nginx -d app.aiwitharifin.com`. The first deploy starts the containers.
+5. **Deploy access:** make a key pair just for deploys (`ssh-keygen -t ed25519 -f deploy -N ""`), add `deploy.pub` to `~/.ssh/authorized_keys` of a user in the `docker` group, and put the private key in the GitHub secret `VPS_SSH_KEY`. `ssh-keyscan app.aiwitharifin.com` gives `VPS_KNOWN_HOSTS`.
+6. Sign in to the app and add the site (`https://wp.aiwitharifin.com`, user `content-importer`, its app password).
+
+### GitHub settings
+
+Settings → Secrets and variables → Actions.
+
+| Name | Kind | Value |
+| --- | --- | --- |
+| `VPS_SSH` | Variable | `<user>@app.aiwitharifin.com` |
+| `VPS_SSH_KEY` | Secret | The deploy private key |
+| `VPS_KNOWN_HOSTS` | Secret | `ssh-keyscan` output, so the job refuses a different host |
+| `FIREBASE_API_KEY`, `FIREBASE_AUTH_DOMAIN`, `FIREBASE_PROJECT_ID` | Variables | The Firebase web app config (public by design) |
+
+### GCP target
+
+#### What Terraform creates
 
 All in `infra/terraform/`, flat files, no modules.
 
@@ -428,12 +462,12 @@ All in `infra/terraform/`, flat files, no modules.
   - `api-run`: `datastore.user`, `firebaseauth.admin`, and `secretAccessor` on its two secrets only.
   - `web-run`: `secretAccessor` on `INTERNAL_API_SECRET` only.
   - `deployer`: `run.developer`, `artifactregistry.writer` on `app`, and `serviceAccountUser` on `api-run` and `web-run` only.
-- **Secrets:** `CREDENTIAL_ENCRYPTION_KEY` and `INTERNAL_API_SECRET` (both services read it; the API refuses to start on GCP without it). Terraform creates them empty. You add the values by hand, so they never sit in Terraform state. Each site's own WordPress app password lives encrypted in Firestore, not in Secret Manager (see spec.md's Data model).
+- **Secrets:** `CREDENTIAL_ENCRYPTION_KEY` and `INTERNAL_API_SECRET` (both services read it; the API refuses to start in prod without it). Terraform creates them empty. You add the values by hand, so they never sit in Terraform state. Each site's own WordPress app password lives encrypted in Firestore, not in Secret Manager (see spec.md's Data model).
 - **Keyless deploys:** a Workload Identity pool and an OIDC provider for GitHub. Only pushes to `main` in `ifindev/content-importer-adaptify` can act as `deployer`.
 
-The billing budget and kill switch (T-046), and Vertex AI with the LangSmith key (Phase 7), come later.
+`AGENCY_EMAILS` comes from the `agency_emails` variable; pass it with `-var` or a gitignored `*.auto.tfvars`. Not built yet: the budget kill switch (T-046) and the GitHub deploy job for Cloud Run (T-045), so images are deployed by hand (below).
 
-### Terraform
+#### Terraform
 
 Run by hand from `infra/terraform/`, not in CI. `terraform.tfvars` holds only the project ID, region and repo, nothing secret.
 
@@ -451,30 +485,40 @@ Once, as the project owner:
 
 After that, `terraform plan` and `terraform apply` for changes. `terraform output` prints what the deploy workflow needs.
 
-### VPS setup, once
+#### Deploy images by hand
 
-1. DNS `A` record for the subdomain; open only 22, 80 and 443 in the cloud firewall and `ufw`.
-2. Install Docker (`get.docker.com`), nginx, and `certbot python3-certbot-nginx`.
-3. Copy `infra/wordpress/` to the VPS, fill in `.env` from `.env.example`, and run `docker compose up -d`.
-4. Copy the nginx site config into `sites-available`, enable it, reload nginx, then run `sudo certbot --nginx -d <domain>`.
-5. Finish the WordPress install in the browser and set permalinks to "Post name".
-6. Create the `content-importer` user with the Author role, and an application password under that user.
-7. Install the two lines from `crontab.txt` with `crontab -e`.
-8. Add the site through the agency UI's Add Site screen (or `POST /sites`), which stores the URL and app password encrypted in Firestore.
+Until T-045 adds a CI job, from the repo root after `gcloud auth configure-docker us-central1-docker.pkg.dev`:
 
-
+```bash
+REPO=us-central1-docker.pkg.dev/content-importer-adaptify/app
+TAG=$(git rev-parse --short HEAD)
+docker build --target prod -t $REPO/api:$TAG server && docker push $REPO/api:$TAG
+docker build --target prod -t $REPO/web:$TAG \
+  --build-arg NEXT_PUBLIC_FIREBASE_API_KEY=$(terraform -chdir=infra/terraform output -raw firebase_api_key) \
+  --build-arg NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=$(terraform -chdir=infra/terraform output -raw firebase_auth_domain) \
+  --build-arg NEXT_PUBLIC_FIREBASE_PROJECT_ID=content-importer-adaptify \
+  web && docker push $REPO/web:$TAG
+gcloud run deploy api --image $REPO/api:$TAG --region us-central1
+gcloud run deploy web --image $REPO/web:$TAG --region us-central1
+```
 
 ### CI pipeline
 
-1. `ci.yml`, on pushes to `main` and on pull requests. Three parallel jobs mirror `make lint` and `make test`:
+`ci.yml`, on pushes to `main` and on pull requests.
+
+1. Three parallel jobs mirror `make lint` and `make test`:
    - `server`: `ruff check`, `ruff format --check`, `lint-imports`, `pytest -m "not integration"`.
    - `web`: `pnpm lint`, `format:check`, `typecheck`, `test`, then `pnpm build` with placeholder `NEXT_PUBLIC_FIREBASE_*` values.
    - `api-types`: `make gen-api`, then `git diff --exit-code web/lib/api/`. It fails when the API changed and the types weren't regenerated.
+2. `deploy`, only on a push to `main` and only when all three pass:
+   - Builds both `prod` images, tags them with the commit SHA and pushes them to GHCR with the job's own `GITHUB_TOKEN`.
+   - Copies `infra/app/docker-compose.yml` to the VPS over SSH, logs the VPS in to GHCR with the same token (sent over stdin), runs `docker compose pull` and `up -d` with `IMAGE_TAG=<sha>`, logs out, and prunes app images older than a week.
 
-   A newer push cancels the older run on the same ref. Integration tests are not in CI: they need the emulators and WordPress. Run `make test-integration` by hand before a deploy that touches the adapters.
-2. `deploy.yml`, on main: build the API and web images, push them to Artifact Registry tagged with the commit hash, and deploy them to Cloud Run (T-045).
+On other refs, a newer push cancels the older run. On `main`, runs queue instead, so a deploy never stops halfway. Integration tests are not in CI: they need the emulators and WordPress. Run `make test-integration` by hand before a push that touches the adapters.
 
-**Decision:** GitHub logs in to GCP with Workload Identity Federation instead of a JSON key file. Each run gets a short-lived token, so no long-lived secret sits in the repo settings.
+**Decision:** No registry credential lives on the VPS. The job's `GITHUB_TOKEN` can pull this repo's private packages and expires when the job ends. The only long-lived deploy secret is the SSH key, scoped to one VPS user.
+
+**Rollback:** on the VPS, `cd ~/app && IMAGE_TAG=<older sha> docker compose up -d`. If that image was pruned, log in to GHCR with a personal token that has `read:packages` first. The next push to `main` deploys forward again.
 
 ## Testing
 
@@ -495,16 +539,15 @@ Tests follow the architecture. The lifecycle rules get the most tests, because a
 
 ## Cost and limits
 
-The monthly target is **$5** and the absolute maximum is **$10**, because the project runs on a personal GCP account. Without AI, the app fits inside GCP's free tiers. The VPS is outside this budget, since you already pay for it.
+Without AI, the app costs nothing beyond the VPS, which you already pay for. The monthly target for paid services is **$5** and the absolute maximum is **$10**.
 
 
-| Item                                         | Expected monthly cost                                                                                                                                             |
-| -------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Cloud Run (API and web, scale to zero)       | $0. The free tier covers 180,000 vCPU-seconds, 360,000 GiB-seconds, and 2 million requests per month ([Cloud Run pricing](https://cloud.google.com/run/pricing)). |
-| Firestore, Secret Manager, Artifact Registry | $0 to cents. Free quotas cover this scale (**approximate**, from memory, not checked).                                                                            |
-| AI change drafts (P2)                        | Under one cent per draft                                                                                                                                          |
-
-
+| Item                                    | Expected monthly cost                                                                                    |
+| --------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| VPS (app and WordPress)                 | Already paid; flat                                                                                       |
+| Firestore and Firebase Auth (Spark)     | $0. Spark has no billing account, so going over a daily free quota makes calls fail instead of costing money. |
+| GHCR images                             | $0 for this repo's packages at this size (**approximate**, not checked)                                 |
+| AI change drafts (P2)                   | Under one cent per draft. Vertex AI needs a GCP billing account, so Phase 7 revisits the provider.      |
 
 
 ### Limits
@@ -514,12 +557,6 @@ The monthly target is **$5** and the absolute maximum is **$10**, because the pr
 | --------------------------- | ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
 | AI spend per month (in-app) | $2                            | `SpendGuard` refuses new drafts until the next month. The button shows why.                                                                     |
 | AI output size per draft    | Capped by `max_output_tokens` | Keeps one call's worst case under one cent, so the limit can only overshoot by one draft.                                                       |
-| GCP budget alert            | $5                            | Email to you                                                                                                                                    |
-| GCP budget kill switch      | $8                            | A Pub/Sub message triggers a small function that disables billing on the project. Every paid service stops until you re-enable billing by hand. |
 
 
-**Decision:** The kill switch fires at $8, not $10, because GCP billing data arrives hours late. The $2 gap absorbs spend that happens before the alert lands.
-
-**Decision:** Run the app in a GCP project that holds nothing else, so the kill switch can't stop anything you care about.
-
-**Decision:** Keep Cloud Run's minimum instances at 0. The first request after idle takes a few seconds longer (a cold start), which is fine for an MVP.
+**Decision:** One container each for the API and web, always on. No autoscaling, so the in-process rate limiter (`rate_limit.py`) stays correct.

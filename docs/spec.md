@@ -321,7 +321,7 @@ Requirements fall into eight epics. Priority: **P0** = MVP must have, **P1** = M
 
 | ID   | Requirement                                                               | Priority |
 | ---- | ------------------------------------------------------------------------- | -------- |
-| R8.1 | The agency app needs a login once deployed. Accounts are created by the admin in the Firebase console; sign-up is off. | P0       |
+| R8.1 | The agency app needs a login once deployed. Accounts are created by the admin in the Firebase console, and only emails listed in `AGENCY_EMAILS` can sign in. | P0       |
 | R8.2 | The review page works without a login, through its token only.            | P0       |
 
 
@@ -591,6 +591,6 @@ The items below stay open on purpose. Each one has a working default, so none bl
 | Pasted Google Docs HTML is messier than expected | Odd formatting in WordPress   | Fixture tests with real pasted samples, and the `nh3` allowed-tags list                                                                 |
 | The review link gets forwarded                   | Someone else can approve      | Names are logged on every decision. The agency can reset the link (R3.7).                                                               |
 | The VPS is down at publish time                  | WordPress misses the schedule | The status check shows Late. Posts publish when the site and cron come back.                                                            |
-| The kill switch disables billing                 | The whole app stops           | The project holds only this app. Re-enable billing by hand.                                                                             |
+| The VPS runs out of memory                      | The app or WordPress restarts | `restart: unless-stopped` brings it back. Watch `docker stats`; add swap or a bigger plan.                                              |
 
 

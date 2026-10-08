@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  CalendarX2,
   Copy,
   ExternalLink,
   FileText,
@@ -20,14 +21,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import type { Schemas } from "@/lib/api/types";
 import { messageFor } from "@/lib/error-messages";
-import { deleteArticle } from "@/modules/articles/actions";
+import { deleteArticle, unscheduleArticle } from "@/modules/articles/actions";
 
 import { ConfirmDeleteDialog } from "./ConfirmDeleteDialog";
 import { isDeletable } from "./deletable";
 
 /**
  * A row's "More actions". Set date, Change date and Retry stay inline
- * (RowAction); this holds the rest.
+ * (RowAction); this holds the rest, Unschedule included.
  */
 export function RowMenu({
   siteId,
@@ -47,6 +48,14 @@ export function RowMenu({
     } catch {
       toast.error("Couldn't copy. The link is " + live);
     }
+  }
+
+  function unschedule() {
+    startTransition(async () => {
+      const result = await unscheduleArticle(siteId, article.id);
+      if (result.ok) toast.success("Taken off the schedule.");
+      else toast.error(messageFor(result.code));
+    });
   }
 
   function remove() {
@@ -95,6 +104,11 @@ export function RowMenu({
                 <Copy /> Copy live link
               </DropdownMenuItem>
             </>
+          )}
+          {article.status === "scheduled" && (
+            <DropdownMenuItem onClick={unschedule} disabled={pending}>
+              <CalendarX2 /> Unschedule
+            </DropdownMenuItem>
           )}
           {isDeletable(article.status) && (
             <DropdownMenuItem

@@ -120,22 +120,31 @@ async def _create_or_update(
             chosen_event_type = event_type or EventType.SCHEDULED
             update = {"wp_post_id": wp_post_id}
         else:
-            if article.status == Status.SCHEDULED:
-                await publisher.update_scheduled(article.wp_post_id, publish_at_utc=publish_at)
-                chosen_event_type = event_type or EventType.DATE_CHANGED
-            else:
-                # Failed after a date change: the post exists; send the
-                # approved text again.
-                await publisher.update_scheduled(
-                    article.wp_post_id,
-                    title=article.title,
-                    slug=article.slug,
-                    html=article.body_html,
-                    publish_at_utc=publish_at,
-                    status="future",
-                )
+            try:
+                if article.status == Status.SCHEDULED:
+                    await publisher.update_scheduled(article.wp_post_id, publish_at_utc=publish_at)
+                    chosen_event_type = event_type or EventType.DATE_CHANGED
+                else:
+                    # Failed after a date change: the post exists; send the
+                    # approved text again.
+                    await publisher.update_scheduled(
+                        article.wp_post_id,
+                        title=article.title,
+                        slug=article.slug,
+                        html=article.body_html,
+                        publish_at_utc=publish_at,
+                        status="future",
+                    )
+                    chosen_event_type = event_type or EventType.SCHEDULED
+                update = {}
+            except WordPressError as exc:
+                # The post was deleted in WordPress (an older unschedule left
+                # a draft that was then removed): make a new one.
+                if not (exc.http_status == 404 and exc.code == "rest_post_invalid_id"):
+                    raise
+                wp_post_id = await _create_with_timeout_recovery(article, publish_at, publisher)
                 chosen_event_type = event_type or EventType.SCHEDULED
-            update = {}
+                update = {"wp_post_id": wp_post_id}
     except WordPressError as exc:
         failed, failed_event = _move(
             article, Status.FAILED, actor, EventType.FAILED, now, data={"error": str(exc)}

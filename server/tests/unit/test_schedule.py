@@ -337,3 +337,38 @@ async def test_reschedule_after_unschedule_creates_a_new_post(repository, clock,
     assert updated.wp_post_id == 1
     assert len(publisher.created) == 1
     assert publisher.updated == []
+
+
+async def test_schedule_creates_a_new_post_when_the_old_one_was_deleted(
+    repository, clock, publisher
+):
+    article = _article(Status.APPROVED, wp_post_id=42)
+    repository.create_article(article)
+    publisher.update_error = WordPressError(404, "rest_post_invalid_id", "Invalid post ID.")
+
+    updated = await schedule(article, FUTURE, repository, publisher, clock, "agency")
+
+    assert (updated.status, updated.wp_post_id) == (Status.SCHEDULED, 1)
+    assert len(publisher.created) == 1
+
+
+async def test_retry_creates_a_new_post_when_the_old_one_was_deleted(repository, clock, publisher):
+    article = _article(Status.FAILED, wp_post_id=42, publish_at_utc=FUTURE)
+    repository.create_article(article)
+    publisher.update_error = WordPressError(404, "rest_post_invalid_id", "Invalid post ID.")
+
+    updated = await retry(article, repository, publisher, clock, "agency")
+
+    assert (updated.status, updated.wp_post_id) == (Status.SCHEDULED, 1)
+    assert repository.list_events("a1")[-1].type.value == "retried"
+
+
+async def test_other_404s_still_fail_the_schedule(repository, clock, publisher):
+    article = _article(Status.APPROVED, wp_post_id=42)
+    repository.create_article(article)
+    publisher.update_error = WordPressError(404, "rest_no_route", "No route")
+
+    with pytest.raises(WordPressError):
+        await schedule(article, FUTURE, repository, publisher, clock, "agency")
+
+    assert repository.get_article("a1").status == Status.FAILED

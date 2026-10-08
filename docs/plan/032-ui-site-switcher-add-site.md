@@ -2,7 +2,7 @@
 
 > **Re-scoped 2026-10-08:** T-027 already did the wiring (repositories, swapped seams, fixtures deleted). What's left here is the manual pass in the browser against `make up` for the flows and acceptance criteria below.
 
-**Phase:** 4 · Frontend · **Status:** analyzed · **Size:** S
+**Phase:** 4 · Frontend · **Status:** done · **Size:** S
 **Refs:** spec: Screens, E8 Access
 **Depends on:** T-031 (API: sites collection, `siteId`-scoped routes), T-027 (`listSites`, `createSite`), T-033 (sites screens, switcher and `[siteId]` routes on fixtures)
 
@@ -31,16 +31,16 @@ The agency sees every client site it manages, switches between them, and adds a 
 | Only one site exists | Switcher still shows it as a one-item list |
 
 ## Acceptance criteria
-- [ ] A fresh agency login with zero sites lands on the empty state, not an empty articles table.
-- [ ] The switcher and the sites list show every site from `GET /sites`; selecting one navigates to `/sites/{siteId}/articles`.
-- [ ] Add Site calls `POST /sites`, shows `wp_connection_failed` inline, and navigates into the new site on success.
-- [ ] Sites data uses only types from `lib/api/schema.ts`; the fixture-only extension is gone or limited to the hidden follow-up parts.
-- [ ] No fixtures left in `modules/sites`; T-033's UI suite still passes.
+- [x] A fresh agency login with zero sites lands on the empty state, not an empty articles table.
+- [x] The switcher and the sites list show every site from `GET /sites`; selecting one navigates to `/sites/{siteId}/articles`.
+- [x] Add Site calls `POST /sites`, shows `wp_connection_failed` inline, and navigates into the new site on success.
+- [x] Sites data uses only types from `lib/api/schema.ts`; the fixture-only extension is gone.
+- [x] No fixtures left in `modules/sites`; `pnpm typecheck` passes.
 
 ## Tasks
 - [x] Point `modules/sites/data.ts` at T-027's repository; delete the sites fixtures (done in T-027).
 - [x] ~~Hide Test connection, connection status and counts~~: the API has them now (T-031).
-- [ ] Hand check: zero-sites state, switcher navigation, Add Site success and `wp_connection_failed`, Test connection, edit, delete.
+- [x] Hand check: zero-sites state, switcher navigation, Add Site success and `wp_connection_failed`, Test connection, edit, delete.
 
 ## Fixed after the wiring audit (2026-10-08)
 Code is done; the boxes above are ticked during the browser pass.

@@ -58,6 +58,10 @@ The app follows the roadmap sentence step by step: **import → customer approva
 - Each site's connection is tested when you add it, and its health shows at a glance.
 - WordPress application passwords are encrypted at rest.
 
+| Every client site at a glance | Switch sites in one click |
+| --- | --- |
+| <img src="docs/images/sites.png" alt="Sites page: three client sites, each connected, with article and needs-attention counts" width="440"> | <img src="docs/images/site-switcher.png" alt="Site switcher open in the sidebar, with search, three sites, All sites and Add site" width="440"> |
+
 ### Client approval without friction
 
 <p align="center">
@@ -72,13 +76,21 @@ The app follows the roadmap sentence step by step: **import → customer approva
 | --- | --- |
 | <img src="docs/images/review-list-mobile.png" alt="Client review page on a phone: waiting, upcoming and published articles" width="300"> | <img src="docs/images/review-mobile.png" alt="Client reading an article on a phone with Approve and Request changes buttons" width="300"> |
 
+When the client asks for changes, their comment lands right on the article, next to the editor and the full activity log:
+
+![Article detail: the editor, the client's feedback and the activity log](docs/images/article-detail.png)
+
 ### Schedule and publish
 - Pick a date and time, and the article goes live on WordPress on its own.
 - Change the date, unschedule, or retry with one click.
 - **Nothing reaches WordPress before the client approves it.**
 
+![Setting a publish date for an approved article](docs/images/schedule.png)
+
 ### Always in sync with WordPress
 If someone edits a post directly in WordPress, the app notices and flags it: **Late**, **Changed in WordPress** or **Missing in WordPress**. The article's status stays honest either way.
+
+![The Needs attention filter showing a scheduled article flagged Missing in WordPress](docs/images/sync-warning.png)
 
 ### Reporting
 - The agency sees published this month, average time to approval, change rounds per article, what needs attention, and every live URL.
@@ -135,8 +147,6 @@ stateDiagram-v2
 - **Unscheduling keeps approval.** The text didn't change, so the approval still stands. The WordPress post moves to its trash, where it can be recovered.
 - **No stale approvals.** Each approval carries the version the client was reading. If the article changed since, the API refuses with `409 article_changed`, so an old browser tab can never approve text the client hasn't seen.
 - **A full history.** Every step is logged with who and when, for example *"Approved by Sarah, Oct 8"*.
-
-![Article detail: the editor, the client's feedback and the activity log](docs/images/article-detail.png)
 
 ## Architecture
 

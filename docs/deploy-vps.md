@@ -59,6 +59,20 @@ All of this step happens in your web browser, at [console.firebase.google.com](h
 
 The database stays empty for now. That's correct: the app adds its own data when you start using it.
 
+### Create the index
+
+The app's article list needs one extra database index. Without it, the Articles page shows "Something went wrong".
+
+1. In **Firestore**, open the **Indexes** tab.
+2. Open **Composite** and click **Create index**.
+3. Collection ID: `articles`.
+4. First field: `status`, **Ascending**.
+5. Click **Add field**. Second field: `created_at`, **Descending**.
+6. Query scope: **Collection**.
+7. Click **Create**.
+
+The index shows "Building" for a few minutes, then "Enabled". You can continue with the next parts while it builds.
+
 ### Turn on email-and-password login
 
 This part only switches the login feature on. **You don't create any login yet.** That's the next part.
@@ -295,7 +309,7 @@ Then, in your web browser:
 
 1. Open your app address, for example `https://app.example.com`.
 2. Sign in with the email and password from step 1.
-3. Open **Sites → Add site**. Enter your WordPress address, a WordPress user name and that user's application password. You create an application password in WordPress under **Users → Profile → Application Passwords**.
+3. Open **Sites → Add site**. Enter your WordPress address, a WordPress username and that user's application password. The dialog's "How do I get a username and application password?" section shows the steps. **The application password only works with the user it was created for**, so the username must be that user's.
 4. Try the full flow: import an article, send it for review, approve it, schedule it at least 6 minutes ahead, and wait until it shows Published.
 
 Finally, check the server's memory **on the VPS**:
@@ -387,6 +401,7 @@ On your machine, the app uses a fake Firebase called the emulator, not the real 
 | The API keeps restarting | A setting is missing | On the VPS: `cd ~/app && docker compose logs api`. Check `~/app/.env` and the Firebase key file. |
 | Login: "unauthorized domain" | The app address isn't allowed in Firebase | Do "Allow your app's web address" in step 1. |
 | Login fails, or says "Please sign in again" | The email isn't in `AGENCY_EMAILS`, or it's spelled differently | Fix the line in `~/app/.env` (see "Add a login for someone"). |
+| Articles page: "Something went wrong", and the API log says `The query requires an index` | The Firestore index is missing | Do "Create the index" in step 1. The log line also has a link that creates it. No redeploy needed. |
 | Upload fails with error 413 | The file is bigger than 30 MB | Use smaller files. |
 | Saved WordPress sites show as unreachable | `CREDENTIAL_ENCRYPTION_KEY` changed | Put back the key you saved in step 5. |
 

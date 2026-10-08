@@ -56,3 +56,7 @@ class InMemoryArticleRepository:
 
     def list_events(self, article_id: str) -> list[Event]:
         return list(self._events.get(article_id, []))
+
+    def delete_article(self, article_id: str) -> None:
+        self._articles.pop(article_id, None)
+        self._events.pop(article_id, None)

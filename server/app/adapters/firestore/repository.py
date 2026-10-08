@@ -76,3 +76,8 @@ class FirestoreArticleRepository:
         events = [Event(id=doc.id, **doc.to_dict()) for doc in query.stream()]
         logger.info("Firestore list_events %s -> %s events", article_id, len(events))
         return events
+
+    def delete_article(self, article_id: str) -> None:
+        # Removes the article document and its events subcollection.
+        self._client.recursive_delete(self._articles_ref().document(article_id))
+        logger.info("Firestore delete_article %s", article_id)

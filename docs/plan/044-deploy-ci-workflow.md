@@ -74,6 +74,7 @@ The commands mirror `make lint` and `make test`. Calling `make` directly would m
 - Checked locally without `.env`: unit tests pass and `make gen-api` leaves `web/lib/api/` unchanged.
 - `ruff format --check` failed on `main` for `app/adapters/documents/parser.py` and `app/api/routes/imports.py`. Both are reformatted in this change so CI starts green.
 - `actionlint` passes.
+- First CI run: `pnpm typecheck` failed with `Cannot find name 'PageProps'`. Next generates those route types (and the gitignored `next-env.d.ts`) only during `next dev` or `next build`, so a fresh checkout had neither. `typecheck` is now `next typegen && tsc --noEmit`.
 
 ## Out of scope
 - Integration tests in CI.

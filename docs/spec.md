@@ -552,6 +552,8 @@ Client routes carry no `siteId` — the API resolves which site a token belongs 
 
 **Decision:** Client routes are rate-limited per client IP. All requests reach the API from the Next.js server, so the web app sends the client's IP in `X-Forwarded-For`, and the API trusts that header only from the web service.
 
+**Decision:** The review token is `secrets.token_urlsafe(32)` (`server/app/core/lib/tokens.py`): 32 random bytes, 43 URL-safe characters, 256 bits. That is the strength of an AES-256 key: guessing it is not a realistic attack at any request rate, and client routes are rate-limited too. A longer token only makes the URL longer in emails and chat; it adds no real security. The real risk is a leaked link, which reset (R3.7) handles. Reconsidered and kept on 2026-10-08.
+
 **Decision:** For the MVP, the review link is protected only by its long random token: no password and no on/off switch. A guessed link is not a realistic risk; a leaked link is, and the reset (R3.7) covers it. A password adds little, since agencies usually send it in the same message as the link. Possible next steps are a per-site on/off switch and an optional passcode. The README records this decision and its reasons.
 
 ## Build order

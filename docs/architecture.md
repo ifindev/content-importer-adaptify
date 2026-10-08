@@ -99,7 +99,7 @@ content-importer/
 │   │   │   │   └── change_draft.py      # P2: prompt text, version, output schema
 │   │   │   └── lib/                     # generic helpers
 │   │   │       ├── slug.py
-│   │   │       ├── tokens.py            # random token, SHA-256 hash
+│   │   │       ├── tokens.py            # 256-bit review token (token_urlsafe(32)), SHA-256 hash; see spec R3.1 decision
 │   │   │       └── html_rules.py        # allowed tags and attributes
 │   │   ├── adapters/                    # the only place SDKs and HTTP clients get imported
 │   │   │   ├── firestore/repository.py

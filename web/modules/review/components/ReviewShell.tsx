@@ -1,3 +1,4 @@
+import { RefreshOnFocus } from "@/components/refresh-on-focus";
 import type { Schemas } from "@/lib/api/types";
 import { getReview } from "@/modules/review/data";
 
@@ -38,6 +39,9 @@ export async function ReviewShell({
           <span className="text-muted-foreground shrink-0 text-[13px]">
             Article review
           </span>
+        </div>
+        <div className="ml-auto">
+          <RefreshOnFocus />
         </div>
       </header>
       <div className="flex min-h-0 flex-1">

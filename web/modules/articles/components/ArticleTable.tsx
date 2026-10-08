@@ -111,6 +111,9 @@ export function ArticleTable({
             <th className="h-9 px-3 font-medium">Title</th>
             <th className="h-9 w-[170px] px-3 font-medium">Status</th>
             <th className="h-9 w-[150px] px-3 font-medium">Publish date</th>
+            <th className="h-9 w-[200px] px-3 font-medium max-lg:hidden">
+              Live URL
+            </th>
             <th className="h-9 w-[170px] px-3">
               <span className="sr-only">Actions</span>
             </th>
@@ -145,6 +148,11 @@ export function ArticleTable({
                     <SyncWarningBadge warning={a.sync_warning} />
                   </span>
                 )}
+                {a.status === "failed" && a.last_error && (
+                  <p className="mt-0.5 truncate text-[12px] text-[oklch(0.42_0.17_27.325)]">
+                    {a.last_error}
+                  </p>
+                )}
               </td>
               <td className="px-3 py-2 max-md:p-0">
                 <StatusBadge status={a.status} />
@@ -159,6 +167,20 @@ export function ArticleTable({
                   <LocalTime iso={a.publish_at_utc} />
                 ) : (
                   <span className="text-faint max-md:hidden">—</span>
+                )}
+              </td>
+              <td className="max-w-[200px] px-3 py-2 max-lg:hidden">
+                {a.published_url ? (
+                  <a
+                    href={a.published_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-foreground/75 block truncate hover:underline"
+                  >
+                    {a.published_url.replace(/^https?:\/\//, "")}
+                  </a>
+                ) : (
+                  <span className="text-faint">—</span>
                 )}
               </td>
               <td className="px-3 py-2 max-md:ml-auto max-md:p-0">

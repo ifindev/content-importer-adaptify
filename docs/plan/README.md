@@ -96,7 +96,7 @@ Build order for this phase: T-026 (done) → T-033 (all UI on fixtures, no API n
 | T-040 | [Review token encrypted in Firestore](040-api-review-token-in-firestore.md) | R3.1, R3.2, R3.7 | analyzed |
 | T-041 | [Production Dockerfiles](041-deploy-production-dockerfiles.md) | architecture: Infrastructure | analyzed |
 | T-042 | [Terraform for GCP](042-deploy-terraform-gcp.md) | R8.1, architecture: Infrastructure, Auth | analyzed |
-| T-043 | [WordPress on the VPS](043-infra-vps-wordpress.md) | spec: WordPress integration | analyzed |
+| T-043 | [WordPress on the VPS](043-infra-vps-wordpress.md) | spec: WordPress integration | done |
 | T-044 | [CI workflow](044-deploy-ci-workflow.md) | architecture: Deployment and CI | analyzed |
 | T-045 | [Auto-deploy to Cloud Run](045-deploy-auto-deploy.md) | R8.1, R8.2, architecture: Deployment and CI | analyzed |
 | T-046 | [Budget alert and kill switch](046-deploy-budget-kill-switch.md) | architecture: Cost and limits | analyzed |

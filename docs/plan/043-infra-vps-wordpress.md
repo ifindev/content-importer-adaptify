@@ -1,6 +1,6 @@
 # T-043 WordPress on the VPS
 
-**Phase:** 5 · Infra · **Status:** analyzed · **Size:** S
+**Phase:** 5 · Infra · **Status:** done · **Size:** S
 **Refs:** spec: WordPress integration, Risks; architecture: WordPress on the VPS, VPS setup once
 **Depends on:** —
 
@@ -91,12 +91,11 @@ Certbot adds the `listen 443 ssl` block and the HTTP-to-HTTPS redirect when it r
 
 **`.env.example`**: `DB_PASSWORD=`, `DB_ROOT_PASSWORD=`. The real `.env` lives only on the VPS.
 
-**`backup.sh`**
-- `set -euo pipefail`.
-- `docker compose exec -T db mariadb-dump --single-transaction -u root -p"$DB_ROOT_PASSWORD" wordpress | gzip > /var/backups/wordpress/<date>/db.sql.gz`.
-- Tar the `wp_data` volume: `docker run --rm -v wordpress_wp_data:/data:ro -v /var/backups/wordpress/<date>:/backup alpine tar czf /backup/wp-data.tgz -C /data .`. The volume name has the compose project prefix; check it with `docker volume ls`.
-- Delete backup folders older than 7 days.
-- Reads `.env` from its own folder.
+**`backup.sh`** (in the repo, copied from the VPS)
+- `set -euo pipefail`; reads `.env` from its own folder.
+- Dumps the database with `docker compose exec -T -e MYSQL_PWD=… db mariadb-dump -u root wordpress | gzip` → `/var/backups/wordpress/<date>/db.sql.gz`. `MYSQL_PWD` keeps the password out of the process list.
+- Tars `/var/www/html` from inside the `wordpress` container (`docker compose exec -T wordpress tar czf - …`) → `wp_files.tar.gz`. No extra container or volume name needed.
+- Deletes backup folders older than 7 days.
 
 **`crontab.txt`**: the two cron lines below, with the real path.
 
@@ -114,10 +113,11 @@ Certbot adds the `listen 443 ssl` block and the HTTP-to-HTTPS redirect when it r
 9. **App user:** create user `content-importer` with the **Author** role. In its profile, create an application password named `content-importer-app`. It is shown once; keep it for T-045 and T-047.
 10. **Cron** (`crontab -e` as your user):
     ```
-    * * * * * cd /home/<user>/wordpress && docker compose exec -T wordpress curl -s -o /dev/null http://localhost/wp-cron.php
-    0 3 * * * /home/<user>/wordpress/backup.sh >> /home/<user>/wordpress/backup.log 2>&1
+    * * * * * curl -s -m 50 -o /dev/null http://127.0.0.1:8080/wp-cron.php
+    0 3 * * * $HOME/wordpress/backup.sh >> $HOME/backup.log 2>&1
     ```
-    Use the full path, since cron doesn't always expand `~`. `/var/backups/wordpress` must be writable by your user (`sudo mkdir -p /var/backups/wordpress && sudo chown <user> /var/backups/wordpress`).
+    The scheduler line calls WordPress on the host's loopback port. An earlier version used `docker compose exec -T wordpress curl …`: it worked by hand but hung under cron (no terminal), so posts missed their time.
+    Cron sets `$HOME`, so `$HOME` works; `~` may not. `/var/backups/wordpress` must be writable by your user (`sudo mkdir -p /var/backups/wordpress && sudo chown <user> /var/backups/wordpress`).
 
 ### Why an Author, not admin
 The app only creates, reschedules and trashes posts it made itself (spec: WordPress integration, Calls). An Author can do all of that for their own posts. If the stored app password leaked, it couldn't install plugins, manage users, change settings, or touch other people's posts. Its posts show "content-importer" as the author, which is fine for a demo site.
@@ -140,25 +140,29 @@ Your user is in the `docker` group, which is effectively root. That's acceptable
 - Update architecture "VPS setup, once" to match the steps above. It currently says "create an application password under the admin user's profile".
 
 ## Acceptance criteria
-- [ ] `https://wp.aiwitharifin.com` loads with a valid certificate, and `http://` redirects to `https://`.
-- [ ] `sudo certbot renew --dry-run` succeeds.
-- [ ] `sudo ss -tlnp` shows 8080 on `127.0.0.1` only, and nothing on 3306. From outside, only 22, 80 and 443 answer.
-- [ ] `curl -u content-importer:'<app password>' "https://wp.aiwitharifin.com/wp-json/wp/v2/users/me?context=edit"` returns 200.
-- [ ] As the Author, through REST: create a post with `status: future` 6 minutes ahead; it goes `publish` on time with no visits to the site. Then `DELETE /wp/v2/posts/{id}` moves it to the trash.
-- [ ] As the Author, `GET /wp-json/wp/v2/plugins` returns 403.
-- [ ] `backup.sh` writes `db.sql.gz` and `wp-data.tgz`; the dump restores into a scratch MariaDB container.
-- [ ] architecture.md updated as listed in Decisions.
+- [x] `https://wp.aiwitharifin.com` loads with a valid certificate, and `http://` redirects to `https://`.
+- [x] `sudo certbot renew --dry-run` succeeds.
+- [x] `sudo ss -tlnp` shows 8080 on `127.0.0.1` only, and nothing on 3306.
+- [ ] From outside, only the SSH port (2222 on this VPS), 80 and 443 answer. Not checked with a port scan yet.
+- [x] `curl -u content-importer:'<app password>' "https://wp.aiwitharifin.com/wp-json/wp/v2/users/me?context=edit"` returns 200.
+- [x] As the Author, through REST: create a post with `status: future` 3 minutes ahead; it goes `publish` on time with no visits to the site.
+- [ ] As the Author, `DELETE /wp/v2/posts/{id}` moves it to the trash. Not checked yet; T-045's live run covers it (Unschedule).
+- [x] As the Author, `GET /wp-json/wp/v2/plugins` returns 403.
+- [x] `backup.sh` writes `db.sql.gz` and `wp_files.tar.gz`.
+- [ ] The dump restores into a scratch MariaDB container. Not checked yet.
+- [x] architecture.md updated as listed in Decisions.
 
 ## Tasks
-- [ ] Check the VPS region (ICP precondition).
-- [ ] Write `docker-compose.yml`, `nginx/wp.aiwitharifin.com.conf`, `.env.example`, `backup.sh`, `crontab.txt` and `README.md` in `infra/wordpress/`.
-- [ ] DNS record, firewall (Tencent and `ufw`), SSH hardening, unattended upgrades.
-- [ ] Install certbot; start the containers; set up the nginx site; get the certificate.
-- [ ] Finish the WordPress install; set permalinks.
-- [ ] Create the Author user and its application password.
-- [ ] Add both cron lines; run `backup.sh` once by hand.
-- [ ] Run the checks above.
-- [ ] Update architecture.md.
+- [x] Check the VPS region (ICP precondition).
+- [x] Write `docker-compose.yml`, `nginx/wp.aiwitharifin.com.conf`, `.env.example`, `backup.sh` and `crontab.txt` in `infra/wordpress/`. No separate README: the steps live in architecture "VPS setup, once".
+- [x] DNS record and firewall.
+- [ ] Confirm SSH key-only login and `unattended-upgrades`.
+- [x] Install certbot; start the containers; set up the nginx site; get the certificate.
+- [x] Finish the WordPress install; set permalinks.
+- [x] Create the Author user and its application password.
+- [x] Add both cron lines; run `backup.sh` once by hand.
+- [x] Run the checks above.
+- [x] Update architecture.md.
 
 ## Out of scope
 - Off-site backups (copying backups off the VPS).

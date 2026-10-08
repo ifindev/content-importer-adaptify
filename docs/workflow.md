@@ -65,9 +65,8 @@ The status lives in the master list, [plan/README.md](plan/README.md), and in th
 3. **Unit tests first** for the rules: lifecycle transitions and use cases, run with in-memory and scripted adapters. Write the test tables from the ticket (status × action, error codes) before the code.
 4. **Repository, use case, and route**, following the import rules in [architecture.md](architecture.md#import-rules).
 5. **Integration tests** against the Firestore emulator and the local WordPress container.
-6. **Swagger** at `/docs` shows the endpoint correctly.
-7. **Postman:** the collection is imported from `openapi.json`. Hand-written requests only for multi-step flows (paste → send → approve → schedule), with variables.
-8. **Types regenerated** for the frontend (`pnpm gen:api`) if the API changed.
+6. **Swagger** at `/docs` shows the endpoint correctly. It is the API reference; there is no Postman collection.
+7. **Types regenerated** for the frontend (`pnpm gen:api`) if the API changed.
 
 ### Frontend tickets
 
@@ -75,6 +74,7 @@ The status lives in the master list, [plan/README.md](plan/README.md), and in th
 2. **UI ticket:** one ticket builds every screen from the design canvas (made with `/design`) on fixtures typed from `lib/api/schema.ts`, in every state (loading, empty, error codes from the API tickets, sync warnings, banners), checked by hand in the browser (no Playwright; see CLAUDE.md). Pages read data only through `modules/<m>/data.ts` and write only through `modules/<m>/actions.ts`.
 3. **Wiring tickets** may group several screens. Each points its modules' `data.ts` and `actions.ts` at the data layer, deletes the fixtures, and checks every flow and error code against the real API.
 4. **Responsive:** every screen works at 375, 768, and 1280px with no horizontal scroll, and is usable by keyboard.
+5. **No automated UI tests** (CLAUDE.md): no Playwright or other end-to-end suite, and no new vitest tests. A frontend ticket is checked by hand in the browser plus `pnpm typecheck`.
 
 Frontend tickets may be size L.
 

@@ -58,6 +58,7 @@ class Container:
         """Removes the site and its articles. Firestore cascades the
         subcollections; the in-memory fallback keeps articles here."""
         self.site_repository.delete_site(site_id)
+        self.secret_store.delete_review_token(site_id)
         self._in_memory_repos.pop(site_id, None)
 
     def build_publisher_from_credentials(

@@ -2,6 +2,7 @@ from unittest.mock import patch
 
 import pytest
 
+from app.adapters.secret_store import LocalFileSecretStore
 from app.adapters.testing.in_memory_repository import InMemoryArticleRepository
 from app.container import build_container
 from app.settings import Settings
@@ -45,3 +46,13 @@ def test_repository_for_reuses_the_same_in_memory_instance_per_site():
 
     assert first is second
     assert first is not other
+
+
+def test_local_secret_store_deletes_a_review_token(tmp_path):
+    store = LocalFileSecretStore(tmp_path / "secrets.json")
+    store.set_review_token("a", "token-a")
+    store.set_review_token("b", "token-b")
+
+    store.delete_review_token("a")
+
+    assert (store.get_review_token("a"), store.get_review_token("b")) == (None, "token-b")

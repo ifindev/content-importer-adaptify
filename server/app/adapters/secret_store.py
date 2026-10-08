@@ -21,3 +21,11 @@ class LocalFileSecretStore:
         logger.info(
             "Local secret store: review token written for site %s to %s", site_id, self._path
         )
+
+    def delete_review_token(self, site_id: str) -> None:
+        if not self._path.exists():
+            return
+        data = json.loads(self._path.read_text())
+        if data.get("review_tokens", {}).pop(site_id, None) is not None:
+            self._path.write_text(json.dumps(data))
+            logger.info("Local secret store: review token removed for site %s", site_id)

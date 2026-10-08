@@ -7,3 +7,6 @@ class InMemorySecretStore:
 
     def set_review_token(self, site_id: str, token: str) -> None:
         self._review_tokens[site_id] = token
+
+    def delete_review_token(self, site_id: str) -> None:
+        self._review_tokens.pop(site_id, None)

@@ -42,6 +42,7 @@ Goals and "done when" for each phase are in [plan/README.md](plan/README.md).
 - `analyzed`: Analysis, Acceptance criteria and Tasks written. Ready to build.
 - `in progress`: being built.
 - `done`: all acceptance criteria pass and the docs are updated.
+- `on hold`: blocked by something outside the code; the reason is in the master list.
 
 The status lives in the master list, [plan/README.md](plan/README.md), and in the ticket header.
 

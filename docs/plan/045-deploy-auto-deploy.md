@@ -1,6 +1,6 @@
 # T-045 Auto-deploy to Cloud Run
 
-**Phase:** 5 · Deploy · **Status:** analyzed · **Size:** S
+**Phase:** 5 · Deploy · **Status:** on hold (no GCP billing account; T-048 deploys to the VPS meanwhile) · **Size:** S
 **Refs:** R8.1, R8.2; spec: API endpoints (rate-limit Decision); architecture: Deployment and CI
 **Depends on:** T-040, T-041, T-042, T-044
 

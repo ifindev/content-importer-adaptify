@@ -1,6 +1,6 @@
 # T-046 Budget alert and kill switch
 
-**Phase:** 5 · Deploy · **Status:** analyzed · **Size:** S
+**Phase:** 5 · Deploy · **Status:** on hold (no GCP billing account; T-048 deploys to the VPS meanwhile) · **Size:** S
 **Refs:** architecture: Cost and limits; spec: Risks (kill switch)
 **Depends on:** T-042
 

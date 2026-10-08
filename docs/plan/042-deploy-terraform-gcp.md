@@ -1,6 +1,6 @@
 # T-042 Terraform for GCP
 
-**Phase:** 5 · Deploy · **Status:** in progress · **Size:** M
+**Phase:** 5 · Deploy · **Status:** on hold (no GCP billing account; T-048 deploys to the VPS meanwhile) · **Size:** M
 **Refs:** R8.1; architecture: Infrastructure, GCP services, Deployment and CI, Auth
 **Depends on:** —
 

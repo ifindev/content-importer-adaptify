@@ -102,7 +102,7 @@ Build order for this phase: T-026 (done) → T-033 (all UI on fixtures, no API n
 | T-046 | [Budget alert and kill switch](046-deploy-budget-kill-switch.md) | architecture: Cost and limits | on hold |
 | T-048 | [Deploy the app to the VPS, with auto-deploy](048-deploy-vps-app.md) | R8.1, R8.2, architecture: Infrastructure, Deployment and CI | in progress |
 
-Build order: T-040, T-041, T-043 and T-044 → T-048. GCP billing couldn't be set up (the card was refused), so T-042, T-045 and T-046 are on hold until it is, and the app runs on the Tencent VPS at `app.aiwitharifin.com`, next to WordPress at `wp.aiwitharifin.com`, with Firestore and Firebase Auth on the free Spark plan. Access: only emails in `AGENCY_EMAILS` can sign in.
+Build order: T-040, T-041, T-043 and T-044 → T-048. GCP billing couldn't be set up (the card was refused), so T-042, T-045 and T-046 are on hold until it is, and the app runs on the Tencent VPS at `importer-app.aiwitharifin.com` (API at `importer-api.aiwitharifin.com`), next to WordPress at `wp.aiwitharifin.com`, with Firestore and Firebase Auth on the free Spark plan. Access: only emails in `AGENCY_EMAILS` can sign in.
 
 ### Phase 6: Demo readiness
 

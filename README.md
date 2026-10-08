@@ -11,7 +11,11 @@
 ![Terraform](https://img.shields.io/badge/Terraform-844FBA?logo=terraform&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
 
-<!-- T-047: live demo link and demo login go here. -->
+**Live:**
+- **App:** [importer-app.aiwitharifin.com](https://importer-app.aiwitharifin.com). The agency signs in here, and clients open their review links here.
+- **API docs (Swagger):** [importer-api.aiwitharifin.com/docs](https://importer-api.aiwitharifin.com/docs). Every endpoint, with its request and response schemas.
+
+<!-- T-047: demo login goes here. -->
 
 <p align="center">
   <img src="docs/images/flow.svg" alt="An article moves from Import to Client review, Approved, Scheduled and Live on WordPress" width="880">
@@ -328,12 +332,38 @@ The full guide is in [architecture.md › GCP target](docs/architecture.md#gcp-t
 
 **Deploy to a VPS:** Firebase console steps, two DNS records (`app.` and `api.`), then one `make vps-setup`. After that, every green push to `main` deploys itself. The step-by-step guide is in [docs/deploy-vps.md](docs/deploy-vps.md).
 
-**CI/CD.** Every push and pull request runs three parallel jobs:
-- **Server:** lint, import rules and unit tests.
-- **Web:** lint, types, tests and a production build.
-- **API types:** a check that the frontend's API types still match the server.
+### From push to live
 
-When all three pass on `main`, a fourth job builds both images, pushes them to GHCR, and connects to the VPS over SSH to pull the images and restart the containers. The registry login uses the job's own short-lived token, so no registry password is stored on the server.
+Every push to `main` that passes the checks goes live on the VPS by itself, a few minutes later. Nobody logs in to the server to deploy.
+
+```mermaid
+flowchart LR
+    Push["git push<br/>to main"] --> Checks
+    subgraph GA [GitHub Actions]
+        Checks["Checks<br/>server · web · API types"] -->|all pass| Build["Build the api and web<br/>Docker images"]
+    end
+    Build -->|"push, tagged with<br/>the commit"| GHCR[("GitHub Container<br/>Registry")]
+    Build -->|"SSH: pull and restart"| VPS["VPS<br/>docker compose"]
+    GHCR -->|"pull the images"| VPS
+```
+
+1. **Checks.** Three jobs run in parallel on every push and pull request:
+   - **Server:** lint, import rules and unit tests.
+   - **Web:** lint, types, tests and a production build.
+   - **API types:** the frontend's generated API types still match the server.
+
+   A pull request stops here. It never deploys.
+2. **Build.** If all three pass on `main`, a fourth job builds the production Docker images for the API and the web app.
+3. **Store.** The job pushes both images to the **GitHub Container Registry** (GHCR), GitHub's storage for Docker images, at `ghcr.io/ifindev/content-importer-adaptify-{api,web}`. Each image is tagged with the commit it was built from, so every version that ever went live can be pulled again.
+4. **Deploy.** The job connects to the VPS over SSH with a deploy key used only for this. It copies the compose file over, then tells the VPS to pull the new images from GHCR and restart the two containers. The new version is live a few seconds later.
+
+**Safe by default:**
+- **No registry password on the server.** The VPS pulls from GHCR with the job's own GitHub token. The token expires when the job ends.
+- **Only this server.** The job checks the VPS's SSH host key, so it refuses to deploy anywhere else.
+- **One deploy at a time.** Pushes to `main` queue, so a deploy never stops halfway.
+- **Easy to undo.** On the VPS, `IMAGE_TAG=<older commit> docker compose up -d` brings back any earlier version.
+
+The workflow is [`.github/workflows/ci.yml`](.github/workflows/ci.yml). The one-time server and GitHub setup is in [docs/deploy-vps.md](docs/deploy-vps.md).
 
 ## What's next: AI change drafting
 

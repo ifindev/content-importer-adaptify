@@ -33,6 +33,7 @@ All UI, states and layout are done in T-033. This ticket points `modules/review/
 ### Decisions
 - The body is rendered with `dangerouslySetInnerHTML`. The server already cleans it with nh3 to the allowed tags at import and on every edit, so there is no second sanitizer in the browser. Record in architecture.md.
 - The WordPress banner is hidden on client pages (spec: Client view).
+- Below `lg`, "Request changes" opens a bottom sheet that behaves like a modal: the page behind it doesn't scroll. The sheet has rounded top corners (14px, like dialogs) and is capped at 80svh; the heading, name field and Cancel / Send request stay in view, and only the comment field scrolls (it isn't resizable there).
 
 ### Full-flow test
 Uses T-033's Playwright config; the spec lives in `web/e2e/flow/full-flow.spec.ts`.
@@ -73,6 +74,11 @@ Code is done; the boxes above are ticked during the browser pass.
 - Live links use `rel="noopener noreferrer"`.
 - Waiting articles show the date they were sent (T-036).
 - Removed copy for an "approved, no date yet" state the client never sees.
+
+## Fixed during the browser pass (2026-10-08)
+- The reader no longer scrolls the whole page at `lg`+: the shell is pinned to the viewport, and the article list, the article and the decision panel scroll on their own. Below `lg` the document scrolls as before, for the sticky decision bar.
+- The review pages refetch on tab focus and from a Refresh button in the header (`RefreshOnFocus`), so an article the agency sends shows without a reload. A half-typed comment survives it.
+- Mobile "Request changes" sheet: the page behind no longer scrolls, and a long comment scrolls inside the field instead of pushing the name and buttons out of the sheet (see Decisions).
 
 ## Out of scope
 - UI, layout and states (T-033).

@@ -15,9 +15,9 @@ class Settings(BaseSettings):
 
     app_env: Literal["local", "gcp", "test"] = "local"
 
-    site_name: str = "Default site"
     web_base_url: str = ""
 
+    # Read only by the WordPress integration tests; sites carry their own.
     wp_base_url: str = ""
     wp_username: str = ""
     wp_app_password: str = ""

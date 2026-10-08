@@ -80,10 +80,11 @@ Phases and the master list of tickets. How tickets work: [workflow.md](../workfl
 | T-035 | [Edit and delete sites](035-api-edit-delete-sites.md) | spec: Screens (Sites) | done |
 | T-032 | [Sites: wiring for the switcher, sites list and Add Site](032-ui-site-switcher-add-site.md) | spec: Screens, E8 Access | analyzed |
 | T-027 | [API data layer and wiring](027-ui-data-layer.md) | E1–E6, architecture: Frontend | done |
+| T-036 | [API: fields the UI shows](036-api-fields-the-ui-shows.md) | spec: Screens, API endpoints | done |
 | T-028 | [Agency screens: wiring](028-ui-agency-screens.md) | E1, E2, E4, R3.2, R3.5–R3.7, R5.1–R5.3, R6.1–R6.4 | analyzed |
 | T-029 | [Client review: wiring and full-flow test](029-ui-client-review-e2e.md) | R3.3–R3.5, R6.5, R8.2 | analyzed |
 
-Build order for this phase: T-026 (done) → T-033 (all UI on fixtures, no API needed) → T-034 → T-035 → T-027 → T-032 → T-028 → T-029. T-027 also did the wiring, so T-032, T-028 and T-029 are now manual browser passes. T-031 (multi-site API, including the test-connection and site-stats follow-ups) is already built, so the generated schema covers every endpoint, sites included. UI first: T-033 builds every screen on fixtures typed from that schema; the wiring tickets then swap each module's fixtures for T-027's functions. Design canvas: [claude.ai artifact](https://claude.ai/artifact/QCpMywgpasGi231uuWrAMn), offline copy `design/canvas.html`.
+Build order for this phase: T-026 (done) → T-033 (all UI on fixtures, no API needed) → T-034 → T-035 → T-027 → T-036 → T-032 → T-028 → T-029. What's left to close the phase: the browser pass of T-032, T-028 and T-029 (with T-033's hand check at 375/768/1280px); their code is done. T-027 also did the wiring, so T-032, T-028 and T-029 are now manual browser passes. T-031 (multi-site API, including the test-connection and site-stats follow-ups) is already built, so the generated schema covers every endpoint, sites included. UI first: T-033 builds every screen on fixtures typed from that schema; the wiring tickets then swap each module's fixtures for T-027's functions. Design canvas: [claude.ai artifact](https://claude.ai/artifact/QCpMywgpasGi231uuWrAMn), offline copy `design/canvas.html`.
 
 ### Phase 5: Deploy
 

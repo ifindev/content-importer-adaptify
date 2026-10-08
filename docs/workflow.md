@@ -51,7 +51,7 @@ The status lives in the master list, [plan/README.md](plan/README.md), and in th
 - **`<seq>`:** one global sequence, three digits, never reused. Gaps are fine.
 - **`<area>`:** `bootstrap`, `infra`, `api`, `ui`, `deploy`, `demo`, or `ai`.
 - **ID:** `T-012`.
-- **Branch:** `T-012-client-approves`.
+- **Branch:** none. During the MVP all work is committed on `main`; the ticket ID lives in the commit scope.
 - **Commit:** `feat(T-012): client approve endpoint` (also `fix`, `docs`, `chore`, `test`, `refactor`).
 
 **Improvements to finished work** are new tickets with the next number and an `Improves: T-012` line in the header. They're listed under the phase in which they're worked, not the phase of the original ticket. Phase membership lives in the master list, not in folders.

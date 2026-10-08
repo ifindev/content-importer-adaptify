@@ -11,7 +11,7 @@
 - If code changes behavior or structure, update `docs/spec.md` or `docs/architecture.md` in the same change.
 - When a ticket is done, set its status in the ticket header and in `docs/plan/README.md`.
 - New tickets: next number in the global sequence, flat in `docs/plan/`, from `docs/plan/_template.md`.
-- Commits: `feat(T-012): …`. Branches: `T-012-short-slug`.
+- Commits: `feat(T-012): …`. Work directly on `main`; no feature branches during the MVP.
 - Never run `git commit` until the user has reviewed the changes and explicitly says to commit, in that same request. Approval of a plan that mentions committing is not commit approval — ask again once the diff is ready.
 - Tooling: uv for Python (`server/`), pnpm for the web app (`web/`). Use the Makefile targets when they exist.
 - Server: `core/` never imports SDKs or HTTP clients; import-linter enforces it.

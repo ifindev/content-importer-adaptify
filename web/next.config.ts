@@ -5,8 +5,9 @@ const nextConfig: NextConfig = {
   output: "standalone",
   experimental: {
     serverActions: {
-      // Cloud Run refuses HTTP/1 bodies over 32 MiB before they reach Next.
       // UploadPanel caps files at 30 MB; the extra 1 MB covers multipart overhead.
+      // Both hosts stop bodies over 32 MB before Next: Cloud Run (HTTP/1) and
+      // nginx on the VPS (infra/app/nginx).
       bodySizeLimit: "31mb",
     },
   },

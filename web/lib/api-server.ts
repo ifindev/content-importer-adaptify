@@ -38,7 +38,8 @@ const INTERNAL_API_SECRET = process.env.INTERNAL_API_SECRET ?? "";
  * The client's address for the API's per-client rate limit. Next only sets
  * x-forwarded-for when it's missing, so a client can send its own; the last
  * entry is the one the nearest proxy appended (or Next's socket address).
- * ponytail: assumes one proxy in front; recheck the entry on Cloud Run (Phase 5).
+ * ponytail: assumes exactly one proxy in front (nginx on the VPS); another hop
+ * (a CDN) would need a different entry.
  */
 function clientIp(forwardedFor: string | null): string {
   return forwardedFor?.split(",").at(-1)?.trim() ?? "";

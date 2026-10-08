@@ -40,10 +40,10 @@ WORKDIR /app
 ENV NODE_ENV=production \
     HOSTNAME=0.0.0.0
 
-# Runtime env (API_URL, APP_ENV, INTERNAL_API_SECRET) comes from Cloud Run.
+# Runtime env (API_URL, APP_ENV, INTERNAL_API_SECRET) comes from infra/app compose.
 COPY --from=build --chown=node:node /app/.next/standalone ./
 COPY --from=build --chown=node:node /app/.next/static ./.next/static
 USER node
 
-# server.js listens on $PORT, which Cloud Run sets.
+# server.js listens on $PORT (3000 if unset).
 CMD ["node", "server.js"]

@@ -3,7 +3,7 @@ import time
 _CAPACITY = 20.0
 _REFILL_PER_SEC = 0.5
 
-# ponytail: single-process dict, fine for one Cloud Run instance with no autoscaling;
+# ponytail: single-process dict, fine for the one API container on the VPS;
 # move to a shared store (e.g. Redis) if the API ever scales to multiple instances.
 _buckets: dict[str, tuple[float, float]] = {}
 

@@ -4,6 +4,7 @@ import { Loader2 } from "lucide-react";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 
+import { DateTimePicker } from "@/components/date-time-picker";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -14,16 +15,32 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { messageFor } from "@/lib/error-messages";
 import { scheduleArticle } from "@/modules/articles/actions";
 
-/** `datetime-local` wants local wall time without a zone. */
+/** The API refuses a publish time closer than this (or in the past). */
+const MIN_LEAD_MS = 5 * 60_000;
+
+/** The picker works in local wall time without a zone: "YYYY-MM-DDTHH:mm". */
+function formatLocal(d: Date) {
+  const shifted = new Date(d.getTime() - d.getTimezoneOffset() * 60_000);
+  return shifted.toISOString().slice(0, 16);
+}
+
 function toLocalInput(iso: string | null | undefined) {
-  const d = iso ? new Date(iso) : new Date(Date.now() + 864e5);
-  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
-  return d.toISOString().slice(0, 16);
+  return formatLocal(iso ? new Date(iso) : new Date(Date.now() + 864e5));
+}
+
+/** Earliest allowed value: now + 5 minutes, rounded up to a whole minute
+ *  because the picker has no seconds. Same-format strings compare as text. */
+function earliestLocal() {
+  const d = new Date(Date.now() + MIN_LEAD_MS);
+  if (d.getSeconds() > 0 || d.getMilliseconds() > 0) {
+    d.setSeconds(0, 0);
+    d.setMinutes(d.getMinutes() + 1);
+  }
+  return formatLocal(d);
 }
 
 export function ScheduleDialog({
@@ -42,9 +59,32 @@ export function ScheduleDialog({
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const [value, setValue] = useState("");
+  const [min, setMin] = useState("");
+
+  // Recomputed on every open, so the limit follows the clock.
+  function handleOpenChange(next: boolean) {
+    if (next) {
+      const earliest = earliestLocal();
+      const wanted = toLocalInput(current);
+      // A stored date that has passed (Failed) isn't a useful default.
+      setValue(current && wanted >= earliest ? wanted : toLocalInput(null));
+      setMin(earliest);
+      setError(null);
+    }
+    setOpen(next);
+  }
+
+  const tooSoon = value !== "" && value < min;
+  const shownError = tooSoon ? "publish_at_in_past" : error;
 
   function submit(formData: FormData) {
     const local = String(formData.get("publish_at") ?? "");
+    // Time has passed since the dialog opened: check against now, not `min`.
+    if (local < earliestLocal()) {
+      setError("publish_at_in_past");
+      return;
+    }
     setError(null);
     startTransition(async () => {
       const result = await scheduleArticle(
@@ -62,7 +102,7 @@ export function ScheduleDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger render={trigger} />
       <DialogContent className="sm:max-w-[400px]">
         <DialogTitle>
@@ -79,24 +119,27 @@ export function ScheduleDialog({
           className="flex flex-col gap-1.5"
         >
           <Label htmlFor="publish_at">Publish at (your time)</Label>
-          <Input
+          <DateTimePicker
             id="publish_at"
             name="publish_at"
-            type="datetime-local"
-            defaultValue={toLocalInput(current)}
-            required
-            aria-invalid={error ? true : undefined}
+            value={value}
+            min={min}
+            onChange={(next) => {
+              setValue(next);
+              setError(null);
+            }}
+            invalid={!!shownError}
           />
-          {error && (
+          {shownError && (
             <p role="alert" className="text-destructive text-[12.5px]">
-              {messageFor(error)}
+              {messageFor(shownError)}
             </p>
           )}
           <DialogFooter className="mt-3">
             <DialogClose render={<Button variant="ghost" />}>
               Cancel
             </DialogClose>
-            <Button type="submit" disabled={pending}>
+            <Button type="submit" disabled={pending || tooSoon}>
               {pending && <Loader2 className="animate-spin" />}
               Schedule
             </Button>

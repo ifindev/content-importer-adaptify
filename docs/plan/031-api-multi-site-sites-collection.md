@@ -67,29 +67,30 @@ An agency can create and list several client sites instead of operating against 
 ### Open questions
 - Encryption key source (Secret Manager key vs. local-dev equivalent) — implementation detail, resolve while building, not a product decision.
 
-### Follow-ups raised by the design (T-033), not built here
+### Follow-ups raised by the design (T-033), built here
 - The Add Site design has a **Test connection** button separate from submit. Proposal: `POST /sites/test-connection` with the same body minus `name`; `200` or `422 {code: "wp_connection_failed"}`, persists nothing, reuses the same checker.
 - The Sites list and switcher show each site's **connection status** and **article / needs-attention counts**. Proposal: store the last check result on the site (`connection_ok`, `connection_checked_at`, set on create and on test), and have `GET /sites` return it plus `article_count` and `needs_attention_count` computed from stored statuses, no live WordPress call.
-- Both need a new API ticket if kept; otherwise T-033 drops the button and those columns.
+- Built in this ticket (decided 2026-10-08). `GET /sites` also returns `wp_username` so the edit dialog can prefill it. A second endpoint, `POST /sites/{siteId}/test-connection`, tests the **stored** details (the sites-row button, and the edit dialog where an empty password means the stored one). Body fields override the stored ones, and only a test of exactly what is stored records `connection_ok`/`connection_checked_at`. Counts are computed per request, one article read per site (`ponytail:` note in `api/routes/sites.py`).
 
 ## Acceptance criteria
-- [ ] `POST /sites` tests the WordPress connection before persisting; failure leaves no document behind.
-- [ ] The stored app password is encrypted at rest; no endpoint ever returns it in plaintext.
-- [ ] Every existing article/review/schedule/sync/report route works unchanged in behavior, now under `/sites/{siteId}/...`, against the Firestore emulator with 2+ sites coexisting.
-- [ ] `SITE_ID` constant and startup-seeding of a single site are removed.
-- [ ] Unit tests: `create_site` (success, WP check failure), repository operations scoped correctly per `siteId` (one site's articles never leak into another's list).
-- [ ] Swagger, Postman collection, and `pnpm gen:api` updated.
+- [x] `POST /sites` tests the WordPress connection before persisting; failure leaves no document behind.
+- [x] The stored app password is encrypted at rest; no endpoint ever returns it in plaintext.
+- [x] Every existing article/review/schedule/sync/report route works unchanged in behavior, now under `/sites/{siteId}/...`, against the Firestore emulator with 2+ sites coexisting.
+- [x] `SITE_ID` constant and startup-seeding of a single site are removed.
+- [x] Unit tests: `create_site` (success, WP check failure), repository operations scoped correctly per `siteId` (one site's articles never leak into another's list).
+- [x] Swagger and `pnpm gen:api` updated. ~~Postman collection~~: dropped, the repo has none and Swagger covers it.
 
 ## Tasks
-- [ ] `core/ports/site_repository.py`, `core/ports/wordpress_connection_checker.py` (or reuse/extend T-009's).
-- [ ] `adapters/crypto/`: encrypt/decrypt helper for the app password.
-- [ ] `adapters/firestore/repository.py`: `siteId`-parameterized reads/writes, `create_site`, `list_sites`.
-- [ ] `adapters/testing/in_memory_repository.py`: same multi-site shape for tests.
-- [ ] `api/routes/sites.py`: `POST /sites`, `GET /sites`.
-- [ ] Reparent `api/routes/articles.py` and every other Phase 3 router under `/sites/{siteId}/...`.
-- [ ] Remove `SITE_ID` constant and startup site-seeding from `container.py`.
-- [ ] Unit + integration tests updated for the new path shape and multi-site isolation.
-- [ ] `pnpm gen:api` in `web/`.
+- [x] `core/ports/site_repository.py`, `core/ports/wordpress_connection_checker.py` (or reuse/extend T-009's).
+- [x] `adapters/crypto/`: encrypt/decrypt helper for the app password.
+- [x] `adapters/firestore/repository.py`: `siteId`-parameterized reads/writes, `create_site`, `list_sites`.
+- [x] `adapters/testing/in_memory_repository.py`: same multi-site shape for tests.
+- [x] `api/routes/sites.py`: `POST /sites`, `GET /sites`.
+- [x] Reparent `api/routes/articles.py` and every other Phase 3 router under `/sites/{siteId}/...`.
+- [x] Remove `SITE_ID` constant and startup site-seeding from `container.py`.
+- [x] Unit + integration tests updated for the new path shape and multi-site isolation.
+- [x] `pnpm gen:api` in `web/`.
+- [x] Follow-ups: `POST /sites/test-connection`, `POST /sites/{siteId}/test-connection`, connection fields and counts on `GET /sites`, with unit tests.
 
 ## Out of scope
 - Site removal/archive (add + list only).

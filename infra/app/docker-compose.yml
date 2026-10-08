@@ -1,0 +1,27 @@
+# The app on the VPS (T-048), next to WordPress. The deploy job copies this file
+# to ~/app and runs it with IMAGE_TAG set to the commit SHA. nginx + certbot on
+# the host proxy app.aiwitharifin.com to 127.0.0.1:3000.
+services:
+  api:
+    image: ghcr.io/ifindev/content-importer-adaptify-api:${IMAGE_TAG:?}
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      APP_ENV: prod
+      GOOGLE_APPLICATION_CREDENTIALS: /run/secrets/firebase.json
+    volumes:
+      - ./firebase-service-account.json:/run/secrets/firebase.json:ro
+    # No ports: only the web container reaches the API, over the compose network.
+
+  web:
+    image: ghcr.io/ifindev/content-importer-adaptify-web:${IMAGE_TAG:?}
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      APP_ENV: prod
+      API_URL: http://api:8080
+    ports:
+      # 127.0.0.1 only: Docker's port rules bypass ufw.
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      - api

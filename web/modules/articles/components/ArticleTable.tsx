@@ -16,6 +16,7 @@ import { deleteArticle } from "@/modules/articles/actions";
 import { ConfirmDeleteDialog } from "./ConfirmDeleteDialog";
 import { isDeletable } from "./deletable";
 import { RowAction } from "./RowAction";
+import { RowMenu } from "./RowMenu";
 
 const CHECKBOX = "accent-primary size-4 cursor-pointer align-middle";
 
@@ -110,7 +111,7 @@ export function ArticleTable({
             <th className="h-9 px-3 font-medium">Title</th>
             <th className="h-9 w-[170px] px-3 font-medium">Status</th>
             <th className="h-9 w-[150px] px-3 font-medium">Publish date</th>
-            <th className="h-9 w-[110px] px-3">
+            <th className="h-9 w-[170px] px-3">
               <span className="sr-only">Actions</span>
             </th>
           </tr>
@@ -160,8 +161,11 @@ export function ArticleTable({
                   <span className="text-faint max-md:hidden">—</span>
                 )}
               </td>
-              <td className="px-3 py-2 text-right max-md:ml-auto max-md:p-0 max-md:empty:hidden">
-                <RowAction siteId={siteId} article={a} />
+              <td className="px-3 py-2 max-md:ml-auto max-md:p-0">
+                <div className="flex items-center justify-end gap-1">
+                  <RowAction siteId={siteId} article={a} />
+                  <RowMenu siteId={siteId} article={a} />
+                </div>
               </td>
             </tr>
           ))}

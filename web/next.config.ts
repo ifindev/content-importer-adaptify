@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Minimal server.js plus only the node_modules it needs, for the Docker image.
+  output: "standalone",
   experimental: {
     serverActions: {
       bodySizeLimit: "100mb",

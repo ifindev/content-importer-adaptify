@@ -163,10 +163,11 @@ stateDiagram-v2
     AwaitingApproval --> Approved: client approves
     Approved --> Scheduled: agency sets date
     Approved --> Failed: WordPress call fails
-    Failed --> Scheduled: retry
+    Scheduled --> Failed: date change fails
+    Failed --> Scheduled: retry or new date
     Scheduled --> Published: WordPress publishes
+    Scheduled --> Approved: agency unschedules
     Approved --> Draft: agency edits (approval resets)
-    Scheduled --> Draft: agency edits (approval resets)
     Draft --> [*]: agency deletes
     ChangesRequested --> [*]: agency deletes
 ```
@@ -180,20 +181,22 @@ stateDiagram-v2
 | Awaiting approval | Visible on the review page. Read-only for the agency. | Client approves or requests changes. The agency can also pull it back to Draft. |
 | Changes requested | The client's comment is attached. Editable.           | Agency edits, then resubmits.                                                   |
 | Approved          | The client accepted this exact text.                  | Agency sets a publish date.                                                     |
-| Scheduled         | Sent to WordPress with a future date.                 | WordPress publishes it on that date.                                            |
+| Scheduled         | Sent to WordPress with a future date. Read-only.      | WordPress publishes it on that date. The agency can unschedule it to change it. |
 | Published         | Live on the site, with a URL.                         | Final.                                                                          |
-| Failed            | The WordPress call failed. The reason is stored.      | Agency clicks Retry.                                                            |
+| Failed            | The WordPress call failed. The reason and the intended date are stored. | Agency clicks Retry, or sets a new date.                          |
 
 
 
 
 ### Approval rules
 
-- **Locking.** An article in Awaiting approval is read-only. To edit it, the agency pulls it back to Draft first.
-- **Edits reset approval.** Editing an Approved or Scheduled article sends it back to Draft. For a Scheduled article, the app also moves the WordPress post back to draft.
-- **Date changes keep approval.** Changing only the publish date of a Scheduled article updates WordPress and keeps the status.
-- **Publish needs approval.** The app sends an article to WordPress only from Approved.
-- **Delete only before WordPress.** The agency can delete an article in Draft or Changes requested, after a confirmation. The article and its history are removed for good. Other statuses can't be deleted: an Awaiting approval article is pulled back first, and later statuses may already exist in WordPress.
+- **Locking.** An article in Awaiting approval or Scheduled is read-only. To edit it, the agency pulls it back (Awaiting approval → Draft) or unschedules it (Scheduled → Approved) first. Both wait on someone else, the client or WordPress's date, so neither can change underneath them.
+- **Edits reset approval.** Editing an Approved article sends it back to Draft. Editing never calls WordPress.
+- **Unschedule keeps approval.** Unscheduling moves the WordPress post to WordPress's trash first (recoverable), then the article to Approved: the text didn't change. Setting a date again creates a new post.
+- **Publish time.** It must be at least 5 minutes after now. The date picker shows earlier days and times as disabled, faint text; the API refuses them too (`publish_at_in_past`), and Retry applies the same rule to its stored date.
+- **Date changes keep approval.** Changing only the publish date of a Scheduled article updates WordPress and keeps the status. If WordPress refuses, the article goes Failed.
+- **Publish needs approval.** The app sends an article to WordPress only after the client approved it: a first date from Approved, or a date change, retry, or new date on that same approved text.
+- **Delete only before publishing.** The agency can delete an article in Draft or Changes requested, after a confirmation. The article and its history are removed for good. If it still owns a WordPress post (older data; unscheduling already trashes it), that post goes to WordPress's trash first; if WordPress refuses, nothing is deleted. Other statuses can't be deleted: an Awaiting approval article is pulled back first, and an approved article (Approved, Scheduled, Failed, Published) stays.
 - **History.** Every status change adds a log entry with time and actor, for example "Approved by Sarah, Oct 8".
 
 **Decision:** The agency sets a publish date only after approval (`schedule` accepts Approved, Scheduled and Failed). An article never reaches WordPress before the client approves it.
@@ -234,8 +237,8 @@ Requirements fall into eight epics. Priority: **P0** = MVP must have, **P1** = M
 | ID   | Requirement                                                                              | Priority |
 | ---- | ---------------------------------------------------------------------------------------- | -------- |
 | R2.1 | A rich-text editor edits the title, slug, and body.                                      | P0       |
-| R2.2 | Editing is allowed only in Draft and Changes requested.                                  | P0       |
-| R2.3 | Editing an Approved or Scheduled article moves it back to Draft (see Article lifecycle). | P0       |
+| R2.2 | Editing is allowed only in Draft and Changes requested. Awaiting approval and Scheduled are read-only. | P0       |
+| R2.3 | Editing an Approved article moves it back to Draft (see Article lifecycle).               | P0       |
 | R2.4 | Each article keeps a history log of status changes with time and actor.                  | P0       |
 | R2.5 | The agency can delete Draft and Changes requested articles, one at a time or in bulk.    | P1       |
 
@@ -279,8 +282,8 @@ Requirements fall into eight epics. Priority: **P0** = MVP must have, **P1** = M
 | ---- | ----------------------------------------------------------------------------------------------------- | -------- |
 | R5.1 | Opening the articles table or the review page checks all Scheduled articles in one WordPress request. | P0       |
 | R5.2 | The app maps WordPress statuses to its own, including the three sync warnings.                        | P0       |
-| R5.3 | A failed check changes nothing and shows a "Can't reach WordPress" banner.                            | P0       |
-| R5.4 | Check results are cached for one minute.                                                              | P1       |
+| R5.3 | A failed check changes nothing and shows a "Can't reach WordPress" banner on the agency screens. Client pages hide it (see Client view). | P0       |
+| R5.4 | Check results are cached for one minute, per site.                                                    | P1       |
 
 
 
@@ -391,6 +394,7 @@ When a site is added, edited, or tested, the app calls `GET /wp-json/wp/v2/users
 | Agency changes only the date            | `POST /wp-json/wp/v2/posts/{id}` | `date_gmt`                                                        |
 | Agency edits a Scheduled article        | `POST /wp-json/wp/v2/posts/{id}` | `status: "draft"`                                                 |
 | Article is approved and scheduled again | `POST /wp-json/wp/v2/posts/{id}` | new `title`, `content`, `slug`, `status: "future"`, `date_gmt`    |
+| Agency deletes a Draft that owns a post | `DELETE /wp-json/wp/v2/posts/{id}` | none: WordPress moves the post to its trash                     |
 | Status check                            | `GET /wp-json/wp/v2/posts`       | query below                                                       |
 
 
@@ -402,7 +406,7 @@ The app stores the WordPress post ID after the first create and reuses it for ev
 
 ### Status check
 
-One request covers all Scheduled articles:
+One request covers all Scheduled articles, plus Published ones not checked in the last day (in chunks of 100, WordPress's page limit):
 
 ```
 GET /wp-json/wp/v2/posts?include=12,15,18&status=publish,future,draft,private&_fields=id,status,link,date_gmt&context=edit&per_page=100
@@ -527,7 +531,8 @@ Every error body is `{"code": "..."}`; `wordpress_error` and `wp_connection_fail
 | POST   | `/sites/{siteId}/articles/{id}/send-for-review`          | Draft or Changes requested to Awaiting approval.                  |
 | POST   | `/sites/{siteId}/articles/{id}/pull-back`                | Awaiting approval to Draft.                                       |
 | POST   | `/sites/{siteId}/articles/{id}/schedule`                 | Set or change the publish time. Body: `publish_at` with timezone. |
-| POST   | `/sites/{siteId}/articles/{id}/retry`                    | Retry a Failed WordPress call.                                    |
+| POST   | `/sites/{siteId}/articles/{id}/unschedule`               | Scheduled to Approved; the WordPress post goes to trash.          |
+| POST   | `/sites/{siteId}/articles/{id}/retry`                    | Retry a Failed WordPress call on its stored date (`publish_at_in_past` once that has passed). |
 | GET    | `/sites/{siteId}/review-link`                            | The current review URL.                                           |
 | POST   | `/sites/{siteId}/review-link/reset`                      | New token; the old link stops working.                            |
 | GET    | `/sites/{siteId}/report`                                 | Agency report. Runs the status check.                             |
@@ -554,7 +559,7 @@ Client routes carry no `siteId` — the API resolves which site a token belongs 
 
 **Decision:** Approve and request changes carry the `version` the client is reading. If the article changed since (the agency pulled it back, edited, and resent it), the API refuses with 409 `article_changed`. Without this, an old browser tab could approve text the client never saw, which breaks the core approval rule.
 
-**Decision:** Client routes are rate-limited per client IP. All requests reach the API from the Next.js server, so the web app sends the client's IP in `X-Forwarded-For`, and the API trusts that header only from the web service.
+**Decision:** Client routes are rate-limited per client IP, before the token is even looked up, so a flood of bad tokens is limited too. All requests reach the API from the Next.js server, so the web app sends the client's IP in `X-Client-IP` together with a shared `INTERNAL_API_SECRET`. The API trusts that header only with the right secret; anything else, including a client-sent `X-Forwarded-For`, is keyed by the connecting address.
 
 **Decision:** The review token is `secrets.token_urlsafe(32)` (`server/app/core/lib/tokens.py`): 32 random bytes, 43 URL-safe characters, 256 bits. That is the strength of an AES-256 key: guessing it is not a realistic attack at any request rate, and client routes are rate-limited too. A longer token only makes the URL longer in emails and chat; it adds no real security. The real risk is a leaked link, which reset (R3.7) handles. Reconsidered and kept on 2026-10-08.
 

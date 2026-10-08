@@ -29,6 +29,7 @@ EXPECTED_OPERATIONS = {
         "POST /sites/{site_id}/articles/{article_id}/pull-back",
         "POST /sites/{site_id}/articles/{article_id}/schedule",
         "POST /sites/{site_id}/articles/{article_id}/retry",
+        "POST /sites/{site_id}/articles/{article_id}/unschedule",
     ],
     "Review link": [
         "GET /sites/{site_id}/review-link",

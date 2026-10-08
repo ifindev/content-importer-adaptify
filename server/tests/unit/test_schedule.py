@@ -8,12 +8,13 @@ from app.adapters.testing.scripted_publisher import ScriptedPublisher
 from app.core.domain.errors import (
     NotFailedError,
     NotSchedulableError,
+    NotScheduledError,
     PublishAtInPastError,
     WordPressError,
 )
 from app.core.domain.models import Article
 from app.core.domain.statuses import Status
-from app.core.use_cases.schedule import retry, schedule
+from app.core.use_cases.schedule import retry, schedule, unschedule
 
 pytestmark = pytest.mark.anyio
 
@@ -25,7 +26,6 @@ NOT_SCHEDULABLE = [
     Status.AWAITING_APPROVAL,
     Status.CHANGES_REQUESTED,
     Status.PUBLISHED,
-    Status.FAILED,
 ]
 
 
@@ -237,3 +237,103 @@ async def test_retry_can_fail_again(repository, clock, publisher):
 
     saved = repository.get_article("a1")
     assert saved.status == Status.FAILED
+
+
+async def test_first_schedule_failure_keeps_the_date_so_retry_works(repository, clock, publisher):
+    article = _article(Status.APPROVED)
+    repository.create_article(article)
+    publisher.create_error = WordPressError(403, "rest_forbidden", "nope")
+
+    with pytest.raises(WordPressError):
+        await schedule(article, FUTURE, repository, publisher, clock, "agency")
+
+    failed = repository.get_article("a1")
+    assert (failed.status, failed.publish_at_utc) == (Status.FAILED, FUTURE)
+
+    publisher.create_error = None
+    updated = await retry(failed, repository, publisher, clock, "agency")
+    assert (updated.status, updated.publish_at_utc) == (Status.SCHEDULED, FUTURE)
+
+
+async def test_retry_refuses_a_date_that_has_passed(repository, clock, publisher):
+    article = _article(Status.FAILED, publish_at_utc=NOW - timedelta(minutes=1))
+    repository.create_article(article)
+
+    with pytest.raises(PublishAtInPastError):
+        await retry(article, repository, publisher, clock, "agency")
+
+
+async def test_schedule_from_failed_sets_a_new_date(repository, clock, publisher):
+    article = _article(Status.FAILED, wp_post_id=42, publish_at_utc=NOW - timedelta(days=1))
+    repository.create_article(article)
+
+    updated = await schedule(article, FUTURE, repository, publisher, clock, "agency")
+
+    assert (updated.status, updated.publish_at_utc) == (Status.SCHEDULED, FUTURE)
+    assert publisher.updated[0]["status"] == "future"
+
+
+async def test_failed_date_change_moves_scheduled_to_failed(repository, clock, publisher):
+    article = _article(Status.SCHEDULED, wp_post_id=42, publish_at_utc=FUTURE)
+    repository.create_article(article)
+    publisher.update_error = WordPressError(500, "server_error", "oops")
+
+    with pytest.raises(WordPressError):
+        await schedule(article, FUTURE + timedelta(days=1), repository, publisher, clock, "a")
+
+    assert repository.get_article("a1").status == Status.FAILED
+
+
+async def test_unschedule_moves_to_approved_and_trashes_the_post(repository, clock, publisher):
+    article = _article(Status.SCHEDULED, wp_post_id=42, publish_at_utc=FUTURE)
+    repository.create_article(article)
+
+    updated = await unschedule(article, repository, publisher, clock, "agency")
+
+    assert updated.status == Status.APPROVED
+    assert (updated.publish_at_utc, updated.wp_post_id) == (None, None)
+    assert publisher.trashed == [42]
+    assert repository.list_events("a1")[-1].type.value == "unscheduled"
+
+
+async def test_unschedule_carries_on_when_the_post_is_already_gone(repository, clock, publisher):
+    article = _article(Status.SCHEDULED, wp_post_id=42, publish_at_utc=FUTURE)
+    repository.create_article(article)
+    publisher.trash_error = WordPressError(404, "rest_post_invalid_id", "gone")
+
+    updated = await unschedule(article, repository, publisher, clock, "agency")
+
+    assert (updated.status, updated.wp_post_id) == (Status.APPROVED, None)
+
+
+async def test_unschedule_changes_nothing_when_wordpress_refuses(repository, clock, publisher):
+    article = _article(Status.SCHEDULED, wp_post_id=42, publish_at_utc=FUTURE)
+    repository.create_article(article)
+    publisher.trash_error = WordPressError(500, "server_error", "oops")
+
+    with pytest.raises(WordPressError):
+        await unschedule(article, repository, publisher, clock, "agency")
+
+    assert repository.get_article("a1").status == Status.SCHEDULED
+    assert repository.list_events("a1") == []
+
+
+@pytest.mark.parametrize("status", [Status.APPROVED, Status.DRAFT, Status.PUBLISHED])
+async def test_unschedule_only_from_scheduled(status, repository, clock, publisher):
+    article = _article(status, wp_post_id=42)
+    repository.create_article(article)
+
+    with pytest.raises(NotScheduledError):
+        await unschedule(article, repository, publisher, clock, "agency")
+
+
+async def test_reschedule_after_unschedule_creates_a_new_post(repository, clock, publisher):
+    article = _article(Status.SCHEDULED, wp_post_id=42, publish_at_utc=FUTURE)
+    repository.create_article(article)
+    approved = await unschedule(article, repository, publisher, clock, "agency")
+
+    updated = await schedule(approved, FUTURE, repository, publisher, clock, "agency")
+
+    assert updated.wp_post_id == 1
+    assert len(publisher.created) == 1
+    assert publisher.updated == []

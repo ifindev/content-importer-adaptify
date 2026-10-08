@@ -12,17 +12,12 @@ from app.adapters.testing.in_memory_repository import InMemoryArticleRepository
 from app.adapters.wordpress.publisher import WordPressPublisher
 from app.core.domain.models import Article
 from app.core.domain.statuses import Status
-from app.core.use_cases.edit_article import edit_article
+from app.core.use_cases.schedule import schedule, unschedule
 from app.settings import Settings
 
 logger = logging.getLogger(__name__)
 
 pytestmark = [pytest.mark.anyio, pytest.mark.integration]
-
-
-class _UnusedParser:
-    def clean_html(self, html: str):
-        raise NotImplementedError("body_html is not edited in these tests")
 
 
 @pytest.fixture
@@ -142,27 +137,6 @@ async def test_update_scheduled_full_reschedule(settings: Settings, publisher: W
         await _delete_post(settings, post_id)
 
 
-async def test_set_draft_moves_a_scheduled_post_to_draft(
-    settings: Settings, publisher: WordPressPublisher
-):
-    html = (Path(__file__).parent.parent / "fixtures" / "sample_article.html").read_text()
-    slug = f"t-020-set-draft-{uuid.uuid4()}"
-    publish_at = datetime.now(UTC) + timedelta(hours=1)
-    post_id = await publisher.create_scheduled("T-020 set draft", slug, html, publish_at)
-
-    try:
-        await publisher.set_draft(post_id)
-
-        async with _raw_client(settings) as client:
-            response = await client.get(f"/posts/{post_id}", params={"context": "edit"})
-            response.raise_for_status()
-            data = response.json()
-
-        assert data["status"] == "draft"
-    finally:
-        await _delete_post(settings, post_id)
-
-
 async def test_find_by_slug_finds_an_existing_post(
     settings: Settings, publisher: WordPressPublisher
 ):
@@ -185,11 +159,11 @@ async def test_find_by_slug_returns_none_when_not_found(
     assert found is None
 
 
-async def test_edit_article_moves_scheduled_wordpress_post_to_draft(
+async def test_unschedule_trashes_the_post_and_a_new_schedule_creates_another(
     settings: Settings, publisher: WordPressPublisher
 ):
     html = (Path(__file__).parent.parent / "fixtures" / "sample_article.html").read_text()
-    slug = f"t-020-edit-draft-{uuid.uuid4()}"
+    slug = f"t-037-unschedule-{uuid.uuid4()}"
     publish_at = datetime.now(UTC) + timedelta(hours=1)
     post_id = await publisher.create_scheduled("T-020 edit draft", slug, html, publish_at)
 
@@ -210,24 +184,28 @@ async def test_edit_article_moves_scheduled_wordpress_post_to_draft(
         )
         repository.create_article(article)
 
-        await edit_article(
-            article,
-            "New title",
-            None,
-            None,
-            repository,
-            _UnusedParser(),
-            FixedClock(now),
-            publisher,
-            "agency",
-        )
+        clock = FixedClock(now)
+        approved = await unschedule(article, repository, publisher, clock, "agency")
 
         async with _raw_client(settings) as client:
             response = await client.get(f"/posts/{post_id}", params={"context": "edit"})
             response.raise_for_status()
-            data = response.json()
+            assert response.json()["status"] == "trash"
+        assert approved.status == Status.APPROVED
+        assert approved.wp_post_id is None
 
-        assert data["status"] == "draft"
-        assert repository.get_article("a1").status == Status.DRAFT
+        # The trashed post gives its slug back, so the new post keeps it clean.
+        rescheduled = await schedule(
+            approved, now + timedelta(hours=2), repository, publisher, clock, "agency"
+        )
+        new_post_id = rescheduled.wp_post_id
+        assert new_post_id is not None and new_post_id != post_id
+        async with _raw_client(settings) as client:
+            response = await client.get(f"/posts/{new_post_id}", params={"context": "edit"})
+            response.raise_for_status()
+            data = response.json()
+        assert data["status"] == "future"
+        assert data["slug"] == slug
+        await _delete_post(settings, new_post_id)
     finally:
         await _delete_post(settings, post_id)

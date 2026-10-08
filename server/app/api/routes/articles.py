@@ -24,7 +24,7 @@ from app.core.ports.document_parser import DocumentParser
 from app.core.use_cases.delete_article import delete_article
 from app.core.use_cases.edit_article import edit_article
 from app.core.use_cases.review import pull_back, send_for_review
-from app.core.use_cases.schedule import retry, schedule
+from app.core.use_cases.schedule import retry, schedule, unschedule
 from app.core.use_cases.sync_status import SyncCache, sync_statuses
 
 router = APIRouter(dependencies=[Depends(require_session)])
@@ -164,6 +164,24 @@ async def retry_route(
         raise ArticleNotFoundError
 
     updated = await retry(article, ctx.repository, ctx.publisher, clock, actor=uid)
+    events = ctx.repository.list_events(article_id)
+    return ArticleDetail(
+        **updated.model_dump(), events=[EventOut(**e.model_dump()) for e in events]
+    )
+
+
+@router.post("/articles/{article_id}/unschedule", tags=[PUBLISHING])
+async def unschedule_route(
+    article_id: str,
+    ctx: SiteContext = Depends(get_site_context),
+    clock: Clock = Depends(get_clock),
+    uid: str = Depends(require_session),
+) -> ArticleDetail:
+    article = ctx.repository.get_article(article_id)
+    if article is None:
+        raise ArticleNotFoundError
+
+    updated = await unschedule(article, ctx.repository, ctx.publisher, clock, actor=uid)
     events = ctx.repository.list_events(article_id)
     return ArticleDetail(
         **updated.model_dump(), events=[EventOut(**e.model_dump()) for e in events]

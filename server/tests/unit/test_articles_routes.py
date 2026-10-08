@@ -292,3 +292,25 @@ def test_delete_keeps_the_article_when_wordpress_refuses(client, repository, pub
     assert response.status_code == 502
     assert response.json()["code"] == "wordpress_error"
     assert repository.get_article("a1") is not None
+
+
+def test_unschedule_route(client, repository, publisher):
+    repository.create_article(
+        _article("a1", Status.SCHEDULED).model_copy(update={"wp_post_id": 42})
+    )
+
+    response = client.post(f"/sites/{SITE_ID}/articles/a1/unschedule")
+
+    assert response.status_code == 200
+    assert response.json()["status"] == "approved"
+    assert publisher.trashed == [42]
+    assert response.json()["publish_at_utc"] is None
+
+
+def test_unschedule_route_refuses_other_statuses(client, repository):
+    repository.create_article(_article("a1", Status.APPROVED))
+
+    response = client.post(f"/sites/{SITE_ID}/articles/a1/unschedule")
+
+    assert response.status_code == 409
+    assert response.json() == {"code": "not_scheduled"}

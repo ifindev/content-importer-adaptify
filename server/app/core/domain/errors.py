@@ -64,6 +64,12 @@ class NotSchedulableError(Exception):
         super().__init__(f"Article in status {status} cannot be scheduled")
 
 
+class NotScheduledError(Exception):
+    def __init__(self, status: str) -> None:
+        self.status = status
+        super().__init__(f"Article in status {status} is not scheduled")
+
+
 class NotFailedError(Exception):
     def __init__(self, status: str) -> None:
         self.status = status

@@ -7,7 +7,8 @@ const MESSAGES: Record<string, string> = {
   unreadable_file: "This file couldn't be read. It may be damaged.",
   file_too_large: "This file is over 10 MB.",
   not_found: "This article no longer exists.",
-  not_editable: "This article can't be edited in its current status.",
+  not_editable:
+    "This article can't be edited in its current status. Reload to see the latest version.",
   empty_update: "Nothing changed.",
   not_deletable:
     "Only Draft and Changes requested articles can be deleted. Pull it back first if it's waiting for the client.",

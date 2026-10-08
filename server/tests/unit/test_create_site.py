@@ -49,6 +49,7 @@ async def test_create_site_succeeds_and_mints_a_review_token():
     assert token is not None
     assert site.review_token_hash == hash_token(token)
     assert site.review_token_created_at == NOW
+    assert (site.connection_ok, site.connection_checked_at) == (True, NOW)
 
 
 async def test_create_site_raises_on_wordpress_connection_failure():

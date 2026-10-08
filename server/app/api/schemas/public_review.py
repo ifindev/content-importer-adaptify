@@ -14,6 +14,9 @@ class ArticleCard(BaseModel):
     sync_warning: SyncWarning | None = Field(
         None, description="Warning from the last WordPress status check, if any."
     )
+    sent_for_review_at: datetime | None = Field(
+        None, description="When the agency last sent it for review, UTC."
+    )
 
 
 class ReviewPageOut(BaseModel):
@@ -33,6 +36,9 @@ class ReviewArticleOut(BaseModel):
     body_html: str = Field(..., description="Article body, as HTML.")
     version: int = Field(..., description="Increments on every body edit.")
     status: Status = Field(..., description="Current lifecycle status.")
+    sent_for_review_at: datetime | None = Field(
+        None, description="When the agency last sent it for review, UTC."
+    )
 
 
 class ApproveRequest(BaseModel):

@@ -66,6 +66,7 @@ def test_send_for_review_allowed_statuses(status, repository, clock):
     assert events[-1].type.value == "sent_for_review"
     assert events[-1].actor == "agency"
     assert events[-1].at == NOW
+    assert updated.sent_for_review_at == NOW
 
 
 def test_send_for_review_clears_client_comment(repository, clock):

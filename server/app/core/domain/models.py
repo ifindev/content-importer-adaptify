@@ -50,6 +50,7 @@ class Article(BaseModel):
     last_error: str | None = None
     last_checked_at: datetime | None = None
     client_comment: str | None = None
+    sent_for_review_at: datetime | None = None
     created_at: datetime
     updated_at: datetime
 

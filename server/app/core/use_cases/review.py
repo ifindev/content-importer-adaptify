@@ -56,7 +56,7 @@ def send_for_review(
     updated, event = lifecycle.transition(
         article, Status.AWAITING_APPROVAL, actor, EventType.SENT_FOR_REVIEW, clock.now()
     )
-    updated = updated.model_copy(update={"client_comment": None})
+    updated = updated.model_copy(update={"client_comment": None, "sent_for_review_at": event.at})
     repository.save_article(updated, event)
     return updated
 
